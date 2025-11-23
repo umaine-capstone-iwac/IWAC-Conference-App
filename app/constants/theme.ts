@@ -5,9 +5,18 @@ export const Colors = {
   lightestBlue: '#eff7fcff',
   lightBlue: '#c4e8fcff',
   blue: '#3899d5ff',
-  maineLightBlue: '#79BDE8', // UMaine Light Blue
-  maineDarkBlue: '#082E58', // UMaine Dark Blue
-  darkestBlue: '#031a34ff'
+  darkBlue: '#155278ff',
+  darkestBlue: '#031a34ff',
+  umaine: {
+    lightBlue: '#79BDE8', // UMaine Light Blue
+    darkBlue: '#082E58', // UMaine Dark Blue
+  },
+  awac: {
+    beige: '#f3ebdc',
+    navy: '#22477a',
+    lightBlue: '#76bccf',
+    orange: '#fb9949'
+  }
 };
 
 export const Fonts = Platform.select({
