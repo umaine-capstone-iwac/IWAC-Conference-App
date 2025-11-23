@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
@@ -9,32 +9,33 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors.blue,
+        tabBarActiveTintColor: Colors.awac.beige,
         tabBarInactiveTintColor: Colors.umaine.darkBlue,
-        headerShown: true,
+        tabBarStyle: styles.tabBar,
+        tabBarButton: HapticTab,
+        tabBarShowLabel: false,
         headerStyle: styles.header,
         headerTitleStyle: styles.headerTitle,
-        tabBarButton: HapticTab,
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={30} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={30} name="paperplane.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="message.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={30} name="message.fill" color={color} />
         }}
       />
     </Tabs>
@@ -43,9 +44,14 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: Colors.awac.lightBlue,
+    backgroundColor: Colors.umaine.lightBlue,
   },
   headerTitle: {
     fontSize: 20,
-  }
+  },
+  tabBar: { 
+    backgroundColor: Colors.umaine.lightBlue,
+    height: 75,
+    paddingTop: 15
+  },
 });

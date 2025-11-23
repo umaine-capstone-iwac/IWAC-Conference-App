@@ -11,7 +11,7 @@ import { Colors } from '@/constants/theme';
 
 export default function HomeScreen() {
   return (
-      <ScrollView
+      <ScrollView style={styles.scrollContainer}
         >
         {/* <ThemedView style={styles.titleContainer}>
           <ThemedText type="title">Messages!</ThemedText>
@@ -40,6 +40,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  scrollContainer: {
+    backgroundColor: Colors.awac.beige
   },
   messagesContainer: {
     flexDirection: 'column',

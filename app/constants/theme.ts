@@ -7,10 +7,12 @@ export const Colors = {
   blue: '#3899d5ff',
   darkBlue: '#155278ff',
   darkestBlue: '#031a34ff',
+  //UMaine Custom Colors
   umaine: {
-    lightBlue: '#79BDE8', // UMaine Light Blue
-    darkBlue: '#082E58', // UMaine Dark Blue
+    lightBlue: '#79BDE8',
+    darkBlue: '#082E58',
   },
+  //AWAC Custom
   awac: {
     beige: '#f3ebdc',
     navy: '#22477a',
