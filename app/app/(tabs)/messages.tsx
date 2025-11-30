@@ -1,11 +1,11 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Platform, StyleSheet, View, ScrollView } from 'react-native';
 import { SafeAreaView} from 'react-native-safe-area-context';
-import { ProfilePicture} from '@/components/profile-picture';
+import { HelloWave } from '@/components/hello-wave';
+import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
-import {SearchBar} from '@/components/search-bar';
 import { Colors } from '@/constants/theme';
 
 
@@ -18,32 +18,17 @@ export default function HomeScreen() {
           <HelloWave />
         </ThemedView> */}
         <View style={styles.messagesContainer}>
-          <View style= {styles.searchBarContainer}>
-            <SearchBar/>
-            <View style={styles.searchIcon}>
-                  <Text style = {{fontWeight: 'bold', fontSize: 24}}> + </Text>
-            </View>
+          <View style={styles.messageContainer}>
+            <ThemedText type="title">Message 1!</ThemedText>
+            <HelloWave />
           </View>
           <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}>Shelly Smith </ThemedText> 
-              <ThemedText>Hi Shelly! I loved your presentation on... </ThemedText> 
-            </View>
+            <ThemedText type="title">Message 2!</ThemedText>
+            <HelloWave />
           </View>
           <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}> Jillian Moore </ThemedText> 
-              <ThemedText> Are you going to the 2:00 seminar on... </ThemedText> 
-            </View>
-          </View>
-          <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}>Javier Martínez </ThemedText> 
-              <ThemedText>That's a great question! I believe that...  </ThemedText> 
-            </View>
+            <ThemedText type="title">Message 3!</ThemedText>
+            <HelloWave />
           </View>
         </View>
       </ScrollView>
@@ -61,7 +46,7 @@ const styles = StyleSheet.create({
   },
   messagesContainer: {
     flexDirection: 'column',
-    gap: 25,
+    gap: 20,
     marginBottom: 8,
     padding: 20,
     borderRadius: 10,
@@ -70,7 +55,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightestBlue,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 8,
     borderWidth: 2,
     borderRadius: 10,
     borderColor: Colors.awac.navy,
@@ -83,18 +68,4 @@ const styles = StyleSheet.create({
     left: 0,
     position: 'absolute',
   },
-  searchIcon: {
-    width: 50,
-    backgroundColor : Colors.lightestBlue,
-    borderWidth: 2,
-    borderColor: 'grey',
-    borderRadius: 10,
-    height: 50,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  searchBarContainer: {
-      flexDirection: 'row',
-      gap: 15
-    },
 });
