@@ -7,6 +7,7 @@ export const Colors = {
   blue: '#3899d5ff',
   darkBlue: '#155278ff',
   darkestBlue: '#031a34ff',
+  darkGrey: '#6b6b6bff',
   //UMaine Custom Colors
   umaine: {
     lightBlue: '#79BDE8',

@@ -5,7 +5,7 @@ import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
-import {SearchBar} from '@/components/search-bar';
+import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 
 
@@ -19,11 +19,20 @@ export default function HomeScreen() {
         </ThemedView> */}
         <View style={styles.messagesContainer}>
           <View style= {styles.searchBarContainer}>
-            <SearchBar/>
+            <Input text = "Search for a message..." style = {styles.searchBar}/>
             <View style={styles.searchIcon}>
                   <Text style = {{fontWeight: 'bold', fontSize: 24}}> + </Text>
             </View>
           </View>
+          <Link href="/conversation" asChild>
+            <View style={styles.messageContainer}>
+              <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
+              <View>
+                <ThemedText type="title" style={{fontSize: 22}}>Shelly Smith</ThemedText> 
+                <ThemedText>Hi Shelly! I loved your presentation on...</ThemedText> 
+              </View>
+            </View>
+          </Link>
           <View style={styles.messageContainer}>
             <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
             <View>
@@ -96,5 +105,9 @@ const styles = StyleSheet.create({
   searchBarContainer: {
       flexDirection: 'row',
       gap: 15
-    },
+  },
+  searchBar: {
+    height: 50,     
+    fontSize: 16,  
+  }
 });
