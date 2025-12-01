@@ -142,7 +142,7 @@ export default function EventsScreen() {
         </View>
       </ScrollView>
 
-      <TouchableOpacity style={styles.itineraryButton} onPress={() => router.push("/index")}>
+      <TouchableOpacity style={styles.itineraryButton} onPress={() => router.push("/")}>
         <Text style={styles.iconLarge}></Text>
         <Text style={styles.itineraryLabel}>Itinerary</Text>
       </TouchableOpacity>
