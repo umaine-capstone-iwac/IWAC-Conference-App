@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text, View, ScrollView } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { SafeAreaView} from 'react-native-safe-area-context';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
@@ -7,16 +7,12 @@ import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
-
+import {router} from "expo-router";
 
 export default function HomeScreen() {
   return (
       <ScrollView style={styles.scrollContainer}
         >
-        {/* <ThemedView style={styles.titleContainer}>
-          <ThemedText type="title">Messages!</ThemedText>
-          <HelloWave />
-        </ThemedView> */}
         <View style={styles.messagesContainer}>
           <View style= {styles.searchBarContainer}>
             <Input text = "Search for a message..." style = {styles.searchBar}/>
@@ -24,7 +20,8 @@ export default function HomeScreen() {
                   <Text style = {{fontWeight: 'bold', fontSize: 24}}> + </Text>
             </View>
           </View>
-          <Link href="/conversation" asChild>
+          {/* Dummy conversations to be replaced later */}
+          <Pressable onPress={() => router.push("/conversation")}>
             <View style={styles.messageContainer}>
               <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
               <View>
@@ -32,14 +29,7 @@ export default function HomeScreen() {
                 <ThemedText>Hi Shelly! I loved your presentation on...</ThemedText> 
               </View>
             </View>
-          </Link>
-          <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}>Shelly Smith </ThemedText> 
-              <ThemedText>Hi Shelly! I loved your presentation on... </ThemedText> 
-            </View>
-          </View>
+          </Pressable>
           <View style={styles.messageContainer}>
             <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
             <View>
