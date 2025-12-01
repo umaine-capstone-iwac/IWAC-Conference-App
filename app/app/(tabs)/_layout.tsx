@@ -18,26 +18,26 @@ export default function TabLayout() {
         headerTitleStyle: styles.headerTitle,
       }}>
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="paperplane.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="itinerary"
         options={{
           title: 'Itinerary',
           tabBarIcon: ({ color }) => <IconSymbol size={30} name="calendar" color={color} />
         }}
       />
+      {/* <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color }) => <IconSymbol size={30} name="house.fill" color={color} />,
+        }}
+      /> */}
+      {/* <Tabs.Screen
+        name="explore"
+        options={{
+          title: 'Explore',
+          tabBarIcon: ({ color }) => <IconSymbol size={30} name="paperplane.fill" color={color} />,
+        }}
+      /> */}
       <Tabs.Screen
         name="messages"
         options={{
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.umaine.lightBlue,
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 22,
   },
   tabBar: { 
     backgroundColor: Colors.umaine.lightBlue,

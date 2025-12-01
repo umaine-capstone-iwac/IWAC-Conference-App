@@ -16,12 +16,14 @@ export default function HomeScreen() {
         <View style={styles.messagesContainer}>
           <View style= {styles.searchBarContainer}>
             <Input text = "Search for a message..." style = {styles.searchBar}/>
-            <View style={styles.searchIcon}>
-                  <Text style = {{fontWeight: 'bold', fontSize: 24}}> + </Text>
-            </View>
+          <View style={styles.searchIcon}>
+            <Pressable onPress={() => router.push("/modals/search-users")}>
+              <Text style={{ fontWeight: "bold", fontSize: 24 }}> + </Text>
+            </Pressable>
+          </View>
           </View>
           {/* Dummy conversations to be replaced later */}
-          <Pressable onPress={() => router.push("/conversation")}>
+          <Pressable onPress={() => router.push("/modals/conversation")}>
             <View style={styles.messageContainer}>
               <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
               <View>
@@ -93,8 +95,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchBarContainer: {
-      flexDirection: 'row',
-      gap: 15
+    flexDirection: 'row',
+    gap: 15
   },
   searchBar: {
     height: 50,     

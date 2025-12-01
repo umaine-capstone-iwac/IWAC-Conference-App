@@ -18,13 +18,22 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        <Stack.Screen name="conversation" 
+        <Stack.Screen name="modals/conversation" 
           options={{  
             title: 'Shelly Smith', 
             headerStyle: styles.header, 
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
             }} />
+        <Stack.Screen
+          name="modals/search-users"
+          options={{
+            presentation: "modal",
+            title: "Start a Conversation",
+            headerStyle: styles.header, 
+            headerTitleStyle: styles.headerTitle,
+          }}
+        />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal'}} />
       </Stack>
       <StatusBar style="auto" />
