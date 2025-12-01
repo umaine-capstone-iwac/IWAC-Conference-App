@@ -11,20 +11,15 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 
 export default function ProfileScreen() {
   return (
-      <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC'}}
-      headerImage={
-        <Image
-          source={require('@/assets/images/profile-picture.png')}
-          style={styles.headerImage}
-          />
-        }>
+      <View>
+          {/* flex box for the profile picture to be in the same line as the profile name, similar to the messages */}
         <ThemedView style={styles.profileContainer}> 
+            <ProfilePicture size={80} source={require('@/assets/images/profile-picture.png')} /> 
+            <ThemedText type="title">John Doe</ThemedText>
+            <ThemedText type="subtitle">PenUltimate  CEO</ThemedText>
             <TouchableOpacity style={styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
-            <ThemedText type="title">John Doe</ThemedText>
-            <ThemedText type="subtitle">PenUltimate  CEO</ThemedText>
         </ThemedView>
         <ThemedView style={styles.sectionContainer}>
             <ThemedText type="subtitle">About Me</ThemedText>
@@ -41,7 +36,7 @@ export default function ProfileScreen() {
                 - Traveling and Exploring New Cultures
             </ThemedText>
         </ThemedView>
-        </ParallaxScrollView>
+      </View>
 
   );
 }
@@ -53,9 +48,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
     profileContainer: {
-    padding: 20,
-    paddingTop: 0,
-    alignItems: 'flex-start',
+    backgroundColor: Colors.lightestBlue,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+    padding: 10
   },
   sectionContainer: {
     gap: 8,
