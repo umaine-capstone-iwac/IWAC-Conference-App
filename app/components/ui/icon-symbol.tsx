@@ -19,6 +19,10 @@ const MAPPING = {
   'message.fill': 'chat-bubble',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'calendar': 'event',
+  'clock.fill': 'access-time',
+  'mappin.circle.fill': 'location-on',
+  'person.fill': 'person',
 } as IconMapping;
 
 /**
