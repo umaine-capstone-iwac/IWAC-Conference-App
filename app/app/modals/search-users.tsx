@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from "@/constants/theme";
 import {Input} from '@/components/input';
+import {ProfilePicture} from '@/components/profile-picture';
 
 // Dummy user names to be replaced later
 const dummyUsers = [
@@ -22,6 +23,7 @@ export default function NewMessageScreen() {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
             <Pressable style={styles.userRow}>
+                <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
                 <Text style={styles.userText}>{item.name}</Text>
             </Pressable>
             )}
@@ -40,6 +42,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderBottomWidth: 1,
     borderColor: Colors.lightBlue,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20
   },
   userText: {
     fontSize: 18,
