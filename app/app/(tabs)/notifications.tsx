@@ -54,19 +54,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 20,
+    gap: 15,
     width: '100%'
   },
   textContainer: {
-    flex: 1,        // text takes available space
-    marginRight: 10, // spacing between text and time
+    flex: 1,       
 },
   userText: {
     fontSize: 18,
     lineHeight: 24,
   },
-  searchBar: {
-    maxHeight: 50,     
-    fontSize: 16,  
-  }
 });
