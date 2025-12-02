@@ -11,12 +11,14 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 
 export default function ProfileScreen() {
   return (
-      <View>
+      <ScrollView style = {{backgroundColor: Colors.lightestBlue}}>
           {/* flex box for the profile picture to be in the same line as the profile name, similar to the messages */}
         <ThemedView style={styles.profileContainer}> 
-            <ProfilePicture size={80} source={require('@/assets/images/profile-picture.png')} /> 
-            <ThemedText type="title">John Doe</ThemedText>
-            <ThemedText type="subtitle">PenUltimate  CEO</ThemedText>
+            <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} /> 
+            <View style = {{ flexDirection: 'column', gap: 8 }}>
+              <ThemedText type="title" style={{fontSize: 26}}>John Doe</ThemedText>
+              <ThemedText type="subtitle" style={{fontSize: 16}}>PenUltimate  CEO</ThemedText>
+            </View>
             <TouchableOpacity style={styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
             </TouchableOpacity>
@@ -27,7 +29,7 @@ export default function ProfileScreen() {
                 Hello! I'm John, a software developer with a love for creating intuitive and dynamic user experiences. When I'm not coding, you can find me exploring the great outdoors or capturing moments through my lens.
             </ThemedText>
         </ThemedView>
-        <ThemedView>
+        <ThemedView style={styles.sectionContainer}>
             <ThemedText type="subtitle">Interests</ThemedText>
             <ThemedText>
                 - Coding and Software Development{'\n'}
@@ -36,7 +38,7 @@ export default function ProfileScreen() {
                 - Traveling and Exploring New Cultures
             </ThemedText>
         </ThemedView>
-      </View>
+      </ScrollView>
 
   );
 }
@@ -47,16 +49,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-    profileContainer: {
+  profileContainer: {
     backgroundColor: Colors.lightestBlue,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
-    padding: 10
+    padding: 10,
+    justifyContent: 'space-around',
   },
   sectionContainer: {
     gap: 8,
     marginBottom: 8,
+    padding: 10
   },
   editButton: {
     backgroundColor: Colors.umaine.darkBlue,
@@ -64,19 +67,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     alignSelf: 'flex-end',
-    marginRight: 20,
     marginBottom: 20,
   },
   editButtonText: {
     color: Colors.awac.beige,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
-  },
-  headerImage: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
   },
 }); 
