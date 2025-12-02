@@ -54,34 +54,6 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-
-      <View style={styles.navContainer}>
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.icon}></Text>
-          <ThemedText style={styles.activeLabel}>Events</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/messages")}>
-          <Text style={styles.icon}></Text>
-          <ThemedText style={styles.label}>Messages</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.icon}></Text>
-          <ThemedText style={styles.label}>Notifications</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.icon}></Text>
-          <ThemedText style={styles.label}>Profile</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navItem}>
-          <Text style={styles.icon}></Text>
-          <ThemedText style={styles.label}>Settings</ThemedText>
-        </TouchableOpacity>
-      </View>
-
       <ScrollView style={styles.scrollContainer}>
         <View style={styles.container}>
 
