@@ -1,8 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, FlatList, Pressable, TouchableOpacity } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedText } from '@/components/themed-text';
+import { View, Text, StyleSheet, FlatList, Pressable} from "react-native";
 import { Colors } from "@/constants/theme";
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 
 // Dummy user names to be replaced later
 const dummyNotifications = [

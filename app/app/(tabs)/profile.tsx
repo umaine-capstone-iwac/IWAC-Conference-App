@@ -1,13 +1,9 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable } from 'react-native';
-import { SafeAreaView} from 'react-native-safe-area-context';
+import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link, router } from 'expo-router';
-import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 
 export default function ProfileScreen() {
   return (

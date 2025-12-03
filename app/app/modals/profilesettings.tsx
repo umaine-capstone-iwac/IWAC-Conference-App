@@ -1,9 +1,7 @@
-import { ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
-import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ProfileSettingsModal() {
   return (
