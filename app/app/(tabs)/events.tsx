@@ -17,6 +17,7 @@ export default function EventsScreen() {
       date: 'Mar 14 · 9:00 AM - 10:30 AM',
       location: 'Foster Center for Innovation',
       lecturer: 'Professor Dufour',
+      description: 'An introduction to AI research and applications.'
     },
     {
       id: 2,
@@ -25,6 +26,7 @@ export default function EventsScreen() {
       date: 'Mar 14 · 11:00 AM - 12:30 PM',
       location: 'Neville Hall',
       lecturer: 'Professor Yu',
+      description: 'A workshop exploring cloud architecture and distributed systems.'
     },
     {
       id: 3,
@@ -33,11 +35,13 @@ export default function EventsScreen() {
       date: 'Mar 14 · 2:00 PM - 3:30 PM',
       location: 'Boardman Hall',
       lecturer: 'Professor Dickens',
+      description: 'A talk on CI/CD pipelines and modern DevOps strategies.'
     },
   ];
 
   const [search, setSearch] = useState("");
   const [tag, setTag] = useState<string | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const tags = ["AI/ML", "Cloud", "DevOps"]; //example tags
 
   const events = allEvents.filter((event) => {
@@ -54,70 +58,116 @@ export default function EventsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-      <ScrollView style={styles.scrollContainer}>
-        <View style={styles.container}>
 
-          <Input
-            text="Search events..."
-            value={search}
-            onChangeText={setSearch}
-            style={styles.searchBar}
-          />
+      {selectedEvent && (
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.container}>
 
-          <View style={styles.tagRow}>
-            {tags.map((t) => (
-              <TouchableOpacity
-                key={t}
-                style={[styles.tagButton, tag === t && styles.tagButtonActive]}
-                onPress={() => setTag(tag === t ? null : t)}
-              >
-                <Text style={tag === t ? styles.tagTextActive : styles.tagText}>
-                  {t}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+            <TouchableOpacity onPress={() => setSelectedEvent(null)}>
+              <Text style={{ fontSize: 18, color: Colors.awac.navy, marginBottom: 10 }}>
+                ← Back
+              </Text>
+            </TouchableOpacity>
 
-          <ThemedText type="title" style={styles.headerText}>
-            Events
-          </ThemedText>
+            <ThemedText type="title" style={styles.headerText}>
+              {selectedEvent.title}
+            </ThemedText>
 
-          {events.map((event) => (
-            <ThemedView key={event.id} style={styles.eventCard}>
-
-              <ThemedText type="title" style={styles.eventTitle}>
-                {event.title}
-              </ThemedText>
+            <ThemedView style={styles.eventCard}>
 
               <View style={styles.categoryTag}>
-                <Text style={styles.categoryText}>{event.category}</Text>
+                <Text style={styles.categoryText}>{selectedEvent.category}</Text>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>Date:</Text>
-                <ThemedText>{event.date}</ThemedText>
+                <ThemedText>{selectedEvent.date}</ThemedText>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>Location:</Text>
-                <ThemedText>{event.location}</ThemedText>
+                <ThemedText>{selectedEvent.location}</ThemedText>
               </View>
 
               <View style={styles.row}>
                 <Text style={styles.rowLabel}>Lecturer:</Text>
-                <ThemedText>{event.lecturer}</ThemedText>
+                <ThemedText>{selectedEvent.lecturer}</ThemedText>
+              </View>
+
+              <View style={styles.row}>
+                <Text style={styles.rowLabel}>Description:</Text>
+                <ThemedText>{selectedEvent.description}</ThemedText>
               </View>
 
             </ThemedView>
-          ))}
 
-        </View>
-      </ScrollView>
+          </View>
+        </ScrollView>
+      )}
+    
+      {!selectedEvent && (
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.container}>
 
-      <TouchableOpacity style={styles.itineraryButton} onPress={() => router.push("/")}>
-        <Text style={styles.iconLarge}></Text>
-        <Text style={styles.itineraryLabel}>Itinerary</Text>
-      </TouchableOpacity>
+            <Input
+              text="Search events..."
+              value={search}
+              onChangeText={setSearch}
+              style={styles.searchBar}
+            />
+
+            <View style={styles.tagRow}>
+              {tags.map((t) => (
+                <TouchableOpacity
+                  key={t}
+                  style={[styles.tagButton, tag === t && styles.tagButtonActive]}
+                  onPress={() => setTag(tag === t ? null : t)}
+                >
+                  <Text style={tag === t ? styles.tagTextActive : styles.tagText}>
+                    {t}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <ThemedText type="title" style={styles.headerText}>
+              Events
+            </ThemedText>
+
+            {events.map((event) => (
+              <TouchableOpacity key={event.id} onPress={() => setSelectedEvent(event)}>
+                <ThemedView style={styles.eventCard}>
+
+                  <ThemedText type="title" style={styles.eventTitle}>
+                    {event.title}
+                  </ThemedText>
+
+                  <View style={styles.categoryTag}>
+                    <Text style={styles.categoryText}>{event.category}</Text>
+                  </View>
+
+                  <View style={styles.row}>
+                    <Text style={styles.rowLabel}>Date:</Text>
+                    <ThemedText>{event.date}</ThemedText>
+                  </View>
+
+                  <View style={styles.row}>
+                    <Text style={styles.rowLabel}>Location:</Text>
+                    <ThemedText>{event.location}</ThemedText>
+                  </View>
+
+                  <View style={styles.row}>
+                    <Text style={styles.rowLabel}>Lecturer:</Text>
+                    <ThemedText>{event.lecturer}</ThemedText>
+                  </View>
+
+                </ThemedView>
+              </TouchableOpacity>
+            ))}
+
+          </View>
+        </ScrollView>
+      )}
 
     </SafeAreaView>
   );
@@ -183,19 +233,4 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", gap: 6, alignItems: "center" },
   rowLabel: { fontWeight: "600" },
-
-  itineraryButton: {
-    position: "absolute",
-    bottom: 25,
-    right: 25,
-    backgroundColor: Colors.awac.navy,
-    paddingVertical: 14,
-    paddingHorizontal: 22,
-    borderRadius: 40,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  iconLarge: { fontSize: 28 },
-  itineraryLabel: { color: "#fff", fontSize: 16, fontWeight: "600" },
 });
