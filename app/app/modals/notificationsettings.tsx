@@ -18,7 +18,7 @@ export default function NotificationSettingsModal() {
   return (
     <View style={styles.container}>
         <ScrollView contentContainerStyle={styles.contentContainer}>
-        <ThemedText type="title" style={styles.title}>Notification Settings</ThemedText>
+        {/* <ThemedText type="title" style={styles.title}>Notification Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>Manage your notification preferences below:</ThemedText>
 
         <input type = "checkbox" id = "Email Notifications" checked = {isChecked1} onChange = {handleChange1}/>

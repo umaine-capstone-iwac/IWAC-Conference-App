@@ -14,7 +14,7 @@ const dummyNotifications = [
 
 export default function NewMessageScreen() {
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
             <Pressable onPress={() => router.push("/modals/notificationsettings")}>
               <View style = {styles.button}>
                 <Text style={styles.buttonText}>Manage Notifications</Text>
@@ -38,7 +38,7 @@ export default function NewMessageScreen() {
               </Pressable>
             )}
         />
-    </ScrollView>
+    </View>
   );
 }
 

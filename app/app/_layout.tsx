@@ -46,7 +46,7 @@ export default function RootLayout() {
         <Stack.Screen 
           name = "modals/notificationsettings"
           options={{
-            title: "Back to notifications",
+            title: "Manage Notifications",
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
