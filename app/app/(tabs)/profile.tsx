@@ -11,7 +11,7 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 
 export default function ProfileScreen() {
   return (
-      <ScrollView style = {{backgroundColor: Colors.lightestBlue}}>
+      <ScrollView style = {{backgroundColor: Colors.awac.beige}}>
           {/* flex box for the profile picture to be in the same line as the profile name, similar to the messages */}
         <ThemedView style={styles.profileContainer}> 
             <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} /> 
@@ -57,11 +57,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     justifyContent: 'space-around',
+    marginBottom: 10,
   },
   sectionContainer: {
     gap: 8,
-    marginBottom: 8,
-    padding: 10
+    margin: 10,
+    padding: 10,
+    borderColor: Colors.awac.navy,
+    borderWidth: 2,
+    borderRadius: 8,
+    // backgroundColor: Colors.awac.beige,
   },
   editButton: {
     backgroundColor: Colors.umaine.darkBlue,

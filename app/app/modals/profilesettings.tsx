@@ -80,6 +80,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   }
 });
-
-//Hello! I’m John, a Maine software engineer.
-//-Coding, Hiking, Photography, Travel
