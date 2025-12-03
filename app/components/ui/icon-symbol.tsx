@@ -24,6 +24,7 @@ const MAPPING = {
   'mappin.circle.fill': 'location-on',
   'person.fill': 'person',
   'bell.fill': 'notifications'
+  'magnifyingglass.circle.fill': 'search',
 } as IconMapping;
 
 /**
