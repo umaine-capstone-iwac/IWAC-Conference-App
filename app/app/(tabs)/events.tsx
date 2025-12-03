@@ -43,6 +43,13 @@ export default function EventsScreen() {
   const [tag, setTag] = useState<string | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
   const tags = ["AI/ML", "Cloud", "DevOps"]; //example tags
+  const [savedEvents, setSavedEvents] = useState<number[]>([]);
+
+  const toggleSave = (id: number) => {
+  setSavedEvents((prev) =>
+    prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+  );
+};
 
   const events = allEvents.filter((event) => {
     const matchesSearch =
@@ -74,6 +81,17 @@ export default function EventsScreen() {
             </ThemedText>
 
             <ThemedView style={styles.eventCard}>
+            <TouchableOpacity
+              style={styles.heartButton}
+              onPress={() => toggleSave(selectedEvent.id)}
+            >
+            <Text style={{
+              fontSize: 55,
+              color: savedEvents.includes(selectedEvent.id) ? "red" : "#888"}}>
+              ♥
+            </Text>
+            </TouchableOpacity>
+
 
               <View style={styles.categoryTag}>
                 <Text style={styles.categoryText}>{selectedEvent.category}</Text>
@@ -136,7 +154,18 @@ export default function EventsScreen() {
 
             {events.map((event) => (
               <TouchableOpacity key={event.id} onPress={() => setSelectedEvent(event)}>
-                <ThemedView style={styles.eventCard}>
+                <ThemedView style={styles.eventCardDetails}>
+
+                    <TouchableOpacity
+                      style={styles.heartButton}
+                      onPress={() => toggleSave(event.id)}
+                    >
+                    <Text style={{ fontSize: 40, color: savedEvents.includes(event.id) ? "red" : "#888" }}>
+                      ♥
+                    </Text>
+
+                    </TouchableOpacity>
+
 
                   <ThemedText type="title" style={styles.eventTitle}>
                     {event.title}
@@ -233,4 +262,21 @@ const styles = StyleSheet.create({
 
   row: { flexDirection: "row", gap: 6, alignItems: "center" },
   rowLabel: { fontWeight: "600" },
+
+  eventCardDetails: {
+    backgroundColor: Colors.lightestBlue,
+    padding: 15,
+    borderWidth: 2,
+    borderColor: Colors.awac.navy,
+    borderRadius: 12,
+    gap: 10,
+    position: "relative",
+},
+
+  heartButton: {
+    position: "absolute",
+    right: 25,
+    top: 10,
+    zIndex: 10,
+},
 });
