@@ -24,21 +24,21 @@ export default function NewMessageScreen() {
             data={dummyNotifications}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-            <Pressable style={styles.userRow}>
-            <View style={styles.textContainer}>
-                <Text 
-                    numberOfLines={3} 
-                    ellipsizeMode="tail" 
-                    style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
-                >
-                {item.text}
-                </Text>
-            </View>
-            <Text style={styles.userText}>{item.time}</Text>
-            </Pressable>
+              <Pressable style={styles.userRow}>
+              <View style={styles.textContainer}>
+                  <Text 
+                      numberOfLines={3} 
+                      ellipsizeMode="tail" 
+                      style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
+                  >
+                  {item.text}
+                  </Text>
+              </View>
+              <Text style={styles.userText}>{item.time}</Text>
+              </Pressable>
             )}
         />
-    </ScrollView>
+    </View>
   );
 }
 
