@@ -1,9 +1,6 @@
-import { View, Text, StyleSheet, ScrollView, FlatList, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedText } from '@/components/themed-text';
+import { View, Text, StyleSheet, FlatList, Pressable} from "react-native";
 import { Colors } from "@/constants/theme";
-import {Input} from '@/components/input';
-import {ProfilePicture} from '@/components/profile-picture';
+import { router } from 'expo-router';
 
 // Dummy user names to be replaced later
 const dummyNotifications = [
@@ -15,26 +12,31 @@ const dummyNotifications = [
 
 export default function NewMessageScreen() {
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
+            <Pressable onPress={() => router.push("/modals/notificationsettings")}>
+              <View style = {styles.button}>
+                <Text style={styles.buttonText}>Manage Notifications</Text>
+              </View>
+            </Pressable>
         <FlatList
             data={dummyNotifications}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-            <Pressable style={styles.userRow}>
-            <View style={styles.textContainer}>
-                <Text 
-                    numberOfLines={4} 
-                    ellipsizeMode="tail" 
-                    style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
-                >
-                {item.text}
-                </Text>
-            </View>
-            <Text style={styles.userText}>{item.time}</Text>
-            </Pressable>
+              <Pressable style={styles.userRow}>
+              <View style={styles.textContainer}>
+                  <Text 
+                      numberOfLines={3} 
+                      ellipsizeMode="tail" 
+                      style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
+                  >
+                  {item.text}
+                  </Text>
+              </View>
+              <Text style={styles.userText}>{item.time}</Text>
+              </Pressable>
             )}
         />
-    </ScrollView>
+    </View>
   );
 }
 
@@ -64,4 +66,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
   },
+  button: {
+    backgroundColor: Colors.umaine.darkBlue,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: Colors.awac.beige,
+    fontSize: 14,
+    fontWeight: '600',
+  }
 });
