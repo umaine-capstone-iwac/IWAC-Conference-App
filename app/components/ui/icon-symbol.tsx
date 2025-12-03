@@ -23,8 +23,8 @@ const MAPPING = {
   'clock.fill': 'access-time',
   'mappin.circle.fill': 'location-on',
   'person.fill': 'person',
-  'bell.fill': 'notifications'
-  'magnifyingglass.circle.fill': 'search',
+  'bell.fill': 'notifications',
+  'magnifyingglass.circle.fill': 'search'
 } as IconMapping;
 
 /**
