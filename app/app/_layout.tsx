@@ -37,9 +37,10 @@ export default function RootLayout() {
         <Stack.Screen 
           name = "modals/profilesettings"
           options={{
-            title: "Back to profile",
+            title: "Profile Settings",
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
+            headerBackButtonDisplayMode: 'minimal',
           }}
         />
         <Stack.Screen 
@@ -48,6 +49,7 @@ export default function RootLayout() {
             title: "Back to notifications",
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
+            headerBackButtonDisplayMode: 'minimal',
           }}
         />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal'}} />
@@ -63,5 +65,6 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20,
-  }
+  },
+
 });
