@@ -1,9 +1,7 @@
-import { View, Text, StyleSheet, ScrollView, FlatList, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, FlatList, Pressable, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from "@/constants/theme";
-import {Input} from '@/components/input';
-import {ProfilePicture} from '@/components/profile-picture';
 
 // Dummy user names to be replaced later
 const dummyNotifications = [
@@ -16,6 +14,9 @@ const dummyNotifications = [
 export default function NewMessageScreen() {
   return (
     <ScrollView style={styles.container}>
+        <TouchableOpacity style={styles.button}>
+            <Text style={styles.buttonText}> Manage Notifications </Text>
+        </TouchableOpacity>
         <FlatList
             data={dummyNotifications}
             keyExtractor={(item) => item.id}
@@ -23,7 +24,7 @@ export default function NewMessageScreen() {
             <Pressable style={styles.userRow}>
             <View style={styles.textContainer}>
                 <Text 
-                    numberOfLines={4} 
+                    numberOfLines={3} 
                     ellipsizeMode="tail" 
                     style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
                 >
@@ -64,4 +65,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     lineHeight: 24,
   },
+  button: {
+    backgroundColor: Colors.umaine.darkBlue,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: Colors.awac.beige,
+    fontSize: 14,
+    fontWeight: '600',
+  }
 });
