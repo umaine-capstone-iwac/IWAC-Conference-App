@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, TextInput, Text, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
@@ -22,13 +22,13 @@ export default function NotificationSettingsModal() {
         <ThemedText type="subtitle" style={styles.subtitle}>Manage your notification preferences below:</ThemedText>
 
         <input type = "checkbox" id = "Email Notifications" checked = {isChecked1} onChange = {handleChange1}/>
-        <label>Email notifications: {isChecked1 ? 'Checked' : 'Unchecked'}</label>
+        <Text>Email notifications: {isChecked1 ? 'Checked' : 'Unchecked'}</Text>
 
         <input type = "checkbox" id = "Push Notifications" checked = {isChecked2} onChange = {handleChange2}/>
-        <label>Push notifications: {isChecked2 ? 'Checked' : 'Unchecked'}</label>
+        <Text>Push notifications: {isChecked2 ? 'Checked' : 'Unchecked'}</Text>
 
         <input type = "checkbox" id = "SMS Notifications" checked = {isChecked3} onChange = {handleChange3}/>
-        <label>SMS notifications: {isChecked3 ? 'Checked' : 'Unchecked'}</label>
+        <Text>SMS notifications: {isChecked3 ? 'Checked' : 'Unchecked'}</Text>
 
         </ScrollView>
     </View>
