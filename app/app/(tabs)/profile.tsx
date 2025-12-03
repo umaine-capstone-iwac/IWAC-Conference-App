@@ -1,10 +1,10 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, Text, View, ScrollView, TouchableOpacity, Pressable } from 'react-native';
 import { SafeAreaView} from 'react-native-safe-area-context';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
 import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
@@ -19,9 +19,11 @@ export default function ProfileScreen() {
               <ThemedText type="title" style={{fontSize: 26}}>John Doe</ThemedText>
               <ThemedText type="subtitle" style={{fontSize: 16}}>PenUltimate  CEO</ThemedText>
             </View>
-            <TouchableOpacity style={styles.editButton}>
+            <Pressable onPress={() => router.push("/modals/profilesettings")}>
+              <View style = {styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
-            </TouchableOpacity>
+              </View>
+            </Pressable>
         </ThemedView>
         <ThemedView style={styles.sectionContainer}>
             <ThemedText type="subtitle">About Me</ThemedText>
