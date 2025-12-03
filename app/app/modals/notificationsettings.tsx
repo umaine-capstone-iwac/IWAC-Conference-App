@@ -22,13 +22,13 @@ export default function NotificationSettingsModal() {
         <ThemedText type="subtitle" style={styles.subtitle}>Manage your notification preferences below:</ThemedText>
 
         <input type = "checkbox" id = "Email Notifications" checked = {isChecked1} onChange = {handleChange1}/>
-        <p>Email notifications: {isChecked1 ? 'Checked' : 'Unchecked'}</p>
+        <label>Email notifications: {isChecked1 ? 'Checked' : 'Unchecked'}</label>
 
         <input type = "checkbox" id = "Push Notifications" checked = {isChecked2} onChange = {handleChange2}/>
-        <p>Push notifications: {isChecked2 ? 'Checked' : 'Unchecked'}</p>
+        <label>Push notifications: {isChecked2 ? 'Checked' : 'Unchecked'}</label>
 
         <input type = "checkbox" id = "SMS Notifications" checked = {isChecked3} onChange = {handleChange3}/>
-        <p>SMS notifications: {isChecked3 ? 'Checked' : 'Unchecked'}</p>
+        <label>SMS notifications: {isChecked3 ? 'Checked' : 'Unchecked'}</label>
 
         </ScrollView>
     </View>
