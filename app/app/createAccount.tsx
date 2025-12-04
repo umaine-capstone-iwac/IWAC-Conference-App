@@ -4,12 +4,16 @@ import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 
-export default function LoginScreen() {
+export default function createAccount() {
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
-        <ThemedText type="subtitle" style={styles.subtitle}>Enter Username and Password</ThemedText>
+        <ThemedText type="subtitle" style={styles.subtitle}>Enter Name, Email, and Password</ThemedText>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>Name</ThemedText>
+          <Input text="Name" style={styles.input} />
+        </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
           <Input text="Email" style={styles.input} />
@@ -18,20 +22,22 @@ export default function LoginScreen() {
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
           <Input text="Password" style={styles.input} />
         </View>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
+          <Input text="Password" style={styles.input} />
+        </View>
         <TouchableOpacity 
-          onPress={() => router.replace("/(tabs)")}
+            onPress={() => router.replace("/(tabs)")}
         >
-          <View style = {styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
-          </View>
+            <View style = {styles.button}>
+                <Text style={styles.buttonText}>Login</Text>
+            </View>
         </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={() => router.replace("/createAccount")}
-        >
-          <View style = {styles.button2}>
-            <Text style={styles.buttonText2}>Create Account</Text>
-          </View>
-        </TouchableOpacity>
+        <TouchableOpacity>
+                  <View style = {styles.button2}>
+                    <Text style={styles.buttonText2}>Login Screen</Text>
+                  </View>
+                </TouchableOpacity>
         </ScrollView>
       </View>
       

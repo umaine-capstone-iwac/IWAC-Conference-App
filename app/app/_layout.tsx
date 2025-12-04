@@ -18,8 +18,12 @@ export default function RootLayout() {
     <ThemeProvider value={DefaultTheme}>
       <Stack>
         <Stack.Screen
-          name="index"
+          name="createAccount"
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="index"
+          options={{headerShown: false}}
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
         <Stack.Screen name="modals/conversation" 
