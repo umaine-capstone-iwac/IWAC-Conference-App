@@ -52,7 +52,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    marginBottom: 20,
+    marginTop: 20,
+    alignSelf: 'center',
   },
   inputGroup: {
     marginBottom: 15,
@@ -81,7 +82,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   button2: {
-    backgroundColor: Colors.awac.orange,
+    backgroundColor: Colors.awac.beige,
     paddingHorizontal: 15,
     paddingVertical: 10,
     borderRadius: 8,
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText2: {
-    color: "white",
+    color: "black",
     fontSize: 14,
     fontWeight: '600',
   }
