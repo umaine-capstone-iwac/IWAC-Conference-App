@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-import { router } from 'expo-router';
+import { RelativePathString, router } from 'expo-router';
 
 export default function createAccount() {
   return (
@@ -33,11 +33,13 @@ export default function createAccount() {
                 <Text style={styles.buttonText}>Login</Text>
             </View>
         </TouchableOpacity>
-        <TouchableOpacity>
-                  <View style = {styles.button2}>
-                    <Text style={styles.buttonText2}>Already Have an Account. Go to Login Screen.</Text>
-                  </View>
-                </TouchableOpacity>
+        <TouchableOpacity
+            onPress={() => router.replace("/")}         //Reroutes to login screen or index.tsx file in app folder
+        >
+            <View style = {styles.button2}>
+                <Text style={styles.buttonText2}>Already Have an Account. Go to Login Screen.</Text>
+            </View>
+        </TouchableOpacity>
         </ScrollView>
       </View>
       
