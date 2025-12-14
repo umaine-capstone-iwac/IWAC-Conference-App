@@ -18,7 +18,7 @@ export default function TabLayout() {
         headerTitleStyle: styles.headerTitle,
       }}>
       <Tabs.Screen
-        name="index"
+        name="myAgenda"
         options={{
           title: 'My Agenda',
           tabBarIcon: ({ color }) => <IconSymbol size={30} name="calendar" color={color} />
