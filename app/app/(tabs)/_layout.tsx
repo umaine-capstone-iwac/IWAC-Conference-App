@@ -20,7 +20,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Itinerary',
+          title: 'My Agenda',
           tabBarIcon: ({ color }) => <IconSymbol size={30} name="calendar" color={color} />
         }}
       />

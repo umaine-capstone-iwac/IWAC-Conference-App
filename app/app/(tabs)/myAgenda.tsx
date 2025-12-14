@@ -32,13 +32,10 @@ const conferenceEvents = [
   }
 ];
 
-export default function ItineraryScreen() {
+export default function AgendaScreen() {
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.headerContainer}>
-        <ThemedText type="title" style={styles.title}>
-          My Itinerary
-        </ThemedText>
         <TouchableOpacity style={styles.browseButton}>
           <Text style={styles.browseButtonText}>Browse More Events</Text>
         </TouchableOpacity>
