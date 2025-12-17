@@ -12,15 +12,15 @@ export default function NotificationSettingsModal() {
   return (
     <View style={styles.container}>
       <View style={styles.section}>
-        <Text style={styles.paragraph}>Email notifications: </Text>
+        <Text style={styles.paragraph}>Message notifications </Text>
         <Checkbox style ={styles.checkbox} value={isChecked1} onValueChange={setChecked1}/>
       </View>
       <View style={styles.section}>
-        <Text style={styles.paragraph}>Push notifications: </Text>
+        <Text style={styles.paragraph}>Presentation updates </Text>
         <Checkbox style ={styles.checkbox} value={isChecked2} onValueChange={setChecked2}/>
       </View>
             <View style={styles.section}>
-        <Text style={styles.paragraph}>SMS notifications: </Text>
+        <Text style={styles.paragraph}>Notify me of upcoming presentations</Text>
         <Checkbox style ={styles.checkbox} value={isChecked3} onValueChange={setChecked3}/>
       </View>
     </View>
