@@ -36,6 +36,15 @@ export default function ProfileScreen() {
                 - Traveling and Exploring New Cultures
             </ThemedText>
         </ThemedView>
+        <ThemedView style={styles.sectionContainer}>
+            <ThemedText type="subtitle">My sessions</ThemedText>
+            <ThemedText>
+                - Advanced AI Techniques{'\n'}
+                - The Contrasts Between Writing in STEM, Arts, and hHumanities{'\n'}
+                - How to Improve a Research Paper{'\n'}
+                - Exploring Historical Literature
+            </ThemedText>
+        </ThemedView>
       </ScrollView>
 
   );
