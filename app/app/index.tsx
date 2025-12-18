@@ -16,7 +16,7 @@ export default function LoginScreen() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
-          <Input text="Password" style={styles.input} />
+          <Input text="Password" style={styles.input} secureTextEntry={true} />
         </View>
         <TouchableOpacity 
           onPress={() => router.replace("/(tabs)")}
@@ -41,6 +41,9 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: Colors.awac.beige,
   },
   contentContainer: {
@@ -52,7 +55,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    marginTop: 20,
+    marginTop: 200,
     alignSelf: 'center',
   },
   inputGroup: {
@@ -90,7 +93,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText2: {
-    color: "black",
+    color: "mediumblue",
     fontSize: 14,
     fontWeight: '600',
   }
