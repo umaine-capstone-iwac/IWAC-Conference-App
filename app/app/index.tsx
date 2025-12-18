@@ -3,11 +3,11 @@ import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function LoginScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>Enter Username and Password</ThemedText>
         <View style={styles.inputGroup}>
@@ -32,7 +32,8 @@ export default function LoginScreen() {
             <Text style={styles.buttonText2}>Create Account</Text>
           </View>
         </TouchableOpacity>
-      </SafeAreaView>
+        </ScrollView>
+      </View>
       
   );
 }
@@ -43,6 +44,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     alignItems: 'center',
     backgroundColor: Colors.awac.beige,
+  },
+  contentContainer: {
+    padding: 20,
   },
   title: {
     fontSize: 28,
