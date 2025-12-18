@@ -14,7 +14,7 @@ export default function ProfileSettingsModal() {
           <Input text="John Doe" style={styles.input} />
         </View>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Bio</ThemedText>
+          <ThemedText type="title" style={styles.label}>Institutional Affiliation</ThemedText>
           <Input text="PenUltimate CEO" style={styles.input} />
         </View>
         <View style={styles.inputGroup}>
@@ -23,9 +23,14 @@ export default function ProfileSettingsModal() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Interests</ThemedText>
-          <Input text="- Coding and Software Development\n- Hiking and Nature Walks\n- Photography and Visual Arts\n- Traveling and Exploring New Cultures" style={styles.input} multiline />
+          <Input text="- Coding and Software Development, - Hiking and Nature Walks, - Photography and Visual Arts, - Traveling and Exploring New Cultures" style={styles.input} multiline />
         </View>
         <TouchableOpacity>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>My Sessions</ThemedText>
+          <Input text="- Advanced AI Techniques, - The Contrasts Between Writing in STEM, Arts, and hHumanities, - How to Improve a Research Paper, - Exploring Historical Literature" style={styles.input} multiline />
+        </View>
+        <TouchableOpacity></TouchableOpacity>
           <View style = {styles.button}>
             <Text style={styles.buttonText}>Save Changes</Text>
           </View>
