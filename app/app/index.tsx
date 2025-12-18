@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     marginTop: 200,
+    padding: 50,
     alignSelf: 'center',
   },
   inputGroup: {
