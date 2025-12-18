@@ -13,7 +13,8 @@ const dummyNotifications = [
 export default function NewMessageScreen() {
   return (
     <View style={styles.container}>
-            <Pressable onPress={() => router.push("/modals/notificationsettings")}>
+            {/* Heather wanted manage notifications to just go to native settings */}
+            <Pressable /*onPress={() => router.push("/modals/notificationsettings")}*/>
               <View style = {styles.button}>
                 <Text style={styles.buttonText}>Manage Notifications</Text>
               </View>
