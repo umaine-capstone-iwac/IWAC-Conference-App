@@ -26,7 +26,7 @@ export default function RootLayout() {
           options={{headerShown: false}}
         />
         <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        <Stack.Screen name="modals/conversation" 
+        <Stack.Screen name="conversation" 
           options={{  
             title: 'Shelly Smith', 
             headerStyle: styles.header, 
@@ -43,7 +43,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen 
-          name = "modals/profilesettings"
+          name = "profilesettings"
           options={{
             title: "Profile Settings",
             headerStyle: styles.header,
@@ -54,6 +54,7 @@ export default function RootLayout() {
         <Stack.Screen 
           name = "modals/notificationsettings"
           options={{
+            presentation: "modal",
             title: "Manage Notifications",
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,

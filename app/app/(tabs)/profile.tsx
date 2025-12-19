@@ -15,7 +15,7 @@ export default function ProfileScreen() {
               <ThemedText type="title" style={{fontSize: 26}}>John Doe</ThemedText>
               <ThemedText type="subtitle" style={{fontSize: 16}}>PenUltimate  CEO</ThemedText>
             </View>
-            <Pressable onPress={() => router.push("/modals/profilesettings")}>
+            <Pressable onPress={() => router.push("/profilesettings")}>
               <View style = {styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </View>

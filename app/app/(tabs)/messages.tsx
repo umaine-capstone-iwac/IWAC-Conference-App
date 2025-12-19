@@ -23,12 +23,12 @@ export default function HomeScreen() {
           </View>
           </View>
           {/* Dummy conversations to be replaced later */}
-          <Pressable onPress={() => router.push("/modals/conversation")}>
+          <Pressable onPress={() => router.push("/conversation")}>
             <View style={styles.messageContainer}>
               <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
               <View>
                 <ThemedText type="title" style={{fontSize: 22}}>Shelly Smith</ThemedText> 
-                <ThemedText>Hi Shelly! I loved your presentation on...</ThemedText> 
+                <ThemedText>Hi Shelly! I loved your presentation...</ThemedText> 
               </View>
             </View>
           </Pressable>
@@ -36,14 +36,14 @@ export default function HomeScreen() {
             <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
             <View>
               <ThemedText type="title" style={{fontSize: 22}}> Jillian Moore </ThemedText> 
-              <ThemedText> Are you going to the 2:00 seminar on... </ThemedText> 
+              <ThemedText> Are you going to the 2:00 seminar... </ThemedText> 
             </View>
           </View>
           <View style={styles.messageContainer}>
             <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
             <View>
               <ThemedText type="title" style={{fontSize: 22}}>Javier Martínez </ThemedText> 
-              <ThemedText>That's a great question! I believe that...  </ThemedText> 
+              <ThemedText>That's a great question! I believe...  </ThemedText> 
             </View>
           </View>
         </View>
