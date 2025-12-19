@@ -23,12 +23,28 @@ export default function ProfileSettingsModal() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Interests</ThemedText>
-          <Input text="- Coding and Software Development, - Hiking and Nature Walks, - Photography and Visual Arts, - Traveling and Exploring New Cultures" style={styles.input} multiline />
+          
+          <Input 
+           style={styles.input} 
+           multiline
+           text="- Coding and Software Development
+- Hiking and Nature Walks
+- Photography and Visual Arts
+- Traveling and Exploring New Cultures"
+/>
         </View>
         <TouchableOpacity>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>My Sessions</ThemedText>
-          <Input text="- Advanced AI Techniques, - The Contrasts Between Writing in STEM, Arts, and hHumanities, - How to Improve a Research Paper, - Exploring Historical Literature" style={styles.input} multiline />
+          <Input 
+          multiline
+          style= {styles.input}
+          text='- Advanced AI Techniques
+- The Contrasts Between Writing in STEM
+-Arts, and hHumanities
+- How to Improve a Research Paper
+- Exploring Historical Literature'
+          />
         </View>
         <TouchableOpacity></TouchableOpacity>
           <View style = {styles.button}>
