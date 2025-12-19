@@ -7,9 +7,6 @@ import { Colors } from '@/constants/theme';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -45,6 +42,7 @@ export default function RootLayout() {
         <Stack.Screen 
           name = "profilesettings"
           options={{
+        
             title: "Profile Settings",
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,

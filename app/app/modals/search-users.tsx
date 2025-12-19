@@ -4,6 +4,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Colors } from "@/constants/theme";
 import {Input} from '@/components/input';
 import {ProfilePicture} from '@/components/profile-picture';
+import {router} from "expo-router";
 
 // Dummy user names to be replaced later
 const dummyUsers = [
@@ -22,7 +23,12 @@ export default function NewMessageScreen() {
             data={dummyUsers}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-            <Pressable style={styles.userRow}>
+            <Pressable 
+              onPress={() => {
+                router.dismissAll(); 
+                router.push("/conversation");
+              }} 
+              style={styles.userRow}>
                 <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
                 <Text style={styles.userText}>{item.name}</Text>
             </Pressable>
