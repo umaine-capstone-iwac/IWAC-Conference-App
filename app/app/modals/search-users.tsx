@@ -5,22 +5,38 @@ import { Colors } from "@/constants/theme";
 import {Input} from '@/components/input';
 import {ProfilePicture} from '@/components/profile-picture';
 import {router} from "expo-router";
-
-// Dummy user names to be replaced later
-const dummyUsers = [
-  { id: "1", name: "Shelly Smith" },
-  { id: "2", name: "Jillian Moore" },
-  { id: "3", name: "Javier Martínez" },
-  { id: "4", name: "Marcus Johnson" },
-];
+import { useEffect, useState } from "react";
+import { supabase } from '@/lib/supabase';
 
 export default function NewMessageScreen() {
+
+  const [users, setUsers] = useState<{
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+  }[]>([]);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, first_name, last_name');
+      // console.log('[loadUsers] data:', data);
+      if (!error) {
+        setUsers(data);
+      } else {
+        console.error(error);
+      }
+    };
+
+    loadUsers();
+  }, []);
   return (
     <SafeAreaView style={styles.container}>
         <Input text = "Search users..." style = {styles.searchBar}/>
 
         <FlatList
-            data={dummyUsers}
+            data={users}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
             <Pressable 
@@ -30,7 +46,7 @@ export default function NewMessageScreen() {
               }} 
               style={styles.userRow}>
                 <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-                <Text style={styles.userText}>{item.name}</Text>
+                <Text style={styles.userText}>{item.first_name} {item.last_name}</Text>
             </Pressable>
             )}
         />
