@@ -1,76 +1,141 @@
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
 
-// example data
-const conferenceEvents = [
-  {
-    id: 1,
-    title: 'Opening from IWAC Staff',
-    time: '9:00 AM - 10:30 AM',
-    location: 'Memorial Union',
-    speaker: 'Dr. Heather Falconer',
-    date: 'Monday, Dec 2'
-  },
-  {
-    id: 2,
-    title: 'Advanced AI Techniques',
-    time: '11:00 AM - 12:30 PM',
-    location: 'Ferland Room 214',
-    speaker: 'Prof. Chen',
-    date: 'Monday, Dec 2'
-  },
-  {
-    id: 3,
-    title: 'Writing in the Classroom',
-    time: '2:00 PM - 3:30 PM',
-    location: 'Foster Center',
-    speaker: 'Prof. Dufour',
-    date: 'Monday, Dec 2'
-  }
-];
+interface ConferenceEvent { //defines event objects
+  id: number;
+  title: string;
+  time: string;
+  location: string;
+  speaker: string;
+  date: string;
+}
 
-export default function AgendaScreen() {
-  return (
-    <ScrollView style={styles.scrollContainer}>
-      <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.browseButton}>
-          <Text style={styles.browseButtonText}>Browse More Events</Text>
-        </TouchableOpacity>
+
+export default function MyAgendaScreen() {
+  const [myEvents, setMyEvents] = useState<ConferenceEvent[]>([]); // stores events pulled from database
+  const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    fetchAgenda();
+  }, []);
+
+
+  const fetchAgenda = async () => { // fetches rows from user agenda
+    try {
+      const { data, error } = await supabase
+        .from('user_agenda')
+        .select(`
+          id,
+          conference_events (
+            id,
+            title,
+            time,
+            location,
+            speaker,
+            date
+          )
+        `)
+        .order('created_at', { ascending: true });
+
+
+      console.log('Agenda rows:', data);
+
+
+      if (error) throw error;
+
+
+      const events =
+        data?.map((row: any) => row.conference_events).filter(Boolean) ?? [];
+
+
+      setMyEvents(events);
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to load agenda');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const removeFromAgenda = async (eventId: number) => { //deletes event from myagenda
+    try {
+      const { error } = await supabase
+        .from('user_agenda')
+        .delete()
+        .eq('event_id', eventId);
+
+
+      if (error) throw error;
+
+
+      setMyEvents(prev => prev.filter(e => e.id !== eventId));
+    } catch (err) {
+      console.error(err);
+      Alert.alert('Error', 'Failed to remove event');
+    }
+  };
+
+
+  if (loading) {
+    return (
+      <View style={[styles.scrollContainer, styles.centerContent]}>
+        <ActivityIndicator size="large" color={Colors.umaine.darkBlue} />
       </View>
+    );
+  }
 
+
+  if (myEvents.length === 0) { // empty state
+    return (
+      <View style={[styles.scrollContainer, styles.centerContent]}>
+        <ThemedText>No events yet.</ThemedText>
+      </View>
+    );
+  }
+
+
+  return ( //renders a card for each event
+    <ScrollView style={styles.scrollContainer}>
       <View style={styles.eventsContainer}>
-        {conferenceEvents.map((event) => (
+        {myEvents.map(event => (
           <View key={event.id} style={styles.eventCard}>
-            <TouchableOpacity style={styles.removeButton}>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => removeFromAgenda(event.id)}
+            >
               <Text style={styles.removeButtonText}>✕</Text>
             </TouchableOpacity>
-            
+
+
             <View style={styles.dateTag}>
               <Text style={styles.dateText}>{event.date}</Text>
             </View>
-            
-            <ThemedText type="title" style={styles.eventTitle}>
-              {event.title}
-            </ThemedText>
-            
-            <View style={styles.eventDetails}>
-              <View style={styles.detailRow}>
-                <IconSymbol size={18} name="clock.fill" color={Colors.awac.navy} />
-                <ThemedText style={styles.detailText}>{event.time}</ThemedText>
-              </View>
-              
-              <View style={styles.detailRow}>
-                <IconSymbol size={18} name="mappin.circle.fill" color={Colors.awac.navy} />
-                <ThemedText style={styles.detailText}>{event.location}</ThemedText>
-              </View>
-              
-              <View style={styles.detailRow}>
-                <IconSymbol size={18} name="person.fill" color={Colors.awac.navy} />
-                <ThemedText style={styles.detailText}>{event.speaker}</ThemedText>
-              </View>
+
+
+            <ThemedText type="title">{event.title}</ThemedText>
+
+
+            <View style={styles.detailRow}>
+              <IconSymbol size={18} name="clock.fill" color={Colors.awac.navy} />
+              <ThemedText>{event.time}</ThemedText>
+            </View>
+
+
+            <View style={styles.detailRow}>
+              <IconSymbol size={18} name="mappin.circle.fill" color={Colors.awac.navy} />
+              <ThemedText>{event.location}</ThemedText>
+            </View>
+
+
+            <View style={styles.detailRow}>
+              <IconSymbol size={18} name="person.fill" color={Colors.awac.navy} />
+              <ThemedText>{event.speaker}</ThemedText>
             </View>
           </View>
         ))}
@@ -79,31 +144,15 @@ export default function AgendaScreen() {
   );
 }
 
+
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
     backgroundColor: Colors.awac.beige,
   },
-  headerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  centerContent: {
+    justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 10,
-  },
-  title: {
-    fontSize: 28,
-  },
-  browseButton: {
-    backgroundColor: Colors.umaine.darkBlue,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
-  },
-  browseButtonText: {
-    color: Colors.awac.beige,
-    fontSize: 12,
-    fontWeight: '600',
   },
   eventsContainer: {
     padding: 20,
@@ -131,19 +180,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.awac.navy,
   },
-  eventTitle: {
-    fontSize: 18,
-  },
-  eventDetails: {
-    gap: 8,
-  },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-  },
-  detailText: {
-    fontSize: 14,
   },
   removeButton: {
     position: 'absolute',
