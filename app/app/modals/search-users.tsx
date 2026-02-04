@@ -6,6 +6,7 @@ import {Input} from '@/components/input';
 import {ProfilePicture} from '@/components/profile-picture';
 import {router} from "expo-router";
 import { useEffect, useMemo, useState } from "react";
+import {filterUsers} from "@/utils/filterUsers";
 import { supabase } from "@/lib/supabase";
 
 export default function NewMessageScreen() {
@@ -36,23 +37,10 @@ export default function NewMessageScreen() {
     loadUsers();
   }, []);
 
-  // FIlter the user list based on the search query
+  // Filter the user list based on the search query
   const filteredUsers = useMemo(() => {
-    const query = search.trim().toLowerCase();
-
-    if (!query) return users;
-
-    return users.filter(user => {
-      const first = user.first_name?.toLowerCase() ?? "";
-      const last = user.last_name?.toLowerCase() ?? "";
-      const fullName = `${first} ${last}`.trim();
-      return (
-        first.includes(query) ||
-        last.includes(query) ||
-        fullName.includes(query)
-      );
-    });
-  }, [search, users]);
+    return filterUsers(users, search);
+  }, [users, search]);
 
   return (
     <SafeAreaView style={styles.container}>
