@@ -5,8 +5,8 @@ import { Colors } from "@/constants/theme";
 import {Input} from '@/components/input';
 import {ProfilePicture} from '@/components/profile-picture';
 import {router} from "expo-router";
-import { useEffect, useState } from "react";
-import { supabase } from '@/lib/supabase';
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function NewMessageScreen() {
 
@@ -16,38 +16,64 @@ export default function NewMessageScreen() {
     last_name: string | null;
   }[]>([]);
 
+  const [search, setSearch] = useState("");
+
+  // Fetch all users from database when component mounts
   useEffect(() => {
-    const loadUsers = async () => {
+    const loadUsers= async () => {
       const { data, error } = await supabase
         .from('users')
         .select('id, first_name, last_name');
-      // console.log('[loadUsers] data:', data);
-      if (!error) {
-        setUsers(data);
-      } else {
-        console.error(error);
-      }
-    };
+      
+        if (!error && data) {
+          setUsers(data);
+        } 
+        else {
+          console.error("Error loading users:", error);
+        }
 
+      };
     loadUsers();
   }, []);
+
+  // FIlter the user list based on the search query
+  const filteredUsers = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) return users;
+
+    return users.filter(user => {
+      const first = user.first_name?.toLowerCase() ?? "";
+      const last = user.last_name?.toLowerCase() ?? "";
+      const fullName = `${first} ${last}`.trim();
+      return (
+        first.includes(query) ||
+        last.includes(query) ||
+        fullName.includes(query)
+      );
+    });
+  }, [search, users]);
+
   return (
     <SafeAreaView style={styles.container}>
-        <Input text = "Search users..." style = {styles.searchBar}/>
+        <Input 
+          text = "Search users..." 
+          style = {styles.searchBar} 
+          onChangeText={setSearch}/>
 
         <FlatList
-            data={users}
+            data={filteredUsers}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-            <Pressable 
-              onPress={() => {
-                router.dismissAll(); 
-                router.push("/conversation");
-              }} 
-              style={styles.userRow}>
-                <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-                <Text style={styles.userText}>{item.first_name} {item.last_name}</Text>
-            </Pressable>
+              <Pressable 
+                onPress={() => {
+                  router.dismissAll(); 
+                  router.push("/conversation");
+                }} 
+                style={styles.userRow}>
+                  <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
+                  <Text style={styles.userText}>{item.first_name} {item.last_name}</Text>
+              </Pressable>
             )}
         />
     </SafeAreaView>

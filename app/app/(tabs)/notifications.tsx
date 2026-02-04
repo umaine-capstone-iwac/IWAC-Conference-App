@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, FlatList, Pressable} from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable, Platform, Linking} from "react-native";
 import { Colors } from "@/constants/theme";
 import { router } from 'expo-router';
 
@@ -11,10 +11,17 @@ const dummyNotifications = [
 ];
 
 export default function NewMessageScreen() {
+  const openSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('app-settings:');
+    } else {
+      Linking.openSettings();
+    }
+  };
   return (
     <View style={styles.container}>
             {/* Heather wanted manage notifications to just go to native settings */}
-            <Pressable /*onPress={() => router.push("/modals/notificationsettings")}*/>
+            <Pressable onPress={openSettings}>
               <View style = {styles.button}>
                 <Text style={styles.buttonText}>Manage Notifications</Text>
               </View>
