@@ -9,10 +9,9 @@ import { supabase } from "@/lib/supabase";
 interface Notification {
   id: string;
   text: string;
-  //time: string;
+  //time: string; 
   //read: boolean;
 }
-
 export default function NotificationsScreen() {
   const openSettings = () => {
     if (Platform.OS === 'ios') {
