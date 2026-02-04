@@ -1,16 +1,19 @@
-import { View, Text, StyleSheet, FlatList, Pressable, Platform, Linking} from "react-native";
+import { View, Text, StyleSheet, FlatList, Pressable, Platform, Linking, Alert, ActivityIndicator} from "react-native";
 import { Colors } from "@/constants/theme";
 import { router } from 'expo-router';
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 // Dummy user names to be replaced later
-const dummyNotifications = [
-  { id: "1", text: "Lunch has been pushed back to 12:30 PM.", time: "36 mins ago", read : false },
-  { id: "2", text: "Presentation 'AI in Education' has been moved to Neville 116.", time: "2 hours ago", read : false },
-  { id: "3", text: "Missing wallet found in Neville 108, contact Brett Palmer for more information.", time: "4 hours ago", read : true},
-  { id: "4", text: "Presentation 'Unlocking Creativity in the Classroom' has been cancelled.", time: "1 day ago", read: true},
-];
 
-export default function NewMessageScreen() {
+interface Notification {
+  id: string;
+  text: string;
+  //time: string;
+  //read: boolean;
+}
+
+export default function NotificationsScreen() {
   const openSettings = () => {
     if (Platform.OS === 'ios') {
       Linking.openURL('app-settings:');
@@ -18,7 +21,57 @@ export default function NewMessageScreen() {
       Linking.openSettings();
     }
   };
-  return (
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('id, text')
+        //.order('created_at', { ascending: true });
+      if (error) throw error;
+
+      const displayedNotifications = data?.map((row: any) => ({ id: row.id, text: row.text })).filter(Boolean) ?? [];
+      setNotifications(displayedNotifications);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not fetch notifications.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.umaine.darkBlue} />
+      </View>
+    );
+  }
+    
+  if (notifications.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Pressable onPress={openSettings}>
+              <View style = {styles.button}>
+                <Text style={styles.buttonText}>Manage Notifications</Text>
+              </View>
+            </Pressable>
+        <Text style={styles.userText}>No notifications available.</Text>
+      </View>
+    );
+  }
+
+
+
+  return ( //loads the notifications from supabase
     <View style={styles.container}>
             {/* Heather wanted manage notifications to just go to native settings */}
             <Pressable onPress={openSettings}>
@@ -26,24 +79,13 @@ export default function NewMessageScreen() {
                 <Text style={styles.buttonText}>Manage Notifications</Text>
               </View>
             </Pressable>
-        <FlatList
-            data={dummyNotifications}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <Pressable style={styles.userRow}>
-              <View style={styles.textContainer}>
-                  <Text 
-                      numberOfLines={3} 
-                      ellipsizeMode="tail" 
-                      style={[styles.userText, !item.read && {fontWeight: 'bold'}]}
-                  >
-                  {item.text}
-                  </Text>
-              </View>
-              <Text style={styles.userText}>{item.time}</Text>
-              </Pressable>
-            )}
-        />
+
+        {notifications.map(notification => (
+          <View key={notification.id} style={styles.userRow}>
+            <Text style={styles.userText}>{notification.text}</Text>
+          </View>
+
+        ))}
     </View>
   );
 }
