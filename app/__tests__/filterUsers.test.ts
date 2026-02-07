@@ -8,7 +8,7 @@ const users: User[] = [
 ];
 
 describe("filterUsers", () => {
-  test("returns all users sorted alphabetically when search is empty", () => {
+  test("returns all users sorted alphabetically for an empty search", () => {
     const result = filterUsers(users, "");
 
     expect(result.map(u => `${u.first_name} ${u.last_name}`)).toEqual([
