@@ -5,17 +5,58 @@ import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
 
   const [userID, setUserID] = useState<string>();
 
+  // Fetch the logged in user's ID
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+    console.log("User ID: ", userID);
+  }, []);
+
   const [otherUser, setOtherUser] = useState<{
     id: string;
     first_name: string | null;
     last_name: string | null;
-    }>();
+  }>();
+
+  const {otherUserID} = useLocalSearchParams();
+
+  useEffect(() => {
+    if (otherUserID) {
+      console.log("Paramname: ", otherUserID)
+    }
+  }, [otherUserID]);
+
+  // Fetch the other user's information
+  useEffect(() => {
+    if (!otherUserID) return;
+    
+    const loadOtherUser = async () => {
+      await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .eq('id', otherUserID)
+        .single()
+        .then(({data,error}) => {
+          if (!error && data) {
+            setOtherUser(data);
+          } 
+          else {
+            console.error("Error loading other user:", error);
+          }
+        });
+    };
+    loadOtherUser();
+    console.log("Other User: ", otherUser);
+  }, []);
 
   const [messages, setMessages] = useState<{
     id: number;
@@ -24,36 +65,6 @@ export default function ConversationScreen() {
     fromUser: Boolean;
     isRead: Boolean | null;
   }[]>([]);
-
-  // Fetch the logged in user's ID
-  useEffect(() => {
-    const loadUser = async () => {
-      setUserID((await supabase.auth.getSession()).data.session?.user.id);
-      console.log(userID);
-    };
-    loadUser();
-  }, []);
-
-  // Fetch the other user's information
-  useEffect(() => {
-    const loadOtherUser = async () => {
-      await supabase
-        .from('users')
-        .select('id, first_name, last_name')
-        .eq('id', '43a24545-ee60-4c0a-a3f6-28f9a05c7965')
-        .single()
-        .then(({data,error}) => {
-          if (!error && data) {
-            setOtherUser(data);
-            console.log(otherUser);
-          } 
-          else {
-            console.error("Error loading other user:", error);
-          }
-        });
-    };
-    loadOtherUser();
-  }, []);
 
   // Fetch all messages between the two users
   useEffect(() => {
@@ -79,7 +90,7 @@ export default function ConversationScreen() {
         }));
 
         setMessages(processedMessages);
-        console.log(processedMessages);
+        console.log("Messages: ", processedMessages);
           } 
           else {
             console.error("Error loading messages:", error);

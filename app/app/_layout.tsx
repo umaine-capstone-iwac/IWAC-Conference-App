@@ -25,11 +25,11 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
         <Stack.Screen name="conversation" 
           options={{  
-            title: 'Shelly Smith', 
+            title: 'Conversation', 
             headerStyle: styles.header, 
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
-            }} />
+          }} />
         <Stack.Screen
           name="modals/search-users"
           options={{

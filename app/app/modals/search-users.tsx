@@ -56,7 +56,7 @@ export default function SearchUsersScreen() {
               <Pressable 
                 onPress={() => {
                   router.dismissAll(); 
-                  router.push("/conversation");
+                  router.push(`/conversation?otherUserID=${item.id}`);
                 }} 
                 style={styles.userRow}>
                   <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
