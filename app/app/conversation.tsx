@@ -4,8 +4,11 @@ import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
+  const loadUser= async () => { console.log((await supabase.auth.getSession()).data.session?.user)};
+  loadUser();
   // Dummy messages to be replaced later
   const messages = [
     { id: 1, fromUser: true, text: "Hi Shelly! I loved your presentation earlier today!" },
