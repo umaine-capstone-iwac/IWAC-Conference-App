@@ -4,19 +4,90 @@ import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
-  const loadUser= async () => { console.log((await supabase.auth.getSession()).data.session?.user)};
-  loadUser();
-  // Dummy messages to be replaced later
-  const messages = [
-    { id: 1, fromUser: true, text: "Hi Shelly! I loved your presentation earlier today!" },
-    { id: 2, fromUser: false, text: "Thank you! I appreciate it." },
-    { id: 3, fromUser: true, text: "Would you want to collaborate on my latest project about AI in education?" },
-    { id: 4, fromUser: false, text: "I’m definitely interested, but would love to hear more about it first." },
-    { id: 5, fromUser: true, text: "Perfect, I’ll send you some materials after the conference." },
-  ];
+
+  const [userID, setUserID] = useState<string>();
+
+  const [otherUser, setOtherUser] = useState<{
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    }>();
+
+  const [messages, setMessages] = useState<{
+    id: number;
+    content: string;
+    timestamp: string;
+    fromUser: Boolean;
+    isRead: Boolean | null;
+  }[]>([]);
+
+  // Fetch the logged in user's ID
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+      console.log(userID);
+    };
+    loadUser();
+  }, []);
+
+  // Fetch the other user's information
+  useEffect(() => {
+    const loadOtherUser = async () => {
+      await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .eq('id', '43a24545-ee60-4c0a-a3f6-28f9a05c7965')
+        .single()
+        .then(({data,error}) => {
+          if (!error && data) {
+            setOtherUser(data);
+            console.log(otherUser);
+          } 
+          else {
+            console.error("Error loading other user:", error);
+          }
+        });
+    };
+    loadOtherUser();
+  }, []);
+
+  // Fetch all messages between the two users
+  useEffect(() => {
+    if (!userID || !otherUser) return;
+    
+    const loadMessages = async () => {
+      await supabase
+        .from('messages')
+        .select('id, user_id, recipient_id, content, timestamp, is_read')
+        .or(
+          `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
+          `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`
+        )
+        .order('timestamp', { ascending: true })
+        .then(({data,error}) => {
+          if (!error && data) {
+          const processedMessages = data.map(msg => ({
+            id: msg.id,
+            content: msg.content,
+            timestamp: msg.timestamp,
+            fromUser: msg.user_id === userID,
+            isRead: msg.is_read,
+        }));
+
+        setMessages(processedMessages);
+        console.log(processedMessages);
+          } 
+          else {
+            console.error("Error loading messages:", error);
+          }
+        });
+    };
+    loadMessages();
+  }, [userID, otherUser]); 
 
   return (
     <View style={styles.container}>
@@ -41,7 +112,7 @@ export default function ConversationScreen() {
                 msg.fromUser ? styles.bubbleUser : styles.bubbleOther,
               ]}
             >
-              <ThemedText>{msg.text}</ThemedText>
+              <ThemedText>{msg.content}</ThemedText>
             </View>
           </View>
         ))}

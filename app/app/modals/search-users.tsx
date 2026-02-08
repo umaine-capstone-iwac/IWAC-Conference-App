@@ -9,7 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import {filterUsers} from "@/utils/filterUsers";
 import { supabase } from "@/lib/supabase";
 
-export default function NewMessageScreen() {
+export default function SearchUsersScreen() {
 
   const [users, setUsers] = useState<{
     id: string;
@@ -22,17 +22,17 @@ export default function NewMessageScreen() {
   // Fetch all users from database when component mounts
   useEffect(() => {
     const loadUsers= async () => {
-      const { data, error } = await supabase
+      await supabase
         .from('users')
-        .select('id, first_name, last_name');
-      
-        if (!error && data) {
-          setUsers(data);
-        } 
-        else {
-          console.error("Error loading users:", error);
-        }
-
+        .select('id, first_name, last_name')
+        .then(({data,error}) => {
+          if (!error && data) {
+            setUsers(data);
+          } 
+          else {
+            console.error("Error loading other user:", error);
+          }
+        });
       };
     loadUsers();
   }, []);
