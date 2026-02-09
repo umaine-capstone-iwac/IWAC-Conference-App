@@ -1,5 +1,4 @@
 import { Image, StyleSheet } from 'react-native';
-import { Colors } from '@/constants/theme';
 
 export type ProfilePictureProps = {
   size: number;

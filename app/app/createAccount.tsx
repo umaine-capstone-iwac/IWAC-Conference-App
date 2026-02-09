@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-import { RelativePathString, router } from 'expo-router';
+import { router } from 'expo-router';
 
 export default function createAccount() {
   return (

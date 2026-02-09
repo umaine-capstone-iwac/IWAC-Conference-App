@@ -1,6 +1,5 @@
-import { View, Text, StyleSheet, FlatList, Pressable, Platform, Linking, Alert, ActivityIndicator} from "react-native";
+import { View, Text, StyleSheet, Pressable, Platform, Linking, Alert, ActivityIndicator} from "react-native";
 import { Colors } from "@/constants/theme";
-import { router } from 'expo-router';
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 

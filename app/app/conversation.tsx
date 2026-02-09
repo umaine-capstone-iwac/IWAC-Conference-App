@@ -1,12 +1,11 @@
-import { ScrollView, StyleSheet, View, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useMemo, useState } from "react";
-import { useLocalSearchParams } from 'expo-router';
-import { useNavigation } from 'expo-router';
+import { useEffect, useState } from "react";
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {

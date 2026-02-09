@@ -1,11 +1,7 @@
-import { Image } from 'expo-image';
-import { Platform, Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { SafeAreaView} from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
-import { useEffect, useMemo, useState } from "react";
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useEffect, useState } from "react";
 import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 import {router} from "expo-router";

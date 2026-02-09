@@ -1,6 +1,5 @@
-import { View, Text, StyleSheet, TextInput, FlatList, Pressable } from "react-native";
+import { Text, StyleSheet, FlatList, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ThemedText } from '@/components/themed-text';
 import { Colors } from "@/constants/theme";
 import {Input} from '@/components/input';
 import {ProfilePicture} from '@/components/profile-picture';
