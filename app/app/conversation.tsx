@@ -18,7 +18,7 @@ export default function ConversationScreen() {
       setUserID((await supabase.auth.getSession()).data.session?.user.id);
     };
     loadUser();
-    console.log("User ID: ", userID);
+    // console.log("User ID: ", userID);
   }, []);
 
   const [otherUser, setOtherUser] = useState<{
@@ -31,7 +31,7 @@ export default function ConversationScreen() {
 
   useEffect(() => {
     if (otherUserID) {
-      console.log("Paramname: ", otherUserID)
+      // console.log("Paramname: ", otherUserID)
     }
   }, [otherUserID]);
 
@@ -40,22 +40,20 @@ export default function ConversationScreen() {
     if (!otherUserID) return;
     
     const loadOtherUser = async () => {
-      await supabase
+      const {data, error} = await supabase
         .from('users')
         .select('id, first_name, last_name')
         .eq('id', otherUserID)
-        .single()
-        .then(({data,error}) => {
-          if (!error && data) {
-            setOtherUser(data);
-          } 
-          else {
-            console.error("Error loading other user:", error);
-          }
-        });
+        .single();
+
+      if (error) {
+        console.error("Error loading other user:", error);
+        return;
+      }
+      setOtherUser(data);
+      // console.log("Other User: ", otherUser);
     };
     loadOtherUser();
-    console.log("Other User: ", otherUser);
   }, []);
 
   const [messages, setMessages] = useState<{
@@ -71,33 +69,32 @@ export default function ConversationScreen() {
     if (!userID || !otherUser) return;
     
     const loadMessages = async () => {
-      await supabase
+      const {data, error} = await supabase
         .from('messages')
         .select('id, user_id, recipient_id, content, timestamp, is_read')
         .or(
           `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
           `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`
         )
-        .order('timestamp', { ascending: true })
-        .then(({data,error}) => {
-          if (!error && data) {
-          const processedMessages = data.map(msg => ({
+        .order('timestamp', { ascending: true });
+
+      if (error) {
+        console.error("Error loading messages:", error);
+        return;
+      }
+      const processedMessages = data.map(msg => ({
             id: msg.id,
             content: msg.content,
             timestamp: msg.timestamp,
             fromUser: msg.user_id === userID,
             isRead: msg.is_read,
-        }));
-
-        setMessages(processedMessages);
-        console.log("Messages: ", processedMessages);
-          } 
-          else {
-            console.error("Error loading messages:", error);
-          }
-        });
-    };
+          }));
+      setMessages(processedMessages);
+      // console.log("Messages: ", processedMessages);
+          
+    }; 
     loadMessages();
+    
   }, [userID, otherUser]); 
 
   return (

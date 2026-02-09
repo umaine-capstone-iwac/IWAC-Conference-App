@@ -3,51 +3,122 @@ import { Platform, Pressable, StyleSheet, Text, View, ScrollView } from 'react-n
 import { SafeAreaView} from 'react-native-safe-area-context';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
+import { useEffect, useMemo, useState } from "react";
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
 import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 import {router} from "expo-router";
+import { supabase } from '@/lib/supabase';
 
-export default function HomeScreen() {
+export default function MessagesListScreen() {
+  const [userID, setUserID] = useState<string>();
+  const [conversationUsers, setConversationUsers] = useState<{ 
+    id: string; 
+    first_name: string | null; 
+    last_name: string | null; 
+    lastMessage: string | null; 
+    timestamp: string | null }[]
+  >([]);
+  
+  // Fetch the logged in user's ID
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+    // console.log("User ID: ", userID);
+  }, []);
+
+  useEffect(() => {
+    if (!userID) return;
+
+    const loadConversations = async () => {
+      // Fetch all messages involving the current user
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('id, user_id, recipient_id, content, timestamp')
+        .or(`user_id.eq.${userID},recipient_id.eq.${userID}`)
+        .order('timestamp', { ascending: false });
+
+      if (error) {
+        console.error("Error loading messages:", error);
+        return;
+      }
+
+      console.log("Messages:", messages);
+      
+      // Extract unique other user IDs
+      const otherUserIds = Array.from(
+        new Set(
+          messages.map(msg =>
+            msg.user_id === userID ? msg.recipient_id : msg.user_id
+          )
+        )
+      );
+      console.log(otherUserIds);
+
+      // Fetch the corresponding user info
+      const { data: usersData, error: usersError } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .in('id', otherUserIds);
+
+      if (usersError || !usersData) {
+        console.error('Error fetching users:', usersError);
+        return;
+      }
+      console.log(usersData);
+
+      // Attach last message & timestamp
+      const usersWithLastMessage = usersData.map(user => {
+        const lastMsg = messages.find(
+          msg =>
+            msg.user_id === user.id || msg.recipient_id === user.id
+        );
+        return {
+          ...user,
+          lastMessage: lastMsg?.content ?? null,
+          timestamp: lastMsg?.timestamp ?? null,
+        };
+      });
+
+      setConversationUsers(usersWithLastMessage);
+    };
+
+    loadConversations();
+  }, [userID]);
+
   return (
-      <ScrollView style={styles.scrollContainer}
-        >
-        <View style={styles.messagesContainer}>
-          <View style= {styles.searchBarContainer}>
-            <Input text = "Search for a message..." style = {styles.searchBar}/>
+    <ScrollView style={styles.scrollContainer}>
+      <View style={styles.messagesContainer}>
+        <View style={styles.searchBarContainer}>
+          <Input text="Search for a message..." style={styles.searchBar} />
           <View style={styles.searchIcon}>
             <Pressable onPress={() => router.push("/modals/search-users")}>
               <Text style={{ fontWeight: "bold", fontSize: 24 }}> + </Text>
             </Pressable>
           </View>
-          </View>
-          {/* Dummy conversations to be replaced later */}
-          <Pressable onPress={() => router.push("/conversation")}>
+        </View>
+
+        {conversationUsers.map(user => (
+          <Pressable
+            key={user.id}
+            onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
+          >
             <View style={styles.messageContainer}>
               <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
               <View>
-                <ThemedText type="title" style={{fontSize: 22}}>Shelly Smith</ThemedText> 
-                <ThemedText>Hi Shelly! I loved your presentation...</ThemedText> 
+                <ThemedText type="title" style={{ fontSize: 22 }}>
+                  {user.first_name} {user.last_name}
+                </ThemedText>
+                <ThemedText numberOfLines={1}>{user.lastMessage}</ThemedText>
               </View>
             </View>
           </Pressable>
-          <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}> Jillian Moore </ThemedText> 
-              <ThemedText> Are you going to the 2:00 seminar... </ThemedText> 
-            </View>
-          </View>
-          <View style={styles.messageContainer}>
-            <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-            <View>
-              <ThemedText type="title" style={{fontSize: 22}}>Javier Martínez </ThemedText> 
-              <ThemedText>That's a great question! I believe...  </ThemedText> 
-            </View>
-          </View>
-        </View>
-      </ScrollView>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 

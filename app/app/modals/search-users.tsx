@@ -22,18 +22,17 @@ export default function SearchUsersScreen() {
   // Fetch all users from database when component mounts
   useEffect(() => {
     const loadUsers= async () => {
-      await supabase
+      const {data, error} = await supabase
         .from('users')
-        .select('id, first_name, last_name')
-        .then(({data,error}) => {
-          if (!error && data) {
-            setUsers(data);
-          } 
-          else {
-            console.error("Error loading other user:", error);
-          }
-        });
-      };
+        .select('id, first_name, last_name');
+
+      if (error) {
+        console.error("Error loading other user:", error);
+        return;
+      }
+      setUsers(data);
+      console.log(data);
+    };
     loadUsers();
   }, []);
 
