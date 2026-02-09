@@ -46,7 +46,7 @@ export default function MessagesListScreen() {
         return;
       }
 
-      console.log("Messages:", messages);
+      // console.log("Messages:", messages);
       
       // Extract unique other user IDs
       const otherUserIds = Array.from(

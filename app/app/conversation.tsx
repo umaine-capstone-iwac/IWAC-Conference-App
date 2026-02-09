@@ -6,9 +6,12 @@ import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useMemo, useState } from "react";
 import { useLocalSearchParams } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
+
+  const navigation = useNavigation();
 
   const [userID, setUserID] = useState<string>();
 
@@ -55,6 +58,19 @@ export default function ConversationScreen() {
     };
     loadOtherUser();
   }, []);
+  
+  // Make the screen title the other user's name
+  useEffect(() => {
+    if (!otherUser) return;
+
+    const first = otherUser.first_name ?? "";
+    const last = otherUser.last_name ?? "";
+    const title = `${first} ${last}`.trim();
+
+    navigation.setOptions({
+      title,
+    });
+  }, [otherUser]);
 
   const [messages, setMessages] = useState<{
     id: number;
