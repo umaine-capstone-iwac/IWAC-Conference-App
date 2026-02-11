@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, } from "react-native";
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, Pressable } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
@@ -33,9 +34,26 @@ type ConferenceEventRow = {
   date: string;
 };
 
+
 export default function SessionsScreen() {
   //loading state for initial fetch
   const [loading, setLoading] = useState(true);
+
+  //fetch the logged in user's ID
+  const [userID, setUserID] = useState<string | undefined>();
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setUserID(data.session?.user?.id);
+    };
+
+    loadUser();
+  }, []);
 
   //grouped sessions built from conference_events
   const [sessions, setSessions] = useState<SessionSlot[]>([]);
@@ -93,7 +111,7 @@ export default function SessionsScreen() {
       const built: SessionSlot[] = Array.from(grouped.entries()).map(
         ([key, value], index) => ({
           id: key,
-          label: `Session ${String.fromCharCode(65 + index)}`, // A, B, C...
+          label: `Session ${String.fromCharCode(65 + index)}`,
           date: value.date,
           time: value.time,
           panels: value.panels,
@@ -111,62 +129,53 @@ export default function SessionsScreen() {
 
   //fetch saved events for current user
   const fetchSavedPanels = useCallback(async () => {
-    try {
-      const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-
-      //if not logged in, no saved panels
-      if (!userId) {
-        setSavedPanels([]);
-        return;
-      }
-
-      //get event ids from user_agenda
-      const { data, error } = await supabase
-        .from("user_agenda")
-        .select("event_id")
-        .eq("user_id", userId);
-
-      if (error) throw error;
-
-      //extract event ids
-      setSavedPanels(data.map((r: any) => r.event_id));
-    } catch (err) {
-      console.error(err);
+    if (!userID) {
+      setSavedPanels([]);
+      return;
     }
-  }, []);
+
+    const { data, error } = await supabase
+      .from("user_agenda")
+      .select("event_id")
+      .eq("user_id", userID);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSavedPanels((data ?? []).map((r: any) => r.event_id));
+  }, [userID]);
 
   //run once on mount
   useEffect(() => {
-    fetchSessions();
-    fetchSavedPanels();
-  }, [fetchSessions, fetchSavedPanels]);
+  fetchSessions();
+}, [fetchSessions]);
+
+  useFocusEffect(
+  useCallback(() => { //runs when you go back to sessions page
+    fetchSavedPanels(); 
+  }, [fetchSavedPanels])
+);
+
 
   //add event to user_agenda
   const addToAgenda = async (eventId: number) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) throw new Error("Not logged in");
-
     const { error } = await supabase
       .from("user_agenda")
-      .insert({ user_id: userId, event_id: eventId });
+      .insert({ user_id: userID, event_id: eventId });
 
     if (error) throw error;
   };
 
   //remove event from user_agenda
   const removeFromAgenda = async (eventId: number) => {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-
-    if (!userId) throw new Error("Not logged in");
+    if (!userID) return;
 
     const { error } = await supabase
       .from("user_agenda")
       .delete()
-      .eq("user_id", userId)
+      .eq("user_id", userID)
       .eq("event_id", eventId);
 
     if (error) throw error;
@@ -174,6 +183,11 @@ export default function SessionsScreen() {
 
   //toggle heart save/unsave
   const toggleSavePanel = async (panelId: number) => {
+    if (!userID) {
+      Alert.alert("Sign in required");
+      return;
+    }
+
     const isSaved = savedPanels.includes(panelId);
 
     //UI update
@@ -246,16 +260,18 @@ export default function SessionsScreen() {
           <View style={styles.container}>
             {/* back button */}
             <TouchableOpacity onPress={() => setSelectedPanel(null)}>
-              <Text style={{ fontSize: 18, color: Colors.awac.navy }}>← Back</Text>
+              <Text style={{ fontSize: 18, color: Colors.awac.navy }}>
+                ← Back
+              </Text>
             </TouchableOpacity>
 
             <ThemedText type="title">{selectedPanel.title}</ThemedText>
 
-            <ThemedView style={styles.sessionCard}>
-              {/* heart button */}
-              <TouchableOpacity
+            <ThemedView style={styles.sessionCardDetails}>
+              <Pressable
                 style={styles.heartButton}
                 onPress={() => toggleSavePanel(selectedPanel.id)}
+                hitSlop={12}
               >
                 <Text
                   style={{
@@ -267,7 +283,7 @@ export default function SessionsScreen() {
                 >
                   ♥
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
 
               <ThemedText>{selectedPanel.date}</ThemedText>
               <ThemedText>{selectedPanel.time}</ThemedText>
@@ -277,17 +293,14 @@ export default function SessionsScreen() {
           </View>
         </ScrollView>
       ) : (
-        /* agenda list view */
         <ScrollView style={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* search input */}
             <Input
               text="Search events..."
               value={search}
               onChangeText={setSearch}
             />
 
-            {/* session tag filters */}
             <View style={styles.tagRow}>
               {sessionTags.map((label) => (
                 <TouchableOpacity
@@ -297,7 +310,9 @@ export default function SessionsScreen() {
                     sessionLabel === label && styles.tagButtonActive,
                   ]}
                   onPress={() =>
-                    setSessionLabel((prev) => (prev === label ? null : label))
+                    setSessionLabel((prev) =>
+                      prev === label ? null : label
+                    )
                   }
                 >
                   <Text
@@ -313,7 +328,6 @@ export default function SessionsScreen() {
               ))}
             </View>
 
-            {/* session list */}
             {filteredSessions.map((slot) => (
               <View key={slot.id}>
                 <ThemedText style={{ fontWeight: "700" }}>
@@ -326,9 +340,13 @@ export default function SessionsScreen() {
                     onPress={() => setSelectedPanel(panel)}
                   >
                     <ThemedView style={styles.sessionCardDetails}>
-                      <TouchableOpacity
+                      <Pressable
                         style={styles.heartButton}
-                        onPress={() => toggleSavePanel(panel.id)}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          toggleSavePanel(panel.id);
+                        }}
+                        hitSlop={12}
                       >
                         <Text
                           style={{
@@ -340,9 +358,11 @@ export default function SessionsScreen() {
                         >
                           ♥
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
 
-                      <ThemedText type="title">{panel.title}</ThemedText>
+                      <ThemedText type="title">
+                        {panel.title}
+                      </ThemedText>
                       <ThemedText>{panel.location}</ThemedText>
                       <ThemedText>{panel.speaker}</ThemedText>
                     </ThemedView>
@@ -360,29 +380,19 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, backgroundColor: Colors.awac.beige },
   centerContent: { justifyContent: "center", alignItems: "center" },
-
   container: { padding: 20, gap: 20 },
-
   tagRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
   tagButton: { padding: 8, backgroundColor: "#e1e1e1", borderRadius: 12 },
   tagButtonActive: { backgroundColor: Colors.awac.navy },
   tagText: { fontWeight: "600" },
   tagTextActive: { color: "#fff", fontWeight: "600" },
-
-  sessionCard: {
-    padding: 15,
-    borderWidth: 2,
-    borderColor: Colors.awac.navy,
-    borderRadius: 12,
-  },
-
   sessionCardDetails: {
     padding: 15,
     borderWidth: 2,
     borderColor: Colors.awac.navy,
     borderRadius: 12,
     marginTop: 10,
+    position: "relative",
   },
-
-  heartButton: { position: "absolute", top: 10, right: 15 },
+  heartButton: { position: "absolute", top: 10, right: 15, zIndex: 10 },
 });
