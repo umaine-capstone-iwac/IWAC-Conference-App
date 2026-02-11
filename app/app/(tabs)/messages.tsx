@@ -6,6 +6,7 @@ import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 import {router} from "expo-router";
 import { supabase } from '@/lib/supabase';
+import {filterMessages} from "@/utils/filterMessages";
 
 export default function MessagesListScreen() {
   const [userID, setUserID] = useState<string>();
@@ -16,6 +17,7 @@ export default function MessagesListScreen() {
     lastMessage: string | null; 
     timestamp: string | null }[]
   >([]);
+  const [search, setSearch] = useState("");
   
   // Fetch the logged in user's ID
   useEffect(() => {
@@ -85,11 +87,18 @@ export default function MessagesListScreen() {
     loadConversations();
   }, [userID]);
 
+  const filteredUsers = filterMessages(conversationUsers, search);
+
   return (
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.messagesContainer}>
         <View style={styles.searchBarContainer}>
-          <Input text="Search for a message..." style={styles.searchBar} />
+          <Input
+            text="Search for a message..."
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchBar}
+          />
           <View style={styles.searchIcon}>
             <Pressable onPress={() => router.push("/modals/search-users")}>
               <Text style={{ fontWeight: "bold", fontSize: 24 }}> + </Text>
@@ -97,7 +106,7 @@ export default function MessagesListScreen() {
           </View>
         </View>
 
-        {conversationUsers.map(user => (
+        {filteredUsers.map(user => (
           <Pressable
             key={user.id}
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
@@ -117,6 +126,7 @@ export default function MessagesListScreen() {
     </ScrollView>
   );
 }
+
 
 const styles = StyleSheet.create({
   titleContainer: {
