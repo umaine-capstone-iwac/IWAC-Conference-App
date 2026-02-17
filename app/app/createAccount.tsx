@@ -2,9 +2,27 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-import { router } from 'expo-router';
+import { RelativePathString, router } from 'expo-router';
+import { useState, FormEvent } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function createAccount() {
+  const[isSignUp, setIsSignUp] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const x = "Signed up";
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+      const {error: signUpError} = await supabase.auth.signUp({email, password,})
+      console.log(x);
+      if(signUpError) {
+        console.error("Error signing up: ", signUpError.message)
+        return;
+      }
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -16,11 +34,26 @@ export default function createAccount() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
-          <Input text="Email" style={styles.input} />
+          <Input
+            text="email"
+            placeholder="Email"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            style={styles.input}
+          />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
-          <Input text="Password" style={styles.input} secureTextEntry={true} />
+          <Input
+            text="password"
+            placeholder="Password"
+            autoCapitalize="none"
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            style={styles.input}
+            secureTextEntry={true}
+          />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>

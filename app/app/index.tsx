@@ -3,8 +3,27 @@ import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
+import { useState, FormEvent } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const y = "Signed in";
+  
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+    const {error: signInError} = await supabase.auth.signInWithPassword({email, password,})
+    console.log(y);
+        if(signInError) {
+          console.error("Error signing up: ", signInError.message)
+          return;
+        }
+  }
+  
+  
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
