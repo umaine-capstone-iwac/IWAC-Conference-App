@@ -2,51 +2,98 @@ import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { Colors } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
+import { useState, useEffect } from 'react';
+
+
+
+
+interface ProfileDetails { // Defines the profile details structure
+  id: string;
+  first_name: string;
+  last_name: string;
+  profession: string;
+  aboutMe: string;
+  interests: string;
+  mySessions: string;
+}
 
 export default function ProfileScreen() {
-  return (
-      <ScrollView style = {{backgroundColor: Colors.awac.beige}}>
-          {/* flex box for the profile picture to be in the same line as the profile name, similar to the messages */}
-        <ThemedView style={styles.profileContainer}> 
-            <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} /> 
-            <View style = {{ flexDirection: 'column', gap: 8 }}>
-              <ThemedText type="title" style={{fontSize: 26}}>John Doe</ThemedText>
-              <ThemedText type="subtitle" style={{fontSize: 16}}>PenUltimate  CEO</ThemedText>
-            </View>
-            <Pressable onPress={() => router.push("/profilesettings")}>
-              <View style = {styles.editButton}>
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </View>
-            </Pressable>
-        </ThemedView>
-        <ThemedView style={styles.sectionContainer}>
-            <ThemedText type="subtitle">About Me</ThemedText>
-            <ThemedText>
-                Hello! I'm John, a software developer with a love for creating intuitive and dynamic user experiences. When I'm not coding, you can find me exploring the great outdoors or capturing moments through my lens.
-            </ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.sectionContainer}>
-            <ThemedText type="subtitle">Interests</ThemedText>
-            <ThemedText>
-                - Coding and Software Development{'\n'}
-                - Hiking and Nature Walks{'\n'}
-                - Photography and Visual Arts{'\n'}
-                - Traveling and Exploring New Cultures
-            </ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.sectionContainer}>
-            <ThemedText type="subtitle">My sessions</ThemedText>
-            <ThemedText>
-                - Advanced AI Techniques{'\n'}
-                - The Contrasts Between Writing in STEM, Arts, and hHumanities{'\n'}
-                - How to Improve a Research Paper{'\n'}
-                - Exploring Historical Literature
-            </ThemedText>
-        </ThemedView>
-      </ScrollView>
+  const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
+  const [profileData, setProfileData] = useState<ProfileDetails[]>([]); // State to hold profile details from supabase
 
+  //fetch the logged in user's ID
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user?.id);
+    };
+    loadUser();
+  }, []);
+
+  useEffect(() => {
+    if (!userID) return; 
+
+    // Function to fetch profile data from supabase
+    const fetchProfileData = async () => {
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, first_name, last_name, profession, aboutMe, interests, mySessions');
+        if (error) {
+          console.error('Error fetching profile data:', error);
+          return;
+        }
+        setProfileData((data as ProfileDetails[]) || []); // Update state with fetched profile data
+      
+    }
+    fetchProfileData();
+  }, [userID]); // Dependency array ensures this runs when userID changes
+
+  
+  return (
+    <ScrollView style = {{backgroundColor: Colors.awac.beige}}>
+      <ThemedView style={styles.profileContainer}> 
+          <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} />
+          <View style = {{ flexDirection: 'column', gap: 8 }}>
+            {profileData.map((profile) => (
+              <View key={profile.id}>
+                <ThemedText type="title" style={{fontSize: 26}}>{profile.first_name} {profile.last_name}</ThemedText> 
+                <ThemedText type="subtitle" style={{fontSize: 16}}>{profile.profession}</ThemedText>
+              </View>
+            ))}
+              <Pressable onPress={() => router.push("/profilesettings")}>
+                <View style = {styles.editButton}>
+                  <Text style={styles.editButtonText}>Edit Profile</Text>
+                </View>
+              </Pressable>
+          </View>
+      </ThemedView>
+      <ThemedView style={styles.sectionContainer}>
+          {profileData.map((profile) => (
+            <View key={profile.id}>
+              <ThemedText type="subtitle">About Me</ThemedText>
+              <ThemedText>{profile.aboutMe}</ThemedText>
+            </View>
+          ))}
+      </ThemedView>
+      <ThemedView style={styles.sectionContainer}>
+          {profileData.map((profile) => (
+            <View key={profile.id}>
+              <ThemedText type="subtitle">Interests</ThemedText>
+              <ThemedText>{profile.interests}</ThemedText>
+            </View>
+          ))}
+      </ThemedView>
+      <ThemedView style={styles.sectionContainer}>
+          {profileData.map((profile) => (
+            <View key={profile.id}>
+              <ThemedText type="subtitle">My sessions</ThemedText>
+              <ThemedText>{profile.mySessions}</ThemedText>
+            </View>
+          ))}
+      </ThemedView>
+    </ScrollView>
   );
 }
 
