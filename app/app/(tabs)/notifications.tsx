@@ -8,8 +8,7 @@ import { supabase } from "@/lib/supabase";
 interface Notification {
   id: string;
   text: string;
-  //time: string; 
-  //read: boolean;
+  read: boolean;
 }
 export default function NotificationsScreen() {
   const openSettings = () => {
@@ -31,11 +30,11 @@ export default function NotificationsScreen() {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('id, text')
+        .select('id, text, read')
         //.order('created_at', { ascending: true });
       if (error) throw error;
 
-      const displayedNotifications = data?.map((row: any) => ({ id: row.id, text: row.text })).filter(Boolean) ?? [];
+      const displayedNotifications = data?.map((row: any) => ({ id: row.id, text: row.text, read: row.read })).filter(Boolean) ?? [];
       setNotifications(displayedNotifications);
     } catch (error) {
       console.error(error);
@@ -80,7 +79,7 @@ export default function NotificationsScreen() {
 
         {notifications.map(notification => (
           <View key={notification.id} style={styles.userRow}>
-            <Text style={styles.userText}>{notification.text}</Text>
+            <Text style={[styles.userText, !notification.read && styles.unreadText]}>{notification.text}</Text>
           </View>
 
         ))}
@@ -113,6 +112,9 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 18,
     lineHeight: 24,
+  },
+  unreadText: {
+    fontWeight: '700',
   },
   button: {
     backgroundColor: Colors.umaine.darkBlue,
