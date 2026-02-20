@@ -15,15 +15,15 @@ interface ProfileDetails { // Defines the profile details structure
   first_name: string;
   last_name: string;
   profession: string;
-  aboutMe: string;
+  about_me: string;
   interests: string;
-  mySessions: string;
+  my_sessions: string;
 }
 
 export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profileData, setProfileData] = useState<ProfileDetails[]>([]); // State to hold profile details from supabase
-
+  console.log("userID: ", userID);
   //fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -31,15 +31,18 @@ export default function ProfileScreen() {
     };
     loadUser();
   }, []);
+  
 
   useEffect(() => {
-    if (!userID) return; 
+    if (!userID) return; // If userID is not available, do not attempt to fetch profile data
 
     // Function to fetch profile data from supabase
     const fetchProfileData = async () => {
         const { data, error } = await supabase
-          .from('users')
-          .select('id, first_name, last_name, profession, aboutMe, interests, mySessions');
+          .from('profiles')
+          .select('id, first_name, last_name, profession, about_me, interests, my_sessions')
+          .eq('id', userID); // Filter to get only the logged in user's profile data
+          console.log("user ID: ", userID);
         if (error) {
           console.error('Error fetching profile data:', error);
           return;
@@ -73,7 +76,7 @@ export default function ProfileScreen() {
           {profileData.map((profile) => (
             <View key={profile.id}>
               <ThemedText type="subtitle">About Me</ThemedText>
-              <ThemedText>{profile.aboutMe}</ThemedText>
+              <ThemedText>{profile.about_me}</ThemedText>
             </View>
           ))}
       </ThemedView>
@@ -89,7 +92,7 @@ export default function ProfileScreen() {
           {profileData.map((profile) => (
             <View key={profile.id}>
               <ThemedText type="subtitle">My sessions</ThemedText>
-              <ThemedText>{profile.mySessions}</ThemedText>
+              <ThemedText>{profile.my_sessions}</ThemedText>
             </View>
           ))}
       </ThemedView>
