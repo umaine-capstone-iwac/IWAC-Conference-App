@@ -68,6 +68,12 @@ export default function SessionsScreen() {
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
 
+  //comments state
+  const [comments, setComments] = useState<{ comment_id: string; user_id: string; comment_content: string; created_at: string }[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
   //fetch events from conference_events
   const fetchSessions = useCallback(async () => {
     try {
@@ -201,6 +207,48 @@ export default function SessionsScreen() {
     }
   };
 
+  const openPanel = (panel: Panel) => { //load comments
+    setSelectedPanel(panel);
+    setComments([]);
+    setNewComment("");
+    fetchComments(panel.id);
+  };
+  
+  const fetchComments = useCallback(async (eventId: number) => { //fetch comments of panel
+  setCommentsLoading(true);
+  const { data, error } = await supabase
+    .from("panel_comments")
+    .select("comment_id, user_id, comment_content, created_at")
+    .eq("event_id", eventId)
+    .order("created_at", { ascending: true });
+
+  if (error) console.error(error);
+  else setComments(data ?? []);
+  setCommentsLoading(false);
+}, []);
+
+  const submitComment = async () => { //add comment to table with user/event ID
+    if (!userID) { Alert.alert("Sign in required"); return; }
+    if (!newComment.trim()) return;
+    if (!selectedPanel) return;
+
+    setSubmitting(true);
+    const { error } = await supabase.from("panel_comments").insert({
+      user_id: userID,
+      event_id: selectedPanel.id,
+      comment_content: newComment.trim(),
+    });
+
+    if (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to post comment");
+    } else {
+      setNewComment("");
+      await fetchComments(selectedPanel.id); // refresh list of comments
+    }
+    setSubmitting(false);
+  };
+
   //build list of session tags
   const sessionTags = useMemo(() => sessions.map((s) => s.label), [sessions]);
 
@@ -274,6 +322,54 @@ export default function SessionsScreen() {
               <ThemedText>{selectedPanel.location}</ThemedText>
               <ThemedText>{selectedPanel.speaker}</ThemedText>
             </ThemedView>
+            {/* Comment Section */}
+            <ThemedText style={{ fontWeight: "700", fontSize: 16, marginTop: 10 }}>Comments</ThemedText>
+            {commentsLoading ? (
+              <ActivityIndicator size="small" color={Colors.awac.navy} />
+            ) : comments.length === 0 ? (
+              <ThemedText style={{ color: "#888" }}>No comments yet</ThemedText>
+            ) : (
+              comments.map((c) => (
+                <ThemedView
+                  key={c.comment_id}
+                  style={{
+                    padding: 12,
+                    borderRadius: 10,
+                    borderWidth: 1,
+                    borderColor: Colors.awac.navy,
+                    backgroundColor: Colors.lightestBlue,
+                    marginTop: 8,
+                  }}
+                >
+                  <ThemedText style={{ fontSize: 12, color: "#888", marginBottom: 4 }}>
+                    {new Date(c.created_at).toLocaleString()}
+                  </ThemedText>
+                  <ThemedText>{c.comment_content}</ThemedText>
+                </ThemedView>
+              ))
+            )}
+            {/* Comment Input */}
+            <View style={{ flexDirection: "row", gap: 10, alignItems: "center", marginTop: 12 }}>
+              <Input
+                text="Add a comment..."
+                value={newComment}
+                onChangeText={setNewComment}
+                style={{ flex: 1 }}
+              />
+              <TouchableOpacity
+                onPress={submitComment}
+                disabled={submitting || !newComment.trim()}
+                style={{
+                  backgroundColor: Colors.awac.navy,
+                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  borderRadius: 10,
+                  opacity: submitting || !newComment.trim() ? 0.5 : 1,
+                }}
+              >
+                <Text style={{ color: "#fff", fontWeight: "600" }}>Post</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       ) : (
@@ -312,7 +408,7 @@ export default function SessionsScreen() {
                 <ThemedText style={{ fontWeight: "700" }}>{slot.label}</ThemedText>
 
                 {slot.panels.map((panel) => (
-                  <TouchableOpacity key={panel.id} activeOpacity={0.85} onPress={() => setSelectedPanel(panel)}>
+                  <TouchableOpacity key={panel.id} activeOpacity={0.85} onPress={() => openPanel(panel)}>
                     <ThemedView style={styles.sessionCardDetails}>
                       <Pressable
                         style={styles.heartButton}
@@ -324,7 +420,6 @@ export default function SessionsScreen() {
                       >
                         <Text style={{ fontSize: 40, color: savedPanels.includes(panel.id) ? "red" : "#888" }}>♥</Text>
                       </Pressable>
-
                       <ThemedText type="title">{panel.title}</ThemedText>
                       <ThemedText>{panel.tag}</ThemedText>
                       <ThemedText>{panel.location}</ThemedText>
