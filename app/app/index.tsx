@@ -1,10 +1,38 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
+<<<<<<< Updated upstream
 
 export default function LoginScreen() {
+=======
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import fetchAgenda from './(tabs)/index';
+
+export default function LoginScreen() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      console.log("Email and password required");
+      return;
+    }
+
+    const {error} = await supabase.auth.signInWithPassword({
+      email,
+      password,});
+  
+    if (error) {
+      console.error("Auth error:", error.message);
+    }
+    else {
+      router.replace("/(tabs)");
+    }
+  }
+  
+>>>>>>> Stashed changes
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
@@ -12,14 +40,27 @@ export default function LoginScreen() {
         <ThemedText type="subtitle" style={styles.subtitle}>Enter Username and Password</ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
-          <Input text="Email" style={styles.input} />
+          <TextInput
+            onChangeText={(text) => setEmail(text)}
+            value={email}
+            placeholder="email@address.com"
+            autoCapitalize="none"
+            style={styles.input}
+            />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
-          <Input text="Password" style={styles.input} secureTextEntry={true} />
+          <TextInput
+          onChangeText={(text) => setPassword(text)}
+          value={password}
+          placeholder="password"
+          autoCapitalize="none"
+          style={styles.input}
+          secureTextEntry={true}
+          />
         </View>
         <TouchableOpacity 
-          onPress={() => router.replace("/(tabs)")}
+          onPress={handleLogin}
         >
           <View style = {styles.button}>
             <Text style={styles.buttonText}>Login</Text>

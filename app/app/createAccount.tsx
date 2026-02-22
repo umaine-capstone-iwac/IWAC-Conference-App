@@ -2,14 +2,47 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
+<<<<<<< Updated upstream
 import { RelativePathString, router } from 'expo-router';
 
 export default function createAccount() {
+=======
+import { router } from 'expo-router';
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
+
+export default function createAccount() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  //const [passCheck, setPassCheck] = useState("");
+
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      console.log("Email and password required");
+      return;
+    }
+
+    const {error} = await supabase.auth.signUp({
+      email,
+      password,});
+  
+    if (error) {
+      console.error("Auth error:", error.message);
+    }
+    else {
+      router.replace("/(tabs)");
+    }
+  }
+
+>>>>>>> Stashed changes
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
-        <ThemedText type="subtitle" style={styles.subtitle}>Enter Name, Email, and Password</ThemedText>
+        <ThemedText
+          type="subtitle"
+          style={styles.subtitle}>Enter Name, Email, and Password
+        </ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Name</ThemedText>
           <Input text="Name" style={styles.input} />
@@ -24,10 +57,14 @@ export default function createAccount() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
-          <Input text="Password" style={styles.input} secureTextEntry={true} />
+          <Input
+            text="Password"
+            style={styles.input}
+            secureTextEntry={true}
+          />
         </View>
         <TouchableOpacity 
-            onPress={() => router.replace("/(tabs)")}
+            onPress={handleSignIn}
         >
             <View style = {styles.button}>
                 <Text style={styles.buttonText}>Login</Text>

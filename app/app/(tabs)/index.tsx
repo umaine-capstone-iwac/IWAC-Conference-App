@@ -19,11 +19,11 @@ export default function MyAgendaScreen() {
   const [myEvents, setMyEvents] = useState<ConferenceEvent[]>([]); // stores events pulled from database
   const [loading, setLoading] = useState(true);
 
-
+/*
   useEffect(() => {
     fetchAgenda();
   }, []);
-
+*/
 
   const fetchAgenda = async () => { // fetches rows from user agenda
     try {
