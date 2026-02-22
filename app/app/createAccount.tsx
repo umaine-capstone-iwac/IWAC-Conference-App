@@ -2,11 +2,6 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-<<<<<<< Updated upstream
-import { RelativePathString, router } from 'expo-router';
-
-export default function createAccount() {
-=======
 import { router } from 'expo-router';
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
@@ -34,7 +29,6 @@ export default function createAccount() {
     }
   }
 
->>>>>>> Stashed changes
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>

@@ -2,13 +2,9 @@ import { ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity } from 
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
-<<<<<<< Updated upstream
-
-export default function LoginScreen() {
-=======
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-import fetchAgenda from './(tabs)/index';
+//import fetchAgenda from './(tabs)/index';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -32,7 +28,6 @@ export default function LoginScreen() {
     }
   }
   
->>>>>>> Stashed changes
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
