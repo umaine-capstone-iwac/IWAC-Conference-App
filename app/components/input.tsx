@@ -11,6 +11,7 @@ export function Input({ text, style, ...rest }: InputProps) {
       placeholder={text}
       placeholderTextColor={Colors.darkGrey}
       style={[styles.input, style]}  
+      autoCapitalize = "sentences"
       {...rest}
     />
   );
@@ -18,13 +19,13 @@ export function Input({ text, style, ...rest }: InputProps) {
 
 const styles = StyleSheet.create({
   input: {
-    flex: 1,
     padding: 10,
     backgroundColor: Colors.lightestBlue,
     borderWidth: 2,
     borderColor: 'grey',
     borderRadius: 10,
-    height: 50,     
+    minHeight: 50,     
     fontSize: 16,    
+    textAlignVertical:"top"
   },
 });
