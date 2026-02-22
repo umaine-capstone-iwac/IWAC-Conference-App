@@ -9,25 +9,32 @@ import { supabase } from "@/lib/supabase";
 export default function createAccount() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  //const [passCheck, setPassCheck] = useState("");
+  const [passCheck, setPassCheck] = useState("");
+  const[toggleVisibility, setToggleVisibility] = useState(true);
 
   const handleSignIn = async () => {
     if (!email || !password) {
       console.log("Email and password required");
       return;
     }
-
-    const {error} = await supabase.auth.signUp({
-      email,
-      password,});
-  
-    if (error) {
-      console.error("Auth error:", error.message);
+    else if (passCheck != password) {
+      console.log("Your passwords do not match");
+      return;
     }
     else {
-      router.replace("/(tabs)");
+      const {error} = await supabase.auth.signUp({
+        email,
+        password,});
+        
+      if (error) {
+        console.error("Auth error:", error.message);
+      }
+      else {
+        router.replace("/(tabs)");
+      }
     }
   }
+
 
   return (
     <View style={styles.container}>
@@ -43,16 +50,29 @@ export default function createAccount() {
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
-          <Input text="Email" style={styles.input} />
+          <Input
+            text="Email"
+            onChangeText={(text) => setEmail(text)}
+            autoCapitalize="none"
+            style={styles.input}
+          />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
-          <Input text="Password" style={styles.input} secureTextEntry={true} />
+          <Input
+            text="Password"
+            onChangeText={(text) => setPassword(text)}
+            autoCapitalize="none"
+            style={styles.input}
+            secureTextEntry={true}
+          />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
           <Input
             text="Password"
+            onChangeText={(text) => setPassCheck(text)}
+            autoCapitalize="none"
             style={styles.input}
             secureTextEntry={true}
           />
