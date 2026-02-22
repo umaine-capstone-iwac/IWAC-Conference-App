@@ -90,6 +90,8 @@ export default function MyAgendaScreen() {
         ...item.conference_events
       })) || [];
      
+      events.sort((a, b) => a.session.localeCompare(b.session)); // sort panels when added
+
       setMyEvents(events);
     } catch (error) {
       console.error('Error fetching my agenda:', error);
@@ -100,7 +102,7 @@ export default function MyAgendaScreen() {
   };
 
 
-  const removeFromAgenda = async (eventId: number) => { //deletes event from myagenda
+  const removeFromAgenda = async (eventId: number) => { //deletes event from user agenda
     try {
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -117,11 +119,9 @@ export default function MyAgendaScreen() {
         .eq('event_id', eventId);
       
 
-
       if (error) throw error;
 
-
-      setMyEvents(myEvents.filter(event => event.id !== eventId));
+      setMyEvents(myEvents.filter(event => event.id !== eventId).sort((a, b) => a.session.localeCompare(b.session))); // sort panels after deletion
      
       Alert.alert('Success', 'Event removed from your agenda');
     } catch (error) {
@@ -158,7 +158,7 @@ export default function MyAgendaScreen() {
     );
   }
 
-  return ( //renders a card for each event
+  return ( // renders a card for each event
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.headerContainer}>
         <TouchableOpacity style={styles.browseButton} onPress={navigateToBrowse}>
