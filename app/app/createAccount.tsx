@@ -2,65 +2,63 @@ import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-nati
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-import { RelativePathString, router } from 'expo-router';
-import { useState, FormEvent } from "react";
+import { router } from 'expo-router';
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function createAccount() {
-  const[isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const x = "Signed up";
+  //const [passCheck, setPassCheck] = useState("");
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      console.log("Email and password required");
+      return;
+    }
 
-      const {error: signUpError} = await supabase.auth.signUp({email, password,})
-      console.log(x);
-      if(signUpError) {
-        console.error("Error signing up: ", signUpError.message)
-        return;
-      }
+    const {error} = await supabase.auth.signUp({
+      email,
+      password,});
+  
+    if (error) {
+      console.error("Auth error:", error.message);
+    }
+    else {
+      router.replace("/(tabs)");
+    }
   }
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
-        <ThemedText type="subtitle" style={styles.subtitle}>Enter Name, Email, and Password</ThemedText>
+        <ThemedText
+          type="subtitle"
+          style={styles.subtitle}>Enter Name, Email, and Password
+        </ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Name</ThemedText>
           <Input text="Name" style={styles.input} />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
-          <Input
-            text="email"
-            placeholder="Email"
-            autoCapitalize="none"
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-            style={styles.input}
-          />
+          <Input text="Email" style={styles.input} />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
+          <Input text="Password" style={styles.input} secureTextEntry={true} />
+        </View>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
           <Input
-            text="password"
-            placeholder="Password"
-            autoCapitalize="none"
-            value={password}
-            onChangeText={(text) => setPassword(text)}
+            text="Password"
             style={styles.input}
             secureTextEntry={true}
           />
         </View>
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
-          <Input text="Password" style={styles.input} secureTextEntry={true} />
-        </View>
         <TouchableOpacity 
-            onPress={() => router.replace("/(tabs)")}
+            onPress={handleSignIn}
         >
             <View style = {styles.button}>
                 <Text style={styles.buttonText}>Login</Text>

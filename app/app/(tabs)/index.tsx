@@ -33,22 +33,7 @@ export default function MyAgendaScreen() {
 
 
   useEffect(() => {
-    // NOTE: Temporary sign-in for testing. Remove after login logic complete.
-    const signIn = async () => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: 'test@test.com',
-        password: 'testUser123?',
-      });
-
-      if (error) {
-        console.error('Auth error:', error.message);
-      }
-      else {
-        console.log((await supabase.auth.getSession()).data.session?.user);
-        fetchAgenda();
-      }
-    };
-    signIn();
+    fetchAgenda();
   }, []);
 
 
