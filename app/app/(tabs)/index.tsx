@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -6,6 +6,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from "@react-navigation/native";
 
 interface ConferenceEvent { //defines event objects
   id: number;
@@ -85,6 +86,12 @@ export default function MyAgendaScreen() {
       setLoading(false);
     }
   };
+
+  useFocusEffect(
+    useCallback(() => { // runs every time this tab/screen becomes active
+    fetchAgenda();
+  }, [fetchAgenda])
+);
 
 
   const removeFromAgenda = async (eventId: number) => { //deletes event from user agenda

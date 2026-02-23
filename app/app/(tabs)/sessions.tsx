@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect, useCallback } from "react";
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, Pressable } from "react-native";
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, Pressable, Linking, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
@@ -7,6 +7,7 @@ import { ThemedView } from "@/components/themed-view";
 import { Input } from "@/components/input";
 import { Colors } from "@/constants/theme";
 import { supabase } from "@/lib/supabase";
+import { Ionicons } from "@expo/vector-icons";
 
 type Panel = {
   id: number;
@@ -34,6 +35,15 @@ type ConferenceEventRow = {
   date: string;
   session: string;
   tag: string;
+};
+
+type PanelResource = {
+  id: number;
+  created_at: string;
+  event_id: number;
+  type: string | null;
+  title: string | null;
+  url: string;
 };
 
 export default function SessionsScreen() {
@@ -73,6 +83,60 @@ export default function SessionsScreen() {
   const [newComment, setNewComment] = useState("");
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  //resource state
+  const [resources, setResources] = useState<PanelResource[]>([]);
+  const [resourcesLoading, setResourcesLoading] = useState(false);
+
+  const isPdfUrl = (url: string) => /\.pdf(\?|#|$)/i.test(url);
+
+  const getYouTubeId = (url: string) => {
+    try {
+      const u = new URL(url);
+
+      //youtu.be/<id>
+      if (u.hostname === "youtu.be") {
+        return u.pathname.split("/")[1] || null;
+      }
+
+      //youtube.com/watch?v=<id>
+      if ((u.hostname === "youtube.com" || u.hostname === "www.youtube.com") && u.pathname === "/watch") {
+        return u.searchParams.get("v");
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
+  const openUrl = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Can't open link");
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Failed to open link");
+    }
+  };
+
+  const downloadPdf = async (url: string) => {
+    try {
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert("Can't download file");
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Failed to download PDF");
+    }
+  };
 
   //fetch events from conference_events
   const fetchSessions = useCallback(async () => {
@@ -138,10 +202,7 @@ export default function SessionsScreen() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("user_agenda")
-      .select("event_id")
-      .eq("user_id", userID);
+    const { data, error } = await supabase.from("user_agenda").select("event_id").eq("user_id", userID);
 
     if (error) {
       console.error(error);
@@ -151,17 +212,17 @@ export default function SessionsScreen() {
     setSavedPanels((data ?? []).map((r: any) => r.event_id));
   }, [userID]);
 
-  //run once on mount
-  useEffect(() => {
-    fetchSessions();
-  }, [fetchSessions]);
+useEffect(() => {
+  fetchSessions();
+  fetchSavedPanels();
+}, []);
 
-  useFocusEffect(
-    useCallback(() => {
-      //runs when you go back to sessions page
-      fetchSavedPanels();
-    }, [fetchSavedPanels])
-  );
+useFocusEffect(
+  useCallback(() => { // runs every time this tab/screen becomes active
+    fetchSessions();
+    fetchSavedPanels();
+  }, [fetchSessions, fetchSavedPanels])
+);
 
   //add event to user_agenda
   const addToAgenda = async (eventId: number) => {
@@ -173,11 +234,7 @@ export default function SessionsScreen() {
   const removeFromAgenda = async (eventId: number) => {
     if (!userID) return;
 
-    const { error } = await supabase
-      .from("user_agenda")
-      .delete()
-      .eq("user_id", userID)
-      .eq("event_id", eventId);
+    const { error } = await supabase.from("user_agenda").delete().eq("user_id", userID).eq("event_id", eventId);
 
     if (error) throw error;
   };
@@ -207,28 +264,48 @@ export default function SessionsScreen() {
     }
   };
 
-  const openPanel = (panel: Panel) => { //load comments
+  const fetchComments = useCallback(async (eventId: number) => {
+    //fetch comments of panel
+    setCommentsLoading(true);
+    const { data, error } = await supabase
+      .from("panel_comments")
+      .select("comment_id, user_id, comment_content, created_at")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: true });
+
+    if (error) console.error(error);
+    else setComments(data ?? []);
+    setCommentsLoading(false);
+  }, []);
+
+  const fetchResources = useCallback(async (eventId: number) => {
+    //fetch resources of panel
+    setResourcesLoading(true);
+
+    const { data, error } = await supabase
+      .from("panel_resources")
+      .select("id, created_at, event_id, type, title, url")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: true });
+
+    if (error) console.error(error);
+    else setResources((data ?? []) as PanelResource[]);
+
+    setResourcesLoading(false);
+  }, []);
+
+  const openPanel = (panel: Panel) => {
     setSelectedPanel(panel);
     setComments([]);
     setNewComment("");
+    setResources([]);
+    fetchResources(panel.id);
     fetchComments(panel.id);
   };
-  
-  const fetchComments = useCallback(async (eventId: number) => { //fetch comments of panel
-  setCommentsLoading(true);
-  const { data, error } = await supabase
-    .from("panel_comments")
-    .select("comment_id, user_id, comment_content, created_at")
-    .eq("event_id", eventId)
-    .order("created_at", { ascending: true });
-
-  if (error) console.error(error);
-  else setComments(data ?? []);
-  setCommentsLoading(false);
-}, []);
 
   const submitComment = async () => { //add comment to table with user/event ID
-    if (!userID) { Alert.alert("Sign in required"); return; }
+    if (!userID) { Alert.alert("Sign in required"); return;
+    }
     if (!newComment.trim()) return;
     if (!selectedPanel) return;
 
@@ -313,7 +390,11 @@ export default function SessionsScreen() {
 
             <ThemedView style={styles.sessionCardDetails}>
               <Pressable style={styles.heartButton} onPress={() => toggleSavePanel(selectedPanel.id)} hitSlop={12}>
-                <Text style={{ fontSize: 40, color: savedPanels.includes(selectedPanel.id) ? "red" : "#888" }}>♥</Text>
+                <Ionicons
+                  name={savedPanels.includes(selectedPanel.id) ? "heart" : "heart-outline"}
+                  size={32}
+                  color={savedPanels.includes(selectedPanel.id) ? "red" : "#888"}
+                  />
               </Pressable>
 
               <ThemedText>{selectedPanel.date}</ThemedText>
@@ -322,6 +403,79 @@ export default function SessionsScreen() {
               <ThemedText>{selectedPanel.location}</ThemedText>
               <ThemedText>{selectedPanel.speaker}</ThemedText>
             </ThemedView>
+
+            {/* resources section */}
+            <ThemedText style={{ fontWeight: "700", fontSize: 16, marginTop: 10 }}>Resources</ThemedText>
+            {resourcesLoading ? (
+              <ActivityIndicator size="small" color={Colors.awac.navy} />
+            ) : resources.length === 0 ? (
+              <ThemedText style={{ color: "#888" }}>No resources yet</ThemedText>
+            ) : (
+              resources.map((r) => {
+                const url = r.url;
+                const title = r.title?.trim() || url;
+
+                const isPdf = r.type?.toLowerCase() === "pdf" || isPdfUrl(url);
+                const ytId = r.type?.toLowerCase() === "youtube" ? getYouTubeId(url) : null;
+
+                if (isPdf) {
+                  return (
+                    <ThemedView
+                      key={r.id}
+                      style={{
+                        padding: 12,
+                        borderRadius: 10,
+                        borderWidth: 1,
+                        borderColor: Colors.awac.navy,
+                        backgroundColor: Colors.lightestBlue,
+                        marginTop: 8,
+                      }}
+                    >
+                      <ThemedText style={{ fontWeight: "600", marginBottom: 6 }}>📄 {title}</ThemedText>
+
+                      <TouchableOpacity
+                        onPress={() => downloadPdf(url)}
+                        style={{
+                          backgroundColor: Colors.awac.navy,
+                          paddingVertical: 10,
+                          paddingHorizontal: 14,
+                          borderRadius: 8,
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        <Text style={{ color: "#fff", fontWeight: "600" }}>Download PDF</Text>
+                      </TouchableOpacity>
+                    </ThemedView>
+                  );
+                }
+
+                if (ytId) {
+                  const thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
+                  return (
+                    <TouchableOpacity key={r.id} activeOpacity={0.85} onPress={() => openUrl(url)}>
+                      <ThemedView
+                        style={{
+                          padding: 12,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: Colors.awac.navy,
+                          backgroundColor: Colors.lightestBlue,
+                          marginTop: 8,
+                          gap: 8,
+                        }}
+                      >
+                        <ThemedText style={{ fontWeight: "600" }}>▶️ {title}</ThemedText>
+                        <Image source={{ uri: thumb }} style={{ width: "100%", height: 180, borderRadius: 8 }} resizeMode="cover" />
+                        <ThemedText style={{ color: Colors.awac.navy }}>Open YouTube</ThemedText>
+                      </ThemedView>
+                    </TouchableOpacity>
+                  );
+                }
+
+                return null;
+              })
+            )}
+
             {/* Comment Section */}
             <ThemedText style={{ fontWeight: "700", fontSize: 16, marginTop: 10 }}>Comments</ThemedText>
             {commentsLoading ? (
@@ -418,7 +572,11 @@ export default function SessionsScreen() {
                         }}
                         hitSlop={12}
                       >
-                        <Text style={{ fontSize: 40, color: savedPanels.includes(panel.id) ? "red" : "#888" }}>♥</Text>
+                        <Ionicons
+                          name={savedPanels.includes(panel.id) ? "heart" : "heart-outline"}
+                          size={32}
+                          color={savedPanels.includes(panel.id) ? "red" : "#888"}
+                          />
                       </Pressable>
                       <ThemedText type="title">{panel.title}</ThemedText>
                       <ThemedText>{panel.tag}</ThemedText>
