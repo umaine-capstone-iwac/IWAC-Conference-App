@@ -178,5 +178,6 @@ const styles = StyleSheet.create({
   searchBar: {
     height: 50,     
     fontSize: 16,  
+    flex: 1
   }
 });

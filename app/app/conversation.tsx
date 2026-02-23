@@ -1,9 +1,10 @@
-import { ScrollView, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -12,8 +13,54 @@ export default function ConversationScreen() {
 
   const navigation = useNavigation();
 
+  //User State
   const [userID, setUserID] = useState<string>();
+  const [otherUser, setOtherUser] = useState<{
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+  }>();
 
+  //Message State
+  const [newMessage, setNewMessage] = useState<string>('');
+
+  //Send message function
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !userID || !otherUser) return;
+
+    // Insert into Supabase
+    const { data, error } = await supabase
+      .from('messages')
+      .insert({
+        user_id: userID,
+        recipient_id: otherUser.id,
+        content: newMessage,
+        is_read: false,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error sending message:', error);
+      return;
+    }
+
+    // Update local messages list immediately
+    setMessages(prev => [
+      ...prev,
+      {
+        id: data.id,
+        content: data.content,
+        timestamp: data.timestamp,
+        fromUser: true,
+        isRead: data.is_read,
+      },
+    ]);
+
+    // Clear input
+    setNewMessage('');
+  };
+  
   // Fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -22,12 +69,6 @@ export default function ConversationScreen() {
     loadUser();
     // console.log("User ID: ", userID);
   }, []);
-
-  const [otherUser, setOtherUser] = useState<{
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-  }>();
 
   const {otherUserID} = useLocalSearchParams();
 
@@ -113,9 +154,13 @@ export default function ConversationScreen() {
   }, [userID, otherUser]); 
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.chatContainer}>
-        {messages.map((msg) => (
+    <KeyboardAvoidingView 
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
+      <ScrollView contentContainerStyle={styles.chatContainer}>   
+       {messages.map((msg) => (
           <View
             key={msg.id}
             style={[
@@ -124,30 +169,37 @@ export default function ConversationScreen() {
             ]}
           >
             {!msg.fromUser && (
-              <ProfilePicture
-                size={35}
-                source={require('@/assets/images/profile-picture.png')}
-              />
+              <ProfilePicture size={35} source={require('@/assets/images/profile-picture.png')} />
             )}
-            <View
-              style={[
-                styles.messageBubble,
-                msg.fromUser ? styles.bubbleUser : styles.bubbleOther,
-              ]}
-            >
-              <ThemedText>{msg.content}</ThemedText>
+            <View style={{ flexDirection: 'column', alignItems: msg.fromUser ? 'flex-end' : 'flex-start' }}>
+              <View style={[styles.messageBubble, msg.fromUser ? styles.bubbleUser : styles.bubbleOther]}>
+                <Text style={{ fontSize: 18 }}>{msg.content}</Text>
+              </View>
+              <Text style={styles.timestamp}>
+                {new Date(msg.timestamp).toLocaleString()}
+              </Text>
             </View>
           </View>
         ))}
       </ScrollView>
 
       <SafeAreaView edges = {['bottom']} style={styles.inputContainer}>
-        <Input text = "Type a message..."/>
-        <TouchableOpacity style={styles.sendButton}>
+        <View style = {{flex:1}}>
+          <Input
+            text="Type a message..."
+            multiline
+            numberOfLines={4}
+            style = {styles.messageInput}
+            value={newMessage}
+            onChangeText={setNewMessage}
+            autoCapitalize='sentences'
+          />
+        </View>
+        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <ThemedText style={{ color: 'white' }}>Send</ThemedText>
         </TouchableOpacity>
       </SafeAreaView>
-    </View>
+    </KeyboardAvoidingView >
   );
 }
 
@@ -195,14 +247,25 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderColor: Colors.awac.navy,
     backgroundColor: Colors.awac.beige,
-    position: 'absolute',
+    // position: 'absolute',
     bottom: 0,
+    alignItems: 'flex-end',
     width: '100%',
   },
+  messageInput: {
+    fontSize: 18,
+},
   sendButton: {
     backgroundColor: Colors.awac.orange,
     paddingHorizontal: 16,
     borderRadius: 10,
     justifyContent: 'center',
+    height: 50
   },
+  timestamp: {
+    fontSize: 12,
+    color: 'grey',
+    marginTop: 4,
+    paddingHorizontal: 4,
+},
 });

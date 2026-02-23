@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function SearchUsersScreen() {
 
+  const [userID, setUserID] = useState<string>();
   const [users, setUsers] = useState<{
     id: string;
     first_name: string | null;
@@ -18,12 +19,20 @@ export default function SearchUsersScreen() {
 
   const [search, setSearch] = useState("");
 
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+  }, []);
+
   // Fetch all users from database when component mounts
   useEffect(() => {
     const loadUsers= async () => {
       const {data, error} = await supabase
         .from('users')
-        .select('id, first_name, last_name');
+        .select('id, first_name, last_name')
+        .neq('id', userID);
 
       if (error) {
         console.error("Error loading other user:", error);
@@ -32,8 +41,10 @@ export default function SearchUsersScreen() {
       setUsers(data);
       console.log(data);
     };
-    loadUsers();
-  }, []);
+    if (userID != undefined) {
+      loadUsers();
+    }
+  }, [userID]);
 
   // Filter the user list based on the search query
   const filteredUsers = useMemo(() => {
