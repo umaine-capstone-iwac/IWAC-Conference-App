@@ -1,10 +1,10 @@
-import { ScrollView, StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Input } from '@/components/input';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
-//import fetchAgenda from './(tabs)/index';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -35,23 +35,21 @@ export default function LoginScreen() {
         <ThemedText type="subtitle" style={styles.subtitle}>Enter Username and Password</ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Email</ThemedText>
-          <TextInput
+          <Input
+            text="email@address.com"
             onChangeText={(text) => setEmail(text)}
-            value={email}
-            placeholder="email@address.com"
             autoCapitalize="none"
             style={styles.input}
             />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Password</ThemedText>
-          <TextInput
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          placeholder="password"
-          autoCapitalize="none"
-          style={styles.input}
-          secureTextEntry={true}
+          <Input
+            text="password"
+            onChangeText={(text) => setPassword(text)}
+            autoCapitalize="none"
+            style={styles.input}
+            secureTextEntry={true}
           />
         </View>
         <TouchableOpacity 
