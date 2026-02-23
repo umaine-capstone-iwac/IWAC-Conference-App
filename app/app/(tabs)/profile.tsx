@@ -5,7 +5,8 @@ import { ThemedView } from '@/components/themed-view';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 
@@ -33,25 +34,36 @@ export default function ProfileScreen() {
   }, []);
   
 
-  useEffect(() => {
-    if (!userID) return; // If userID is not available, do not attempt to fetch profile data
-
-    // Function to fetch profile data from supabase
-    const fetchProfileData = async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, first_name, last_name, profession, about_me, interests, my_sessions')
-          .eq('id', userID); // Filter to get only the logged in user's profile data
-          console.log("user ID: ", userID);
-        if (error) {
-          console.error('Error fetching profile data:', error);
-          return;
-        }
-        setProfileData((data as ProfileDetails[]) || []); // Update state with fetched profile data
-      
+  const fetchProfileData = useCallback(async () => {
+    if (!userID) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, profession, about_me, interests, my_sessions')
+        .eq('id', userID); // Filter to get only the logged in user's profile data
+      console.log('fetchProfileData response:', { userID, data, error });
+      if (error) {
+        console.error('Error fetching profile data:', error);
+        return;
+      }
+      setProfileData((data as ProfileDetails[]) || []); // Update state with fetched profile data
+    } catch (err) {
+      console.error('Unexpected error fetching profile data:', err);
     }
-    fetchProfileData();
-  }, [userID]); // Dependency array ensures this runs when userID changes
+  }, [userID]);
+
+  useEffect(() => {
+    // fetch once when userID becomes available
+    if (userID) fetchProfileData();
+  }, [userID, fetchProfileData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      // re-fetch whenever the screen gains focus
+      //i.e. after returning from the profile edit screen
+      fetchProfileData();
+    }, [fetchProfileData])
+  );
 
   
   return (

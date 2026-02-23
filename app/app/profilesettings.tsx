@@ -1,58 +1,143 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
 
 export default function ProfileSettingsModal() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [userID, setUserID] = useState<string | undefined>();
+
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [profession, setProfession] = useState('');
+  const [aboutMe, setAboutMe] = useState('');
+  const [interests, setInterests] = useState('');
+  const [mySessions, setMySessions] = useState('');
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        const id = data.session?.user?.id;
+        setUserID(id || undefined);
+
+        if (!id) {
+          setLoading(false);
+          return;
+        }
+
+        const { data: profileRows, error: fetchError } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, profession, about_me, interests, my_sessions')
+          .eq('id', id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        if (profileRows) {
+          setFirstName(profileRows.first_name ?? '');
+          setLastName(profileRows.last_name ?? '');
+          setProfession(profileRows.profession ?? '');
+          setAboutMe(profileRows.about_me ?? '');
+          setInterests(profileRows.interests ?? '');
+          setMySessions(profileRows.my_sessions ?? '');
+        }
+      } catch (err) {
+        console.error('Error loading profile for edit:', err);
+        Alert.alert('Error', 'Could not load profile data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
+  const saveChanges = async () => {
+    if (!userID) {
+      Alert.alert('Not signed in');
+      return;
+    }
+    setSaving(true);
+    try {
+      const payload = {
+        id: userID,
+        first_name: firstName,
+        last_name: lastName,
+        profession: profession,
+        about_me: aboutMe,
+        interests: interests,
+        my_sessions: mySessions,
+      };
+
+      const { error } = await supabase.from('profiles').upsert(payload);
+      if (error) throw error;
+
+      Alert.alert('Saved', 'Profile updated successfully');
+      router.back();
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      Alert.alert('Error', 'Failed to save profile.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.umaine.darkBlue} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>Edit your profile information below:</ThemedText>
+
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Name</ThemedText>
-          <Input text="John Doe" style={styles.input} />
+          <ThemedText type="title" style={styles.label}>First name</ThemedText>
+          <Input value={firstName} onChangeText={setFirstName} style={styles.input} text={''} />
         </View>
+
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>Last name</ThemedText>
+          <Input value={lastName} onChangeText={setLastName} style={styles.input} text={''} />
+        </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Institutional Affiliation</ThemedText>
-          <Input text="PenUltimate CEO" style={styles.input} />
+          <Input value={profession} onChangeText={setProfession} style={styles.input} text={''} />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>About Me</ThemedText>
-          <Input text="Hello! I'm John, a software developer with a love for creating intuitive and dynamic user experiences." style={styles.input} multiline />
+          <Input value={aboutMe} onChangeText={setAboutMe} multiline style={[styles.input, { height: 120 }]} text={''} />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>Interests</ThemedText>
-          
-          <Input 
-           style={styles.input} 
-           multiline
-           text="- Coding and Software Development
-- Hiking and Nature Walks
-- Photography and Visual Arts
-- Traveling and Exploring New Cultures"
-/>
+          <Input value={interests} onChangeText={setInterests} multiline style={[styles.input, { height: 120 }]} text={''} />
         </View>
-        <TouchableOpacity>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>My Sessions</ThemedText>
-          <Input 
-          multiline
-          style= {styles.input}
-          text='- Advanced AI Techniques
-- The Contrasts Between Writing in STEM
--Arts, and hHumanities
-- How to Improve a Research Paper
-- Exploring Historical Literature'
-          />
+          <Input value={mySessions} onChangeText={setMySessions} multiline style={[styles.input, { height: 140 }]} text={''} />
         </View>
-        <TouchableOpacity></TouchableOpacity>
+
+        <TouchableOpacity onPress={saveChanges} disabled={saving}>
           <View style = {styles.button}>
-            <Text style={styles.buttonText}>Save Changes</Text>
+            <Text style={styles.buttonText}>{saving ? 'Saving...' : 'Save Changes'}</Text>
           </View>
         </TouchableOpacity>
-        </ScrollView>
-      </View>
+      </ScrollView>
+    </View>
   );
 }
 
