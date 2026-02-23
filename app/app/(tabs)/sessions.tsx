@@ -9,6 +9,7 @@ import { Colors } from "@/constants/theme";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
 
+
 type Panel = {
   id: number;
   title: string;

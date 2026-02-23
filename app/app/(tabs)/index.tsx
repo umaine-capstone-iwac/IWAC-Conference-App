@@ -91,7 +91,7 @@ export default function MyAgendaScreen() {
     useCallback(() => { // runs every time this tab/screen becomes active
     fetchAgenda();
   }, [fetchAgenda])
-);
+  );
 
 
   const removeFromAgenda = async (eventId: number) => { //deletes event from user agenda
