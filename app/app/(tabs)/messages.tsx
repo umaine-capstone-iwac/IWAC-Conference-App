@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useFocusEffect} from "@react-navigation/native";
 import {Input} from '@/components/input';
 import { Colors } from '@/constants/theme';
 import {router} from "expo-router";
@@ -9,85 +10,140 @@ import { supabase } from '@/lib/supabase';
 import {filterMessages} from "@/utils/filterMessages";
 
 export default function MessagesListScreen() {
-  const [userID, setUserID] = useState<string>();
-  const [conversationUsers, setConversationUsers] = useState<{ 
-    id: string; 
-    first_name: string | null; 
-    last_name: string | null; 
-    lastMessage: string | null; 
-    timestamp: string | null }[]
-  >([]);
-  const [search, setSearch] = useState("");
   
-  // Fetch the logged in user's ID
+  // -- STATE -- //
+
+  const [currentUserID, setUserID] = useState<string>(); 
+
+  type ConversationPreview = {
+    id: string;
+    first_name: string | null;
+    last_name: string | null;
+    lastMessage: string | null;
+    timestamp: string | null;
+  };
+  const [conversations, setConversationUsers] = useState<ConversationPreview[]>([]);
+  
+  const [search, setSearch] = useState("");
+
+  // -- DERIVED DATA -- // 
+
+  // Filter conversations based on search input
+  const filteredConversations = filterMessages(conversations, search);
+
+  // -- DATA LOADING -- //
+
+  // Load all conversations involving the current user
+  const loadConversations = useCallback(async () => {
+    if (!currentUserID) return;
+    // Fetch all messages involving the current user
+    const { data: messages, error } = await supabase
+      .from('messages')
+      .select('id, user_id, recipient_id, content, timestamp')
+      .or(`user_id.eq.${currentUserID},recipient_id.eq.${currentUserID}`)
+      .order('timestamp', { ascending: false });
+
+    if (error) {
+      console.error("Error loading messages:", error);
+      return;
+    }
+    
+    // Extract unique IDs of users involved in conversations
+    const otherUserIds = Array.from(
+      new Set(
+        messages.map(msg =>
+          msg.user_id === currentUserID ? msg.recipient_id : msg.user_id
+        )
+      )
+    );
+
+    // Fetch user info for each of those IDs
+    const { data: usersData, error: usersError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .in('id', otherUserIds);
+
+    if (usersError || !usersData) {
+      console.error('Error fetching users:', usersError);
+      return;
+    }
+
+    // Attach last message and timestamp to each user
+    const usersWithLastMessage = usersData.map(user => {
+      const lastMsg = messages.find(
+        msg =>
+          msg.user_id === user.id || msg.recipient_id === user.id
+      );
+      return {
+        ...user,
+        lastMessage: lastMsg?.content ?? null,
+        timestamp: lastMsg?.timestamp ?? null,
+      };
+    });
+
+    setConversationUsers(usersWithLastMessage);
+  }, [currentUserID]);
+
+  // -- AUTH INITIALIZATION -- //
+
+  // Fetch the currently logged-in user's ID on mount
   useEffect(() => {
     const loadUser = async () => {
       setUserID((await supabase.auth.getSession()).data.session?.user.id);
     };
     loadUser();
-    // console.log("User ID: ", userID);
   }, []);
 
+  // -- SCREEN LIFECYCLE -- //
+
+  // Refresh conversations whenever this screen gains focus
+  useFocusEffect(
+    useCallback(() => {
+      loadConversations();
+    }, [loadConversations])
+  );
+
+  // -- REALTIME SUBSCRIPTION -- //
+
+  // Subscribe to message changes relevant to the current user
   useEffect(() => {
-    if (!userID) return;
+    if (!currentUserID) return;
 
-    const loadConversations = async () => {
-      // Fetch all messages involving the current user
-      const { data: messages, error } = await supabase
-        .from('messages')
-        .select('id, user_id, recipient_id, content, timestamp')
-        .or(`user_id.eq.${userID},recipient_id.eq.${userID}`)
-        .order('timestamp', { ascending: false });
+    const sentChannel = supabase
+      .channel('messages-sent')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `user_id=eq.${currentUserID}`,
+        },
+        loadConversations
+      )
+      .subscribe();
 
-      if (error) {
-        console.error("Error loading messages:", error);
-        return;
-      }
+    const receivedChannel = supabase
+      .channel('messages-received')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${currentUserID}`,
+        },
+        loadConversations
+      )
+      .subscribe();
 
-      // console.log("Messages:", messages);
-      
-      // Extract unique other user IDs
-      const otherUserIds = Array.from(
-        new Set(
-          messages.map(msg =>
-            msg.user_id === userID ? msg.recipient_id : msg.user_id
-          )
-        )
-      );
-      console.log(otherUserIds);
-
-      // Fetch the corresponding user info
-      const { data: usersData, error: usersError } = await supabase
-        .from('users')
-        .select('id, first_name, last_name')
-        .in('id', otherUserIds);
-
-      if (usersError || !usersData) {
-        console.error('Error fetching users:', usersError);
-        return;
-      }
-      console.log(usersData);
-
-      // Attach last message & timestamp
-      const usersWithLastMessage = usersData.map(user => {
-        const lastMsg = messages.find(
-          msg =>
-            msg.user_id === user.id || msg.recipient_id === user.id
-        );
-        return {
-          ...user,
-          lastMessage: lastMsg?.content ?? null,
-          timestamp: lastMsg?.timestamp ?? null,
-        };
-      });
-
-      setConversationUsers(usersWithLastMessage);
+    return () => {
+      supabase.removeChannel(sentChannel);
+      supabase.removeChannel(receivedChannel);
     };
+  }, [currentUserID, loadConversations]);
 
-    loadConversations();
-  }, [userID]);
-
-  const filteredUsers = filterMessages(conversationUsers, search);
+  // -- UI -- //
 
   return (
     <ScrollView style={styles.scrollContainer}>
@@ -106,7 +162,7 @@ export default function MessagesListScreen() {
           </View>
         </View>
 
-        {filteredUsers.map(user => (
+        {filteredConversations.map(user => (
           <Pressable
             key={user.id}
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
