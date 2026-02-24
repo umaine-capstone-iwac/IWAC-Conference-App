@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
@@ -145,13 +145,56 @@ export default function ConversationScreen() {
             fromUser: msg.user_id === userID,
             isRead: msg.is_read,
           }));
-      setMessages(processedMessages);
-      // console.log("Messages: ", processedMessages);
-          
+      setMessages(processedMessages);          
     }; 
     loadMessages();
     
   }, [userID, otherUser]); 
+
+  // Fetch new messages from the other user in realtime
+  useEffect(() => {
+    if (!userID || !otherUser) return;
+
+    const channel = supabase
+      .channel(`conversation-${userID}-${otherUser.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        (payload) => {
+          const msg = payload.new;
+
+          const isThisConversation =
+            (msg.user_id === userID && msg.recipient_id === otherUser.id) ||
+            (msg.user_id === otherUser.id && msg.recipient_id === userID);
+
+          if (!isThisConversation) return;
+
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev;
+
+            return [
+              ...prev,
+              {
+                id: msg.id,
+                content: msg.content,
+                timestamp: msg.timestamp,
+                fromUser: msg.user_id === userID,
+                isRead: msg.is_read,
+              },
+            ];
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userID, otherUser]);
 
   return (
     <KeyboardAvoidingView 
