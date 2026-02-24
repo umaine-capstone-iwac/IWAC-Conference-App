@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useRef, useState, useEffect, useCallback } from "react";
 import { ScrollView, StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Alert, Pressable, Linking, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -8,6 +8,7 @@ import { Input } from "@/components/input";
 import { Colors } from "@/constants/theme";
 import { supabase } from "@/lib/supabase";
 import { Ionicons } from "@expo/vector-icons";
+import { KeyboardAvoidingView, Platform } from 'react-native';
 
 
 type Panel = {
@@ -84,6 +85,7 @@ export default function SessionsScreen() {
   const [newComment, setNewComment] = useState("");
   const [commentsLoading, setCommentsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
 
   //resource state
   const [resources, setResources] = useState<PanelResource[]>([]);
@@ -323,6 +325,7 @@ useFocusEffect(
     } else {
       setNewComment("");
       await fetchComments(selectedPanel.id); // refresh list of comments
+      scrollRef.current?.scrollToEnd({ animated: true });
     }
     setSubmitting(false);
   };
@@ -380,7 +383,12 @@ useFocusEffect(
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
       {/* panel detail view */}
       {selectedPanel ? (
-        <ScrollView style={styles.scrollContainer} keyboardShouldPersistTaps="always">
+         <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 160 : 60}
+        >
+        <ScrollView ref={scrollRef} style={styles.scrollContainer} keyboardShouldPersistTaps="always" contentContainerStyle={{ paddingBottom: 40 }}>
           <View style={styles.container}>
             {/* back button */}
             <TouchableOpacity onPress={() => setSelectedPanel(null)}>
@@ -527,6 +535,7 @@ useFocusEffect(
             </View>
           </View>
         </ScrollView>
+      </KeyboardAvoidingView>
       ) : (
         <ScrollView style={styles.scrollContainer} keyboardShouldPersistTaps="always">
           <View style={styles.container}>
