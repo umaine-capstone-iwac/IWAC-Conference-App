@@ -5,13 +5,14 @@ import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAvoidingView, Platform } from 'react-native';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
 
   const navigation = useNavigation();
+  const scrollViewRef = useRef<ScrollView>(null);
 
   //User State
   const [userID, setUserID] = useState<string>();
@@ -23,6 +24,13 @@ export default function ConversationScreen() {
 
   //Message State
   const [newMessage, setNewMessage] = useState<string>('');
+
+  //Scroll to the bottom of the chat
+  const scrollToBottom = (animated = true) => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated });
+    }, 50);
+  };
 
   //Send message function
   const sendMessage = async () => {
@@ -57,8 +65,8 @@ export default function ConversationScreen() {
       },
     ]);
 
-    // Clear input
-    setNewMessage('');
+    setNewMessage(''); // Clear input
+    scrollToBottom(true);
   };
   
   // Fetch the logged in user's ID
@@ -145,7 +153,8 @@ export default function ConversationScreen() {
             fromUser: msg.user_id === userID,
             isRead: msg.is_read,
           }));
-      setMessages(processedMessages);          
+      setMessages(processedMessages);   
+      scrollToBottom(false);       
     }; 
     loadMessages();
     
@@ -202,7 +211,10 @@ export default function ConversationScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={80}
     >
-      <ScrollView contentContainerStyle={styles.chatContainer}>   
+      <ScrollView 
+        contentContainerStyle={styles.chatContainer}
+        ref={scrollViewRef}
+      >   
        {messages.map((msg) => (
           <View
             key={msg.id}
@@ -254,7 +266,6 @@ const styles = StyleSheet.create({
   chatContainer: {
     padding: 20,
     gap: 20,
-    paddingBottom: 80,
   },
   messageRow: {
     flexDirection: 'row',
