@@ -2,7 +2,7 @@ import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { ProfilePicture} from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
@@ -23,7 +23,10 @@ interface ProfileDetails { // Defines the profile details structure
 
 export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
-  const [profileData, setProfileData] = useState<ProfileDetails[]>([]); // State to hold profile details from supabase
+  const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
+  const { userID: routeUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
+  const viewedUserID = routeUserID ?? otherUserID ?? userID;// Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
+  
   console.log("userID: ", userID);
   //fetch the logged in user's ID
   useEffect(() => {
@@ -35,32 +38,36 @@ export default function ProfileScreen() {
   
 
   const fetchProfileData = useCallback(async () => {
-    if (!userID) return;
+    const idToFetch = routeUserID ?? otherUserID ?? userID; // Determines which user to display based on route parameters, or logged in user ID
+    if (!idToFetch) return; //Don't load if we don't have a user ID to fetch for
+
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('id, first_name, last_name, profession, about_me, interests, my_sessions')
-        .eq('id', userID); // Filter to get only the logged in user's profile data
+        .eq('id', idToFetch) // Filter to get only the logged in user's profile data
+        .single(); // Expecting a single profile row for the user ID
       console.log('fetchProfileData response:', { userID, data, error });
+
       if (error) {
         console.error('Error fetching profile data:', error);
+        setProfileData(null);
         return;
       }
-      setProfileData((data as ProfileDetails[]) || []); // Update state with fetched profile data
+      setProfileData((data as ProfileDetails) || null); // Update state with fetched profile data
     } catch (err) {
       console.error('Unexpected error fetching profile data:', err);
     }
-  }, [userID]);
+  }, [userID, routeUserID, otherUserID]); 
 
   useEffect(() => {
     // fetch once when userID becomes available
     if (userID) fetchProfileData();
   }, [userID, fetchProfileData]);
 
+  // re-fetch whenever the screen gains focus
   useFocusEffect(
     useCallback(() => {
-      // re-fetch whenever the screen gains focus
-      //i.e. after returning from the profile edit screen
       fetchProfileData();
     }, [fetchProfileData])
   );
@@ -71,42 +78,50 @@ export default function ProfileScreen() {
       <ThemedView style={styles.profileContainer}> 
           <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} />
           <View style = {{ flexDirection: 'column', gap: 8 }}>
-            {profileData.map((profile) => (
+            {profile ? (
               <View key={profile.id}>
                 <ThemedText type="title" style={{fontSize: 26}}>{profile.first_name} {profile.last_name}</ThemedText> 
                 <ThemedText type="subtitle" style={{fontSize: 16}}>{profile.profession}</ThemedText>
               </View>
-            ))}
-              <Pressable onPress={() => router.push("/profilesettings")}>
+            ): null}
+            {viewedUserID && userID === viewedUserID ? ( // Only show edit button if we're viewing our own profile
+              <Pressable onPress={() => router.push('/profilesettings')}>
                 <View style = {styles.editButton}>
                   <Text style={styles.editButtonText}>Edit Profile</Text>
                 </View>
               </Pressable>
+            ) : viewedUserID ? ( // Only show message button if we're viewing someone else's profile
+              <Pressable onPress={() => router.push(`/conversation?otherUserID=${viewedUserID}`)}>
+                <View style={styles.editButton}>
+                  <Text style={styles.editButtonText}>Message User</Text>
+                </View>
+              </Pressable>
+            ) : null}
           </View>
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
-          {profileData.map((profile) => (
-            <View key={profile.id}>
-              <ThemedText type="subtitle">About Me</ThemedText>
-              <ThemedText>{profile.about_me}</ThemedText>
-            </View>
-          ))}
+        {profile ? (
+          <View key={profile.id}>
+            <ThemedText type="subtitle">About Me</ThemedText>
+            <ThemedText>{profile.about_me}</ThemedText>
+          </View>
+        ) : null}
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
-          {profileData.map((profile) => (
-            <View key={profile.id}>
-              <ThemedText type="subtitle">Interests</ThemedText>
-              <ThemedText>{profile.interests}</ThemedText>
-            </View>
-          ))}
+        {profile ? (
+          <View key={`${profile.id}-interests`}>
+            <ThemedText type="subtitle">Interests</ThemedText>
+            <ThemedText>{profile.interests}</ThemedText>
+          </View>
+        ) : null}
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
-          {profileData.map((profile) => (
-            <View key={profile.id}>
-              <ThemedText type="subtitle">My sessions</ThemedText>
-              <ThemedText>{profile.my_sessions}</ThemedText>
-            </View>
-          ))}
+        {profile ? (
+          <View key={`${profile.id}-sessions`}>
+            <ThemedText type="subtitle">My sessions</ThemedText>
+            <ThemedText>{profile.my_sessions}</ThemedText>
+          </View>
+        ) : null}
       </ThemedView>
     </ScrollView>
   );
