@@ -13,18 +13,27 @@ import { Colors } from '@/constants/theme';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+import { ProfilePicture } from '@/components/profile-picture';
 
 export default function ProfileSettingsModal() {
+  // State for loading and saving status
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [userID, setUserID] = useState<string | undefined>();
 
+  // Profile details state
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [profession, setProfession] = useState('');
   const [aboutMe, setAboutMe] = useState('');
   const [interests, setInterests] = useState('');
   const [mySessions, setMySessions] = useState('');
+
+  // For handling profile picture updates
+  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [avatarPath, setAvatarPath] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -39,23 +48,39 @@ export default function ProfileSettingsModal() {
           return;
         }
 
-        const { data: profileRows, error: fetchError } = await supabase
-          .from('profiles')
-          .select(
-            'first_name, last_name, profession, about_me, interests, my_sessions',
-          )
-          .eq('id', id)
-          .single();
+        const [
+          { data: profileRows, error: pErr },
+          { data: userRows, error: uErr },
+        ] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select(
+              'id, profession, about_me, interests, my_sessions, avatar_url',
+            )
+            .eq('id', id)
+            .single(),
 
-        if (fetchError) throw fetchError;
+          supabase
+            .from('users')
+            .select('first_name, last_name')
+            .eq('id', id)
+            .single(),
+        ]);
+
+        if (pErr || uErr) throw pErr ?? uErr;
+
+        if (userRows) {
+          setFirstName(userRows.first_name ?? '');
+          setLastName(userRows.last_name ?? '');
+        }
 
         if (profileRows) {
-          setFirstName(profileRows.first_name ?? '');
-          setLastName(profileRows.last_name ?? '');
           setProfession(profileRows.profession ?? '');
           setAboutMe(profileRows.about_me ?? '');
           setInterests(profileRows.interests ?? '');
           setMySessions(profileRows.my_sessions ?? '');
+          setAvatarUri(profileRows.avatar_url ?? null);
+          setAvatarPath(profileRows.avatar_url ?? null);
         }
       } catch (err) {
         console.error('Error loading profile for edit:', err);
@@ -68,6 +93,54 @@ export default function ProfileSettingsModal() {
     load();
   }, []);
 
+  const pickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        setAvatarUri(result.assets[0].uri);
+      }
+    } catch (err) {
+      console.error('Error picking image:', err);
+      Alert.alert('Error', 'Failed to pick image.');
+    }
+  };
+
+  const uploadAvatar = async (): Promise<string | null> => {
+    if (!avatarUri || !userID) return null;
+
+    setUploading(true);
+    try {
+      const fileName = `${userID}-${Date.now()}.jpg`;
+
+      //fetch the image and convert it into a blob (binary large object)
+      const response = await fetch(avatarUri);
+      const blob = await response.blob();
+
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, blob as never);
+      if (error) throw error;
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (err) {
+      console.error('Error uploading avatar:', err);
+      Alert.alert('Error', 'Failed to upload avatar.');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const saveChanges = async () => {
     if (!userID) {
       Alert.alert('Not signed in');
@@ -75,14 +148,31 @@ export default function ProfileSettingsModal() {
     }
     setSaving(true);
     try {
+      let avatarUrl = avatarPath;
+
+      // Upload new avatar if changed
+      if (avatarUri && avatarUri !== avatarPath) {
+        const uploadedUrl = await uploadAvatar();
+        if (uploadedUrl) {
+          avatarUrl = uploadedUrl;
+        }
+      }
+
+      // Update names in the users table
+      const { error: userError } = await supabase
+        .from('users')
+        .update({ first_name: firstName, last_name: lastName })
+        .eq('id', userID);
+      if (userError) throw userError;
+
+      // Upsert profile details in the profiles table
       const payload = {
         id: userID,
-        first_name: firstName,
-        last_name: lastName,
         profession: profession,
         about_me: aboutMe,
         interests: interests,
         my_sessions: mySessions,
+        avatar_url: avatarUrl,
       };
 
       const { error } = await supabase.from('profiles').upsert(payload);
@@ -112,6 +202,13 @@ export default function ProfileSettingsModal() {
         <ThemedText type="subtitle" style={styles.subtitle}>
           Edit your profile information below:
         </ThemedText>
+
+        <TouchableOpacity onPress={pickImage}>
+          <View style={styles.avatarContainer}>
+            <ProfilePicture size={75} avatarUrl={avatarUri} userId={userID} />
+            <Text style={styles.avatarText}>Change Picture</Text>
+          </View>
+        </TouchableOpacity>
 
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
@@ -188,10 +285,10 @@ export default function ProfileSettingsModal() {
           />
         </View>
 
-        <TouchableOpacity onPress={saveChanges} disabled={saving}>
+        <TouchableOpacity onPress={saveChanges} disabled={saving || uploading}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving || uploading ? 'Saving...' : 'Save Changes'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -215,6 +312,21 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 18,
     marginBottom: 20,
+  },
+  avatarContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 10,
+  },
+  avatarImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
+  avatarText: {
+    color: Colors.awac.navy,
+    fontSize: 14,
+    fontWeight: '600',
   },
   inputGroup: {
     marginBottom: 15,

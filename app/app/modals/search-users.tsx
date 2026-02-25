@@ -4,12 +4,15 @@ import { Colors } from '@/constants/theme';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { router } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { filterUsers } from '@/utils/filterUsers';
 import { supabase } from '@/lib/supabase';
 
 export default function SearchUsersScreen() {
+  // -- STATE -- //
+
   const [userID, setUserID] = useState<string>();
+
   const [users, setUsers] = useState<
     {
       id: string;
@@ -20,6 +23,35 @@ export default function SearchUsersScreen() {
 
   const [search, setSearch] = useState('');
 
+  // -- DERIVED DATA -- //
+
+  // Filter users based on search input
+  const filteredUsers = useMemo(() => {
+    return filterUsers(users, search);
+  }, [users, search]);
+
+  // -- DATA LOADING -- //
+
+  // Load all users except the current user
+  const loadUsers = useCallback(async () => {
+    if (!userID) return;
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .neq('id', userID);
+
+    if (error) {
+      console.error('Error loading other users:', error);
+      return;
+    }
+
+    setUsers(data);
+  }, [userID]);
+
+  // -- AUTH INITIALIZATION -- //
+
+  // Fetch the logged-in user's ID on mount
   useEffect(() => {
     const loadUser = async () => {
       setUserID((await supabase.auth.getSession()).data.session?.user.id);
@@ -27,30 +59,14 @@ export default function SearchUsersScreen() {
     loadUser();
   }, []);
 
-  // Fetch all users from database when component mounts
+  // -- SCREEN EFFECTS -- //
+
+  // Load users once current user is known
   useEffect(() => {
-    const loadUsers = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, first_name, last_name')
-        .neq('id', userID);
+    loadUsers();
+  }, [loadUsers]);
 
-      if (error) {
-        console.error('Error loading other user:', error);
-        return;
-      }
-      setUsers(data);
-      console.log(data);
-    };
-    if (userID != undefined) {
-      loadUsers();
-    }
-  }, [userID]);
-
-  // Filter the user list based on the search query
-  const filteredUsers = useMemo(() => {
-    return filterUsers(users, search);
-  }, [users, search]);
+  // -- UI -- //
 
   return (
     <SafeAreaView style={styles.container}>

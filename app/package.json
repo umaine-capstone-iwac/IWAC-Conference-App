@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint",
+    "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test": "jest"
@@ -25,6 +25,7 @@
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.10",
+    "expo-image-picker": "^17.0.10",
     "expo-linking": "~8.0.9",
     "expo-router": "~6.0.15",
     "expo-splash-screen": "~31.0.11",
