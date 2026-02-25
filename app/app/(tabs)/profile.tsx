@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-native';
 import { ProfilePicture } from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -17,13 +17,14 @@ interface ProfileDetails {
   about_me: string;
   interests: string;
   my_sessions: string;
+  avatar_url: string | null;
 }
 
 export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
   const { userID: routeUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
-  const viewedUserID = routeUserID ?? otherUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
+  const viewedUserID = routeUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
 
   console.log('userID: ', userID);
   //fetch the logged in user's ID
@@ -39,21 +40,42 @@ export default function ProfileScreen() {
     if (!idToFetch) return; //Don't load if we don't have a user ID to fetch for
 
     try {
-      const { data, error } = await supabase
+      const [{ data: profileRow, error: pErr }, {data: userRow, error: uErr}] = await Promise.all([
+        supabase
         .from('profiles')
-        .select(
-          'id, first_name, last_name, profession, about_me, interests, my_sessions',
-        )
+        .select('id, profession, about_me, interests, my_sessions, avatar_url')
         .eq('id', idToFetch) // Filter to get only the logged in user's profile data
-        .single(); // Expecting a single profile row for the user ID
-      console.log('fetchProfileData response:', { userID, data, error });
+        .single(), //expecting a single profile row for the user ID
 
-      if (error) {
-        console.error('Error fetching profile data:', error);
+        //Now to get the names
+        supabase
+        .from('users')
+        .select('first_name, last_name')
+        .eq('id', idToFetch)
+        .single(),
+      ])
+
+
+      if (pErr || uErr) {
+        console.error('Error fetching profile data:', pErr ?? uErr);
         setProfileData(null);
         return;
       }
-      setProfileData((data as ProfileDetails) || null); // Update state with fetched profile data
+
+      //map the data into a structure we want
+      const mapped = {
+        id: profileRow.id,
+        first_name: userRow?.first_name ?? '',
+        last_name: userRow?.last_name ?? '',
+        profession: profileRow.profession ?? '',
+        about_me: profileRow.about_me ?? '',
+        interests: profileRow.interests ?? '',
+        my_sessions: profileRow.my_sessions ?? '',
+        avatar_url: profileRow.avatar_url,
+      } as ProfileDetails
+
+
+      setProfileData(mapped); // Update state with fetched profile data
     } catch (err) {
       console.error('Unexpected error fetching profile data:', err);
     }
@@ -74,10 +96,31 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
       <ThemedView style={styles.profileContainer}>
+        {profile?.avatar_url ? (
+          <Image
+            key={profile.avatar_url + String(Date.now())} // force remount / avoid stale cache
+            source={{
+              uri:
+                typeof profile.avatar_url === 'string'
+                  ? `${profile.avatar_url}${profile.avatar_url.includes('?') ? '&' : '?'}t=${Date.now()}`
+                  : undefined,
+            }}
+            style={{
+              width: 75,
+              height: 75,
+              borderRadius: 37.5,
+            }}
+            onError={(e) => {
+              console.error('Profile image load error:', e.nativeEvent);
+            }}
+            accessibilityLabel="Profile picture"
+          />
+        ) : (
         <ProfilePicture
           size={75}
           source={require('@/assets/images/profile-picture.png')}
         />
+        )}
         <View style={{ flexDirection: 'column', gap: 8 }}>
           {profile ? (
             <View key={profile.id}>

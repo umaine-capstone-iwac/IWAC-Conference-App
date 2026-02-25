@@ -230,10 +230,11 @@ export default function ConversationScreen() {
               msg.fromUser ? styles.rowRight : styles.rowLeft,
             ]}
           >
-            {!msg.fromUser && (
+            {!msg.fromUser && otherUser &&(
               <ProfilePicture
                 size={35}
                 source={require('@/assets/images/profile-picture.png')}
+                userId={otherUser.id}
               />
             )}
             <View

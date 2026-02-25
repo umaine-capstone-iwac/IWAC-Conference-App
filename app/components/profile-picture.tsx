@@ -1,12 +1,14 @@
-import { Image, StyleSheet, ImageSourcePropType } from 'react-native';
+import { Image, StyleSheet, ImageSourcePropType, Pressable } from 'react-native';
+import { router } from 'expo-router';
 
 export type ProfilePictureProps = {
   size: number;
   source: ImageSourcePropType;
+  userId?: string;
 };
 
-export function ProfilePicture({ size, source }: ProfilePictureProps) {
-  return (
+export function ProfilePicture({ size, source, userId }: ProfilePictureProps) {
+  const image = (
     <Image
       source={source}
       style={[
@@ -15,6 +17,16 @@ export function ProfilePicture({ size, source }: ProfilePictureProps) {
       ]}
     />
   );
+
+  if (userId) {
+    return (
+      <Pressable onPress={() => router.push(`/profile?otherUserID=${userId}`)}>
+        {image}
+      </Pressable>
+    );
+  }
+
+  return image;
 }
 
 const styles = StyleSheet.create({

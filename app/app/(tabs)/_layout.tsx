@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -70,6 +70,13 @@ export default function TabLayout() {
             <IconSymbol size={30} name="person.fill" color={color} />
           ),
         }}
+          // force navigation to plain /profile (no params) when tab pressed
+          listeners={{
+            tabPress: () => {
+              router.push('/(tabs)/profile');
+            },
+          }}
+        
       />
       <Tabs.Screen
         name="notifications"
