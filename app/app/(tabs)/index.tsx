@@ -113,7 +113,6 @@ export default function MyAgendaScreen() {
     }, [fetchAgenda]),
   );
 
-
   // -- Deletion -- //
 
   // Deletes specific event from a user's agenda locally and in Supabase
@@ -151,12 +150,11 @@ export default function MyAgendaScreen() {
   };
 
   // -- Navigation -- //
-  
+
   // Go to Sessions page for browsing
   const navigateToBrowse = (): void => {
     router.push('/sessions');
   };
-
 
   // -- Rendering -- //
 
