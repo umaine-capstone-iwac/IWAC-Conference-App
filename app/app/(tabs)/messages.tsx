@@ -170,8 +170,6 @@ export default function MessagesListScreen() {
             <View style={styles.messageContainer}>
               <ProfilePicture
                 size={40}
-                source={require('@/assets/images/profile-picture.png')}
-                userId={user.id}
               />
               <View>
                 <ThemedText type="title" style={{ fontSize: 22 }}>
