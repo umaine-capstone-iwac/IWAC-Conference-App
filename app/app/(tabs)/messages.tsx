@@ -1,19 +1,18 @@
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { ProfilePicture} from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
-import { useEffect, useState, useCallback } from "react";
-import { useFocusEffect} from "@react-navigation/native";
-import {Input} from '@/components/input';
+import { useEffect, useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
-import {router} from "expo-router";
+import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
-import {filterMessages} from "@/utils/filterMessages";
+import { filterMessages } from '@/utils/filterMessages';
 
 export default function MessagesListScreen() {
-  
   // -- STATE -- //
 
-  const [currentUserID, setUserID] = useState<string>(); 
+  const [currentUserID, setUserID] = useState<string>();
 
   type ConversationPreview = {
     id: string;
@@ -22,11 +21,13 @@ export default function MessagesListScreen() {
     lastMessage: string | null;
     timestamp: string | null;
   };
-  const [conversations, setConversationUsers] = useState<ConversationPreview[]>([]);
-  
-  const [search, setSearch] = useState("");
+  const [conversations, setConversationUsers] = useState<ConversationPreview[]>(
+    [],
+  );
 
-  // -- DERIVED DATA -- // 
+  const [search, setSearch] = useState('');
+
+  // -- DERIVED DATA -- //
 
   // Filter conversations based on search input
   const filteredConversations = filterMessages(conversations, search);
@@ -44,17 +45,17 @@ export default function MessagesListScreen() {
       .order('timestamp', { ascending: false });
 
     if (error) {
-      console.error("Error loading messages:", error);
+      console.error('Error loading messages:', error);
       return;
     }
-    
+
     // Extract unique IDs of users involved in conversations
     const otherUserIds = Array.from(
       new Set(
-        messages.map(msg =>
-          msg.user_id === currentUserID ? msg.recipient_id : msg.user_id
-        )
-      )
+        messages.map((msg) =>
+          msg.user_id === currentUserID ? msg.recipient_id : msg.user_id,
+        ),
+      ),
     );
 
     // Fetch user info for each of those IDs
@@ -69,10 +70,9 @@ export default function MessagesListScreen() {
     }
 
     // Attach last message and timestamp to each user
-    const usersWithLastMessage = usersData.map(user => {
+    const usersWithLastMessage = usersData.map((user) => {
       const lastMsg = messages.find(
-        msg =>
-          msg.user_id === user.id || msg.recipient_id === user.id
+        (msg) => msg.user_id === user.id || msg.recipient_id === user.id,
       );
       return {
         ...user,
@@ -100,7 +100,7 @@ export default function MessagesListScreen() {
   useFocusEffect(
     useCallback(() => {
       loadConversations();
-    }, [loadConversations])
+    }, [loadConversations]),
   );
 
   // -- REALTIME SUBSCRIPTION -- //
@@ -119,7 +119,7 @@ export default function MessagesListScreen() {
           table: 'messages',
           filter: `user_id=eq.${currentUserID}`,
         },
-        loadConversations
+        loadConversations,
       )
       .subscribe();
 
@@ -133,7 +133,7 @@ export default function MessagesListScreen() {
           table: 'messages',
           filter: `recipient_id=eq.${currentUserID}`,
         },
-        loadConversations
+        loadConversations,
       )
       .subscribe();
 
@@ -156,19 +156,22 @@ export default function MessagesListScreen() {
             style={styles.searchBar}
           />
           <View style={styles.searchIcon}>
-            <Pressable onPress={() => router.push("/modals/search-users")}>
-              <Text style={{ fontWeight: "bold", fontSize: 24 }}> + </Text>
+            <Pressable onPress={() => router.push('/modals/search-users')}>
+              <Text style={{ fontWeight: 'bold', fontSize: 24 }}> + </Text>
             </Pressable>
           </View>
         </View>
 
-        {filteredConversations.map(user => (
+        {filteredConversations.map((user) => (
           <Pressable
             key={user.id}
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
           >
             <View style={styles.messageContainer}>
-              <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
+              <ProfilePicture
+                size={40}
+                source={require('@/assets/images/profile-picture.png')}
+              />
               <View>
                 <ThemedText type="title" style={{ fontSize: 22 }}>
                   {user.first_name} {user.last_name}
@@ -183,7 +186,6 @@ export default function MessagesListScreen() {
   );
 }
 
-
 const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   scrollContainer: {
-    backgroundColor: Colors.awac.beige
+    backgroundColor: Colors.awac.beige,
   },
   messagesContainer: {
     flexDirection: 'column',
@@ -208,7 +210,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 10,
     borderColor: Colors.awac.navy,
-    padding: 10
+    padding: 10,
   },
   reactLogo: {
     height: 178,
@@ -219,7 +221,7 @@ const styles = StyleSheet.create({
   },
   searchIcon: {
     width: 50,
-    backgroundColor : Colors.lightestBlue,
+    backgroundColor: Colors.lightestBlue,
     borderWidth: 2,
     borderColor: 'grey',
     borderRadius: 10,
@@ -229,11 +231,11 @@ const styles = StyleSheet.create({
   },
   searchBarContainer: {
     flexDirection: 'row',
-    gap: 15
+    gap: 15,
   },
   searchBar: {
-    height: 50,     
-    fontSize: 16,  
-    flex: 1
-  }
+    height: 50,
+    fontSize: 16,
+    flex: 1,
+  },
 });

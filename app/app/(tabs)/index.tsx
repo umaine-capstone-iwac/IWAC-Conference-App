@@ -1,14 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect } from '@react-navigation/native';
 
-interface ConferenceEvent { //defines event objects
+interface ConferenceEvent {
+  //defines event objects
   id: number;
   title: string;
   location: string;
@@ -32,16 +40,17 @@ export default function MyAgendaScreen() {
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
-
   useEffect(() => {
     fetchAgenda();
   }, []);
 
-
-  const fetchAgenda = async () => { // fetches rows from user agenda
+  const fetchAgenda = async () => {
+    // fetches rows from user agenda
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-     
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         Alert.alert('Error', 'Please log in to view your agenda');
         setLoading(false);
@@ -50,7 +59,8 @@ export default function MyAgendaScreen() {
 
       const { data, error } = await supabase
         .from('user_agenda')
-        .select(`
+        .select(
+          `
           id,
           conference_events (
             id,
@@ -61,21 +71,21 @@ export default function MyAgendaScreen() {
             session,
             tag
           )
-        `)
+        `,
+        )
         .eq('user_id', user.id) // fetches agenda rows for specific user
         .order('created_at', { ascending: true });
 
-
       if (error) throw error;
-
 
       // type assertion for the joined data
       const typedData = data as unknown as UserAgendaResponse[];
-     
-      const events: ConferenceEvent[] = typedData?.map((item) => ({
-        ...item.conference_events
-      })) || [];
-     
+
+      const events: ConferenceEvent[] =
+        typedData?.map((item) => ({
+          ...item.conference_events,
+        })) || [];
+
       events.sort((a, b) => a.session.localeCompare(b.session)); // sort panels when added
 
       setMyEvents(events);
@@ -88,17 +98,19 @@ export default function MyAgendaScreen() {
   };
 
   useFocusEffect(
-    useCallback(() => { // runs every time this tab/screen becomes active
-    fetchAgenda();
-  }, [fetchAgenda])
+    useCallback(() => {
+      // runs every time this tab/screen becomes active
+      fetchAgenda();
+    }, [fetchAgenda]),
   );
 
-
-  const removeFromAgenda = async (eventId: number) => { //deletes event from user agenda
+  const removeFromAgenda = async (eventId: number) => {
+    //deletes event from user agenda
     try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      const { data: { user } } = await supabase.auth.getUser();
-     
       if (!user) {
         Alert.alert('Error', 'Please log in');
         return;
@@ -109,12 +121,15 @@ export default function MyAgendaScreen() {
         .delete()
         .eq('user_id', user.id)
         .eq('event_id', eventId);
-      
 
       if (error) throw error;
 
-      setMyEvents(myEvents.filter(event => event.id !== eventId).sort((a, b) => a.session.localeCompare(b.session))); // sort panels after deletion
-     
+      setMyEvents(
+        myEvents
+          .filter((event) => event.id !== eventId)
+          .sort((a, b) => a.session.localeCompare(b.session)),
+      ); // sort panels after deletion
+
       Alert.alert('Success', 'Event removed from your agenda');
     } catch (error) {
       console.error('Error removing event:', error);
@@ -122,11 +137,10 @@ export default function MyAgendaScreen() {
     }
   };
 
-
-  const navigateToBrowse = (): void => { // go to agenda page for browsing
+  const navigateToBrowse = (): void => {
+    // go to agenda page for browsing
     router.push('/sessions');
   };
-
 
   if (loading) {
     return (
@@ -136,30 +150,39 @@ export default function MyAgendaScreen() {
     );
   }
 
-
-  if (myEvents.length === 0) { // show when user hasn't favorited any events
+  if (myEvents.length === 0) {
+    // show when user hasn't favorited any events
     return (
-      <View style={[styles.scrollContainer, styles.centerContent, styles.padding]}>
+      <View
+        style={[styles.scrollContainer, styles.centerContent, styles.padding]}
+      >
         <ThemedText style={styles.emptyText}>
-          You haven't added any events to your agenda yet.
+          {`You haven't added any events to your agenda yet.`}
         </ThemedText>
-        <TouchableOpacity style={styles.browseButton} onPress={navigateToBrowse}>
+        <TouchableOpacity
+          style={styles.browseButton}
+          onPress={navigateToBrowse}
+        >
           <Text style={styles.browseButtonText}>Browse Panels</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  return ( // renders a card for each event
+  return (
+    // renders a card for each event
     <ScrollView style={styles.scrollContainer}>
       <View style={styles.headerContainer}>
-        <TouchableOpacity style={styles.browseButton} onPress={navigateToBrowse}>
+        <TouchableOpacity
+          style={styles.browseButton}
+          onPress={navigateToBrowse}
+        >
           <Text style={styles.browseButtonText}>Browse More Panels</Text>
         </TouchableOpacity>
       </View>
-  
+
       <View style={styles.eventsContainer}>
-        {myEvents.map(event => (
+        {myEvents.map((event) => (
           <View key={event.id} style={styles.eventCard}>
             <TouchableOpacity
               style={styles.removeButton}
@@ -168,29 +191,36 @@ export default function MyAgendaScreen() {
               <Text style={styles.removeButtonText}>✕</Text>
             </TouchableOpacity>
 
-
             <View style={styles.dateTag}>
               <Text style={styles.dateText}>{event.date}</Text>
             </View>
 
-
             <ThemedText type="title">{event.title}</ThemedText>
 
-
             <View style={styles.detailRow}>
-              <IconSymbol size={18} name="clock.fill" color={Colors.awac.navy} />
+              <IconSymbol
+                size={18}
+                name="clock.fill"
+                color={Colors.awac.navy}
+              />
               <ThemedText>{event.session}</ThemedText>
             </View>
 
-
             <View style={styles.detailRow}>
-              <IconSymbol size={18} name="mappin.circle.fill" color={Colors.awac.navy} />
+              <IconSymbol
+                size={18}
+                name="mappin.circle.fill"
+                color={Colors.awac.navy}
+              />
               <ThemedText>{event.location}</ThemedText>
             </View>
 
-
             <View style={styles.detailRow}>
-              <IconSymbol size={18} name="person.fill" color={Colors.awac.navy} />
+              <IconSymbol
+                size={18}
+                name="person.fill"
+                color={Colors.awac.navy}
+              />
               <ThemedText>{event.speaker}</ThemedText>
             </View>
           </View>
@@ -199,7 +229,6 @@ export default function MyAgendaScreen() {
     </ScrollView>
   );
 }
-
 
 const styles = StyleSheet.create({
   scrollContainer: {

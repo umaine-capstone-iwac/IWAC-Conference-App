@@ -1,49 +1,61 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import { Input } from '@/components/input';
 import { ThemedText } from '@/components/themed-text';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
     if (!email || !password) {
-      console.log("Email and password required");
+      console.log('Email and password required');
       return;
     }
 
-    const {error} = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
-      password,});
-  
+      password,
+    });
+
     if (error) {
-      console.error("Auth error:", error.message);
+      console.error('Auth error:', error.message);
+    } else {
+      router.replace('/(tabs)');
     }
-    else {
-      router.replace("/(tabs)");
-    }
-  }
-  
+  };
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
-        <ThemedText type="subtitle" style={styles.subtitle}>Enter Username and Password</ThemedText>
+        <ThemedText type="subtitle" style={styles.subtitle}>
+          Enter Username and Password
+        </ThemedText>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Email</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Email
+          </ThemedText>
           <Input
             text="email@address.com"
             onChangeText={(text) => setEmail(text)}
             autoCapitalize="none"
             style={styles.input}
-            />
+          />
         </View>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Password</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Password
+          </ThemedText>
           <Input
             text="password"
             onChangeText={(text) => setPassword(text)}
@@ -52,23 +64,18 @@ export default function LoginScreen() {
             secureTextEntry={true}
           />
         </View>
-        <TouchableOpacity 
-          onPress={handleLogin}
-        >
-          <View style = {styles.button}>
+        <TouchableOpacity onPress={handleLogin}>
+          <View style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity 
-          onPress={() => router.replace("/createAccount")}
-        >
-          <View style = {styles.button2}>
+        <TouchableOpacity onPress={() => router.replace('/createAccount')}>
+          <View style={styles.button2}>
             <Text style={styles.buttonText2}>Create Account</Text>
           </View>
         </TouchableOpacity>
-        </ScrollView>
-      </View>
-      
+      </ScrollView>
+    </View>
   );
 }
 
@@ -114,7 +121,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -127,8 +134,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText2: {
-    color: "mediumblue",
+    color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
-  }
+  },
 });

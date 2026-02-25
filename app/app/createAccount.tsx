@@ -1,54 +1,61 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+} from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
-import { useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
-export default function createAccount() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [passCheck, setPassCheck] = useState("");
+export default function CreateAccount() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passCheck, setPassCheck] = useState('');
   //const[toggleVisibility, setToggleVisibility] = useState(true);
 
   const handleSignIn = async () => {
     if (!email || !password) {
-      console.log("Email and password required");
+      console.log('Email and password required');
       return;
-    }
-    else if (passCheck != password) {
-      console.log("Your passwords do not match");
+    } else if (passCheck != password) {
+      console.log('Your passwords do not match');
       return;
     }
 
-    const {error} = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signUp({
       email,
-      password,});
-        
-    if (error) {
-      console.error("Auth error:", error.message);
-    }
-    else {
-      router.replace("/(tabs)");
-    }
-  }
+      password,
+    });
 
+    if (error) {
+      console.error('Auth error:', error.message);
+    } else {
+      router.replace('/(tabs)');
+    }
+  };
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
-        <ThemedText
-          type="subtitle"
-          style={styles.subtitle}>Enter Name, Email, and Password
+        <ThemedText type="subtitle" style={styles.subtitle}>
+          Enter Name, Email, and Password
         </ThemedText>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Name</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Name
+          </ThemedText>
           <Input text="Name" style={styles.input} />
         </View>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Email</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Email
+          </ThemedText>
           <Input
             text="Email"
             onChangeText={(text) => setEmail(text)}
@@ -57,7 +64,9 @@ export default function createAccount() {
           />
         </View>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Password</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Password
+          </ThemedText>
           <Input
             text="Password"
             onChangeText={(text) => setPassword(text)}
@@ -67,7 +76,9 @@ export default function createAccount() {
           />
         </View>
         <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>Confirm Password</ThemedText>
+          <ThemedText type="title" style={styles.label}>
+            Confirm Password
+          </ThemedText>
           <Input
             text="Password"
             onChangeText={(text) => setPassCheck(text)}
@@ -76,23 +87,22 @@ export default function createAccount() {
             secureTextEntry={true}
           />
         </View>
-        <TouchableOpacity 
-            onPress={handleSignIn}
-        >
-            <View style = {styles.button}>
-                <Text style={styles.buttonText}>Login</Text>
-            </View>
+        <TouchableOpacity onPress={handleSignIn}>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>Login</Text>
+          </View>
         </TouchableOpacity>
         <TouchableOpacity
-            onPress={() => router.replace("/")}         //Reroutes to login screen or index.tsx file in app folder
+          onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in app folder
         >
-            <View style = {styles.button2}>
-                <Text style={styles.buttonText2}>Already Have an Account. {'\n'}      Go to Login Screen.</Text>
-            </View>
+          <View style={styles.button2}>
+            <Text style={styles.buttonText2}>
+              Already Have an Account. {'\n'} Go to Login Screen.
+            </Text>
+          </View>
         </TouchableOpacity>
-        </ScrollView>
-      </View>
-      
+      </ScrollView>
+    </View>
   );
 }
 
@@ -136,7 +146,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -149,8 +159,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText2: {
-    color: "mediumblue",
+    color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
-  }
+  },
 });

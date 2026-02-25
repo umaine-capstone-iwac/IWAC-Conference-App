@@ -1,4 +1,4 @@
 module.exports = {
-  preset: "jest-expo",
-  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  preset: 'jest-expo',
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 };

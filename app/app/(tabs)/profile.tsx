@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
-import { ProfilePicture} from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -8,10 +8,8 @@ import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
-
-
-
-interface ProfileDetails { // Defines the profile details structure
+interface ProfileDetails {
+  // Defines the profile details structure
   id: string;
   first_name: string;
   last_name: string;
@@ -25,9 +23,9 @@ export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
   const { userID: routeUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
-  const viewedUserID = routeUserID ?? otherUserID ?? userID;// Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
-  
-  console.log("userID: ", userID);
+  const viewedUserID = routeUserID ?? otherUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
+
+  console.log('userID: ', userID);
   //fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -35,7 +33,6 @@ export default function ProfileScreen() {
     };
     loadUser();
   }, []);
-  
 
   const fetchProfileData = useCallback(async () => {
     const idToFetch = routeUserID ?? otherUserID ?? userID; // Determines which user to display based on route parameters, or logged in user ID
@@ -44,7 +41,9 @@ export default function ProfileScreen() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, first_name, last_name, profession, about_me, interests, my_sessions')
+        .select(
+          'id, first_name, last_name, profession, about_me, interests, my_sessions',
+        )
         .eq('id', idToFetch) // Filter to get only the logged in user's profile data
         .single(); // Expecting a single profile row for the user ID
       console.log('fetchProfileData response:', { userID, data, error });
@@ -58,7 +57,7 @@ export default function ProfileScreen() {
     } catch (err) {
       console.error('Unexpected error fetching profile data:', err);
     }
-  }, [userID, routeUserID, otherUserID]); 
+  }, [userID, routeUserID, otherUserID]);
 
   useEffect(() => {
     // fetch once when userID becomes available
@@ -69,35 +68,45 @@ export default function ProfileScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchProfileData();
-    }, [fetchProfileData])
+    }, [fetchProfileData]),
   );
 
-  
   return (
-    <ScrollView style = {{backgroundColor: Colors.awac.beige}}>
-      <ThemedView style={styles.profileContainer}> 
-          <ProfilePicture size={75} source={require('@/assets/images/profile-picture.png')} />
-          <View style = {{ flexDirection: 'column', gap: 8 }}>
-            {profile ? (
-              <View key={profile.id}>
-                <ThemedText type="title" style={{fontSize: 26}}>{profile.first_name} {profile.last_name}</ThemedText> 
-                <ThemedText type="subtitle" style={{fontSize: 16}}>{profile.profession}</ThemedText>
+    <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
+      <ThemedView style={styles.profileContainer}>
+        <ProfilePicture
+          size={75}
+          source={require('@/assets/images/profile-picture.png')}
+        />
+        <View style={{ flexDirection: 'column', gap: 8 }}>
+          {profile ? (
+            <View key={profile.id}>
+              <ThemedText type="title" style={{ fontSize: 26 }}>
+                {profile.first_name} {profile.last_name}
+              </ThemedText>
+              <ThemedText type="subtitle" style={{ fontSize: 16 }}>
+                {profile.profession}
+              </ThemedText>
+            </View>
+          ) : null}
+          {viewedUserID && userID === viewedUserID ? ( // Only show edit button if we're viewing our own profile
+            <Pressable onPress={() => router.push('/profilesettings')}>
+              <View style={styles.editButton}>
+                <Text style={styles.editButtonText}>Edit Profile</Text>
               </View>
-            ): null}
-            {viewedUserID && userID === viewedUserID ? ( // Only show edit button if we're viewing our own profile
-              <Pressable onPress={() => router.push('/profilesettings')}>
-                <View style = {styles.editButton}>
-                  <Text style={styles.editButtonText}>Edit Profile</Text>
-                </View>
-              </Pressable>
-            ) : viewedUserID ? ( // Only show message button if we're viewing someone else's profile
-              <Pressable onPress={() => router.push(`/conversation?otherUserID=${viewedUserID}`)}>
-                <View style={styles.editButton}>
-                  <Text style={styles.editButtonText}>Message User</Text>
-                </View>
-              </Pressable>
-            ) : null}
-          </View>
+            </Pressable>
+          ) : viewedUserID ? ( // Only show message button if we're viewing someone else's profile
+            <Pressable
+              onPress={() =>
+                router.push(`/conversation?otherUserID=${viewedUserID}`)
+              }
+            >
+              <View style={styles.editButton}>
+                <Text style={styles.editButtonText}>Message User</Text>
+              </View>
+            </Pressable>
+          ) : null}
+        </View>
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
         {profile ? (
@@ -163,4 +172,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-}); 
+});

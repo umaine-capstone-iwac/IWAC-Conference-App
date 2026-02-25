@@ -10,8 +10,8 @@ export function Input({ text, style, ...rest }: InputProps) {
     <TextInput
       placeholder={text}
       placeholderTextColor={Colors.darkGrey}
-      style={[styles.input, style]}  
-      autoCapitalize = "sentences"
+      style={[styles.input, style]}
+      autoCapitalize="sentences"
       {...rest}
     />
   );
@@ -24,8 +24,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'grey',
     borderRadius: 10,
-    minHeight: 50,     
-    fontSize: 16,    
-    textAlignVertical:"top"
+    minHeight: 50,
+    fontSize: 16,
+    textAlignVertical: 'top',
   },
 });

@@ -1,7 +1,16 @@
-import { View, Text, StyleSheet, Pressable, Platform, Linking, Alert, ActivityIndicator} from "react-native";
-import { Colors } from "@/constants/theme";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Platform,
+  Linking,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { Colors } from '@/constants/theme';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 // Dummy user names to be replaced later
 
@@ -21,7 +30,7 @@ export default function NotificationsScreen() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   useEffect(() => {
     fetchNotifications();
   }, []);
@@ -30,20 +39,22 @@ export default function NotificationsScreen() {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('id, text, read')
-        //.order('created_at', { ascending: true });
+        .select('id, text, read');
+      //.order('created_at', { ascending: true });
       if (error) throw error;
 
-      const displayedNotifications = data?.map((row: any) => ({ id: row.id, text: row.text, read: row.read })).filter(Boolean) ?? [];
+      const displayedNotifications =
+        data
+          ?.map((row) => ({ id: row.id, text: row.text, read: row.read }))
+          .filter(Boolean) ?? [];
       setNotifications(displayedNotifications);
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not fetch notifications.");
+      Alert.alert('Error', 'Could not fetch notifications.');
     } finally {
       setLoading(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -52,37 +63,39 @@ export default function NotificationsScreen() {
       </View>
     );
   }
-    
+
   if (notifications.length === 0) {
     return (
       <View style={styles.container}>
         <Pressable onPress={openSettings}>
-              <View style = {styles.button}>
-                <Text style={styles.buttonText}>Manage Notifications</Text>
-              </View>
-            </Pressable>
+          <View style={styles.button}>
+            <Text style={styles.buttonText}>Manage Notifications</Text>
+          </View>
+        </Pressable>
         <Text style={styles.userText}>No notifications available.</Text>
       </View>
     );
   }
 
-
-
-  return ( //loads the notifications from supabase
+  return (
+    //loads the notifications from supabase
     <View style={styles.container}>
-            {/* Heather wanted manage notifications to just go to native settings */}
-            <Pressable onPress={openSettings}>
-              <View style = {styles.button}>
-                <Text style={styles.buttonText}>Manage Notifications</Text>
-              </View>
-            </Pressable>
+      {/* Heather wanted manage notifications to just go to native settings */}
+      <Pressable onPress={openSettings}>
+        <View style={styles.button}>
+          <Text style={styles.buttonText}>Manage Notifications</Text>
+        </View>
+      </Pressable>
 
-        {notifications.map(notification => (
-          <View key={notification.id} style={styles.userRow}>
-            <Text style={[styles.userText, !notification.read && styles.unreadText]}>{notification.text}</Text>
-          </View>
-
-        ))}
+      {notifications.map((notification) => (
+        <View key={notification.id} style={styles.userRow}>
+          <Text
+            style={[styles.userText, !notification.read && styles.unreadText]}
+          >
+            {notification.text}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }
@@ -91,7 +104,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: Colors.awac.beige
+    backgroundColor: Colors.awac.beige,
   },
   userRow: {
     padding: 10,
@@ -104,11 +117,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 15,
-    width: '100%'
+    width: '100%',
   },
   textContainer: {
-    flex: 1,       
-},
+    flex: 1,
+  },
   userText: {
     fontSize: 18,
     lineHeight: 24,
@@ -128,5 +141,5 @@ const styles = StyleSheet.create({
     color: Colors.awac.beige,
     fontSize: 14,
     fontWeight: '600',
-  }
+  },
 });

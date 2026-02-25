@@ -1,23 +1,24 @@
-import { Text, StyleSheet, FlatList, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Colors } from "@/constants/theme";
-import {Input} from '@/components/input';
-import {ProfilePicture} from '@/components/profile-picture';
-import {router} from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import {filterUsers} from "@/utils/filterUsers";
-import { supabase } from "@/lib/supabase";
+import { Text, StyleSheet, FlatList, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '@/constants/theme';
+import { Input } from '@/components/input';
+import { ProfilePicture } from '@/components/profile-picture';
+import { router } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { filterUsers } from '@/utils/filterUsers';
+import { supabase } from '@/lib/supabase';
 
 export default function SearchUsersScreen() {
-
   const [userID, setUserID] = useState<string>();
-  const [users, setUsers] = useState<{
-    id: string;
-    first_name: string | null;
-    last_name: string | null;
-  }[]>([]);
+  const [users, setUsers] = useState<
+    {
+      id: string;
+      first_name: string | null;
+      last_name: string | null;
+    }[]
+  >([]);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const loadUser = async () => {
@@ -28,14 +29,14 @@ export default function SearchUsersScreen() {
 
   // Fetch all users from database when component mounts
   useEffect(() => {
-    const loadUsers= async () => {
-      const {data, error} = await supabase
+    const loadUsers = async () => {
+      const { data, error } = await supabase
         .from('users')
         .select('id, first_name, last_name')
         .neq('id', userID);
 
       if (error) {
-        console.error("Error loading other user:", error);
+        console.error('Error loading other user:', error);
         return;
       }
       setUsers(data);
@@ -53,26 +54,33 @@ export default function SearchUsersScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <Input 
-          text = "Search users..." 
-          style = {styles.searchBar} 
-          onChangeText={setSearch}/>
+      <Input
+        text="Search users..."
+        style={styles.searchBar}
+        onChangeText={setSearch}
+      />
 
-        <FlatList
-            data={filteredUsers}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <Pressable 
-                onPress={() => {
-                  router.dismissAll(); 
-                  router.push(`/conversation?otherUserID=${item.id}`);
-                }} 
-                style={styles.userRow}>
-                  <ProfilePicture size={40} source={require('@/assets/images/profile-picture.png')} />
-                  <Text style={styles.userText}>{item.first_name} {item.last_name}</Text>
-              </Pressable>
-            )}
-        />
+      <FlatList
+        data={filteredUsers}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => {
+              router.dismissAll();
+              router.push(`/conversation?otherUserID=${item.id}`);
+            }}
+            style={styles.userRow}
+          >
+            <ProfilePicture
+              size={40}
+              source={require('@/assets/images/profile-picture.png')}
+            />
+            <Text style={styles.userText}>
+              {item.first_name} {item.last_name}
+            </Text>
+          </Pressable>
+        )}
+      />
     </SafeAreaView>
   );
 }
@@ -81,7 +89,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: Colors.lightestBlue
+    backgroundColor: Colors.lightestBlue,
   },
   userRow: {
     paddingVertical: 15,
@@ -89,13 +97,13 @@ const styles = StyleSheet.create({
     borderColor: Colors.lightBlue,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20
+    gap: 20,
   },
   userText: {
     fontSize: 18,
   },
   searchBar: {
-    maxHeight: 50,     
-    fontSize: 16,  
-  }
+    maxHeight: 50,
+    fontSize: 16,
+  },
 });

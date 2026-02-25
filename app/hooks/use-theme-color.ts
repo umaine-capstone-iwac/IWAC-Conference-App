@@ -10,7 +10,7 @@ import { Colors } from '@/constants/theme';
 // color from the global `Colors` object.
 export function useThemeColor(
   props: { light?: string; dark?: string; color?: string },
-  colorName: keyof typeof Colors
+  colorName: keyof typeof Colors,
 ) {
   const colorFromProps = props.light ?? props.color;
 

@@ -15,12 +15,15 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         headerStyle: styles.header,
         headerTitleStyle: styles.headerTitle,
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
           title: 'My Agenda',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="calendar" color={color} />
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={30} name="calendar" color={color} />
+          ),
         }}
       />
       {/* <Tabs.Screen
@@ -41,28 +44,40 @@ export default function TabLayout() {
         name="sessions"
         options={{
           title: 'Agenda',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="magnifyingglass.circle.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={30}
+              name="magnifyingglass.circle.fill"
+              color={color}
+            />
+          ),
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="message.fill" color={color} />
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={30} name="message.fill" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={30} name="person.fill" color={color} />
+          ),
         }}
       />
       <Tabs.Screen
         name="notifications"
         options={{
           title: 'Notifications',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="bell.fill" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={30} name="bell.fill" color={color} />
+          ),
         }}
       />
     </Tabs>
@@ -76,9 +91,9 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 22,
   },
-  tabBar: { 
+  tabBar: {
     backgroundColor: Colors.umaine.lightBlue,
     height: 75,
-    paddingTop: 15
+    paddingTop: 15,
   },
 });

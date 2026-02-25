@@ -9,9 +9,9 @@ export function filterUsers(users: User[], search: string): User[] {
 
   const filtered = !query
     ? users
-    : users.filter(user => {
-        const first = user.first_name?.toLowerCase() ?? "";
-        const last = user.last_name?.toLowerCase() ?? "";
+    : users.filter((user) => {
+        const first = user.first_name?.toLowerCase() ?? '';
+        const last = user.last_name?.toLowerCase() ?? '';
         const fullName = `${first} ${last}`.trim();
 
         return (
@@ -23,15 +23,15 @@ export function filterUsers(users: User[], search: string): User[] {
 
   // Sort names alphabetical by last name, then first name
   return [...filtered].sort((a, b) => {
-    const aLast = a.last_name ?? "";
-    const bLast = b.last_name ?? "";
+    const aLast = a.last_name ?? '';
+    const bLast = b.last_name ?? '';
 
     if (aLast !== bLast) {
       return aLast.localeCompare(bLast);
     }
 
-    const aFirst = a.first_name ?? "";
-    const bFirst = b.first_name ?? "";
+    const aFirst = a.first_name ?? '';
+    const bFirst = b.first_name ?? '';
 
     return aFirst.localeCompare(bFirst);
   });

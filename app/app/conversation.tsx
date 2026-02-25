@@ -1,16 +1,22 @@
-import { ScrollView, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { KeyboardAvoidingView, Platform } from 'react-native';
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
-
   const navigation = useNavigation();
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -54,7 +60,7 @@ export default function ConversationScreen() {
     }
 
     // Update local messages list immediately
-    setMessages(prev => [
+    setMessages((prev) => [
       ...prev,
       {
         id: data.id,
@@ -68,7 +74,7 @@ export default function ConversationScreen() {
     setNewMessage(''); // Clear input
     scrollToBottom(true);
   };
-  
+
   // Fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -78,7 +84,7 @@ export default function ConversationScreen() {
     // console.log("User ID: ", userID);
   }, []);
 
-  const {otherUserID} = useLocalSearchParams();
+  const { otherUserID } = useLocalSearchParams();
 
   useEffect(() => {
     if (otherUserID) {
@@ -89,16 +95,16 @@ export default function ConversationScreen() {
   // Fetch the other user's information
   useEffect(() => {
     if (!otherUserID) return;
-    
+
     const loadOtherUser = async () => {
-      const {data, error} = await supabase
+      const { data, error } = await supabase
         .from('users')
         .select('id, first_name, last_name')
         .eq('id', otherUserID)
         .single();
 
       if (error) {
-        console.error("Error loading other user:", error);
+        console.error('Error loading other user:', error);
         return;
       }
       setOtherUser(data);
@@ -106,13 +112,13 @@ export default function ConversationScreen() {
     };
     loadOtherUser();
   }, []);
-  
+
   // Make the screen title the other user's name
   useEffect(() => {
     if (!otherUser) return;
 
-    const first = otherUser.first_name ?? "";
-    const last = otherUser.last_name ?? "";
+    const first = otherUser.first_name ?? '';
+    const last = otherUser.last_name ?? '';
     const title = `${first} ${last}`.trim();
 
     navigation.setOptions({
@@ -120,45 +126,46 @@ export default function ConversationScreen() {
     });
   }, [otherUser]);
 
-  const [messages, setMessages] = useState<{
-    id: number;
-    content: string;
-    timestamp: string;
-    fromUser: Boolean;
-    isRead: Boolean | null;
-  }[]>([]);
+  const [messages, setMessages] = useState<
+    {
+      id: number;
+      content: string;
+      timestamp: string;
+      fromUser: boolean;
+      isRead: boolean | null;
+    }[]
+  >([]);
 
   // Fetch all messages between the two users
   useEffect(() => {
     if (!userID || !otherUser) return;
-    
+
     const loadMessages = async () => {
-      const {data, error} = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .select('id, user_id, recipient_id, content, timestamp, is_read')
         .or(
           `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
-          `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`
+            `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`,
         )
         .order('timestamp', { ascending: true });
 
       if (error) {
-        console.error("Error loading messages:", error);
+        console.error('Error loading messages:', error);
         return;
       }
-      const processedMessages = data.map(msg => ({
-            id: msg.id,
-            content: msg.content,
-            timestamp: msg.timestamp,
-            fromUser: msg.user_id === userID,
-            isRead: msg.is_read,
-          }));
-      setMessages(processedMessages);   
-      scrollToBottom(false);       
-    }; 
+      const processedMessages = data.map((msg) => ({
+        id: msg.id,
+        content: msg.content,
+        timestamp: msg.timestamp,
+        fromUser: msg.user_id === userID,
+        isRead: msg.is_read,
+      }));
+      setMessages(processedMessages);
+      scrollToBottom(false);
+    };
     loadMessages();
-    
-  }, [userID, otherUser]); 
+  }, [userID, otherUser]);
 
   // Fetch new messages from the other user in realtime
   useEffect(() => {
@@ -196,7 +203,7 @@ export default function ConversationScreen() {
               },
             ];
           });
-        }
+        },
       )
       .subscribe();
 
@@ -206,16 +213,16 @@ export default function ConversationScreen() {
   }, [userID, otherUser]);
 
   return (
-    <KeyboardAvoidingView 
+    <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={80}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.chatContainer}
         ref={scrollViewRef}
-      >   
-       {messages.map((msg) => (
+      >
+        {messages.map((msg) => (
           <View
             key={msg.id}
             style={[
@@ -224,10 +231,23 @@ export default function ConversationScreen() {
             ]}
           >
             {!msg.fromUser && (
-              <ProfilePicture size={35} source={require('@/assets/images/profile-picture.png')} />
+              <ProfilePicture
+                size={35}
+                source={require('@/assets/images/profile-picture.png')}
+              />
             )}
-            <View style={{ flexDirection: 'column', alignItems: msg.fromUser ? 'flex-end' : 'flex-start' }}>
-              <View style={[styles.messageBubble, msg.fromUser ? styles.bubbleUser : styles.bubbleOther]}>
+            <View
+              style={{
+                flexDirection: 'column',
+                alignItems: msg.fromUser ? 'flex-end' : 'flex-start',
+              }}
+            >
+              <View
+                style={[
+                  styles.messageBubble,
+                  msg.fromUser ? styles.bubbleUser : styles.bubbleOther,
+                ]}
+              >
                 <Text style={{ fontSize: 18 }}>{msg.content}</Text>
               </View>
               <Text style={styles.timestamp}>
@@ -238,23 +258,23 @@ export default function ConversationScreen() {
         ))}
       </ScrollView>
 
-      <SafeAreaView edges = {['bottom']} style={styles.inputContainer}>
-        <View style = {{flex:1}}>
+      <SafeAreaView edges={['bottom']} style={styles.inputContainer}>
+        <View style={{ flex: 1 }}>
           <Input
             text="Type a message..."
             multiline
             numberOfLines={4}
-            style = {styles.messageInput}
+            style={styles.messageInput}
             value={newMessage}
             onChangeText={setNewMessage}
-            autoCapitalize='sentences'
+            autoCapitalize="sentences"
           />
         </View>
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <ThemedText style={{ color: 'white' }}>Send</ThemedText>
         </TouchableOpacity>
       </SafeAreaView>
-    </KeyboardAvoidingView >
+    </KeyboardAvoidingView>
   );
 }
 
@@ -308,18 +328,18 @@ const styles = StyleSheet.create({
   },
   messageInput: {
     fontSize: 18,
-},
+  },
   sendButton: {
     backgroundColor: Colors.awac.orange,
     paddingHorizontal: 16,
     borderRadius: 10,
     justifyContent: 'center',
-    height: 50
+    height: 50,
   },
   timestamp: {
     fontSize: 12,
     color: 'grey',
     marginTop: 4,
     paddingHorizontal: 4,
-},
+  },
 });

@@ -7,58 +7,54 @@ import { Colors } from '@/constants/theme';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-
 export default function RootLayout() {
-
   return (
     <ThemeProvider value={DefaultTheme}>
       <Stack>
+        <Stack.Screen name="createAccount" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
-          name="createAccount"
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name="index"
-          options={{headerShown: false}}
-        />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
-        <Stack.Screen name="conversation" 
-          options={{  
-            title: 'Conversation', 
-            headerStyle: styles.header, 
+          name="conversation"
+          options={{
+            title: 'Conversation',
+            headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
-          }} />
+          }}
+        />
         <Stack.Screen
           name="modals/search-users"
           options={{
-            presentation: "modal",
-            title: "Start a Conversation",
-            headerStyle: styles.header, 
+            presentation: 'modal',
+            title: 'Start a Conversation',
+            headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
           }}
         />
-        <Stack.Screen 
-          name = "profilesettings"
+        <Stack.Screen
+          name="profilesettings"
           options={{
-        
-            title: "Profile Settings",
+            title: 'Profile Settings',
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
           }}
         />
-        <Stack.Screen 
-          name = "modals/notificationsettings"
+        <Stack.Screen
+          name="modals/notificationsettings"
           options={{
-            presentation: "modal",
-            title: "Manage Notifications",
+            presentation: 'modal',
+            title: 'Manage Notifications',
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',
           }}
         />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal'}} />
+        <Stack.Screen
+          name="modal"
+          options={{ presentation: 'modal', title: 'Modal' }}
+        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
@@ -72,5 +68,4 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
   },
-
 });
