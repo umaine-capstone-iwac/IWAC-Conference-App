@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
   Image,
-  Platform,
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
@@ -208,10 +207,7 @@ export default function ProfileSettingsModal() {
         <TouchableOpacity onPress={pickImage}>
           <View style={styles.avatarContainer}>
             {avatarUri ? (
-              <Image
-                source={{ uri: avatarUri }}
-                style={styles.avatarImage}
-              />
+              <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
             ) : (
               <ProfilePicture
                 size={100}

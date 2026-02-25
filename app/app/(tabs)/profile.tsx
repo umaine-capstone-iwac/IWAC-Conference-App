@@ -1,4 +1,11 @@
-import { StyleSheet, Text, View, ScrollView, Pressable, Image } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Pressable,
+  Image,
+} from 'react-native';
 import { ProfilePicture } from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -40,21 +47,25 @@ export default function ProfileScreen() {
     if (!idToFetch) return; //Don't load if we don't have a user ID to fetch for
 
     try {
-      const [{ data: profileRow, error: pErr }, {data: userRow, error: uErr}] = await Promise.all([
+      const [
+        { data: profileRow, error: pErr },
+        { data: userRow, error: uErr },
+      ] = await Promise.all([
         supabase
-        .from('profiles')
-        .select('id, profession, about_me, interests, my_sessions, avatar_url')
-        .eq('id', idToFetch) // Filter to get only the logged in user's profile data
-        .single(), //expecting a single profile row for the user ID
+          .from('profiles')
+          .select(
+            'id, profession, about_me, interests, my_sessions, avatar_url',
+          )
+          .eq('id', idToFetch) // Filter to get only the logged in user's profile data
+          .single(), //expecting a single profile row for the user ID
 
         //Now to get the names
         supabase
-        .from('users')
-        .select('first_name, last_name')
-        .eq('id', idToFetch)
-        .single(),
-      ])
-
+          .from('users')
+          .select('first_name, last_name')
+          .eq('id', idToFetch)
+          .single(),
+      ]);
 
       if (pErr || uErr) {
         console.error('Error fetching profile data:', pErr ?? uErr);
@@ -72,8 +83,7 @@ export default function ProfileScreen() {
         interests: profileRow.interests ?? '',
         my_sessions: profileRow.my_sessions ?? '',
         avatar_url: profileRow.avatar_url,
-      } as ProfileDetails
-
+      } as ProfileDetails;
 
       setProfileData(mapped); // Update state with fetched profile data
     } catch (err) {
@@ -116,10 +126,10 @@ export default function ProfileScreen() {
             accessibilityLabel="Profile picture"
           />
         ) : (
-        <ProfilePicture
-          size={75}
-          source={require('@/assets/images/profile-picture.png')}
-        />
+          <ProfilePicture
+            size={75}
+            source={require('@/assets/images/profile-picture.png')}
+          />
         )}
         <View style={{ flexDirection: 'column', gap: 8 }}>
           {profile ? (

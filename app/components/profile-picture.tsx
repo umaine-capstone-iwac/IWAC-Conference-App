@@ -1,4 +1,9 @@
-import { Image, StyleSheet, ImageSourcePropType, Pressable } from 'react-native';
+import {
+  Image,
+  StyleSheet,
+  ImageSourcePropType,
+  Pressable,
+} from 'react-native';
 import { router } from 'expo-router';
 
 export type ProfilePictureProps = {

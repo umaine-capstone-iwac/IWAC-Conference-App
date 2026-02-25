@@ -70,13 +70,12 @@ export default function TabLayout() {
             <IconSymbol size={30} name="person.fill" color={color} />
           ),
         }}
-          // force navigation to plain /profile (no params) when tab pressed
-          listeners={{
-            tabPress: () => {
-              router.push('/(tabs)/profile');
-            },
-          }}
-        
+        // force navigation to plain /profile (no params) when tab pressed
+        listeners={{
+          tabPress: () => {
+            router.push('/(tabs)/profile');
+          },
+        }}
       />
       <Tabs.Screen
         name="notifications"
