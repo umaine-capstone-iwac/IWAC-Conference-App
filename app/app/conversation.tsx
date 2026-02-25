@@ -12,37 +12,60 @@ import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profile-picture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 export default function ConversationScreen() {
   const navigation = useNavigation();
-  const scrollViewRef = useRef<ScrollView>(null);
 
-  //User State
+  // -- STATE -- //
+
+  // Auth state
   const [userID, setUserID] = useState<string>();
+
+  // Other user state
   const [otherUser, setOtherUser] = useState<{
     id: string;
     first_name: string | null;
     last_name: string | null;
   }>();
 
-  //Message State
+  // Messages state
+  const [messages, setMessages] = useState<
+    {
+      id: number;
+      content: string;
+      timestamp: string;
+      fromUser: boolean;
+      isRead: boolean | null;
+    }[]
+  >([]);
+
+  // Input state
   const [newMessage, setNewMessage] = useState<string>('');
 
-  //Scroll to the bottom of the chat
+  // -- REFS -- //
+
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // -- PARAMS -- //
+
+  const { otherUserID } = useLocalSearchParams();
+
+  // -- DATA LOADING FUNCTIONS -- //
+
+  // Scroll to the bottom of the chat
   const scrollToBottom = (animated = true) => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated });
     }, 50);
   };
 
-  //Send message function
+  // Send a new message
   const sendMessage = async () => {
     if (!newMessage.trim() || !userID || !otherUser) return;
 
-    // Insert into Supabase
     const { data, error } = await supabase
       .from('messages')
       .insert({
@@ -59,7 +82,7 @@ export default function ConversationScreen() {
       return;
     }
 
-    // Update local messages list immediately
+    // If successful, update UI
     setMessages((prev) => [
       ...prev,
       {
@@ -71,49 +94,81 @@ export default function ConversationScreen() {
       },
     ]);
 
-    setNewMessage(''); // Clear input
+    setNewMessage('');
     scrollToBottom(true);
   };
 
-  // Fetch the logged in user's ID
+  // Load the other user's profile info
+  const loadOtherUser = useCallback(async () => {
+    if (!otherUserID) return;
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .eq('id', otherUserID)
+      .single();
+
+    if (error) {
+      console.error('Error loading other user:', error);
+      return;
+    }
+
+    setOtherUser(data);
+  }, [otherUserID]);
+
+  // Load all messages between the two users
+  const loadMessages = useCallback(async () => {
+    if (!userID || !otherUser) return;
+
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, user_id, recipient_id, content, timestamp, is_read')
+      .or(
+        `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
+          `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`,
+      )
+      .order('timestamp', { ascending: true });
+
+    if (error) {
+      console.error('Error loading messages:', error);
+      return;
+    }
+
+    const processedMessages = data.map((msg) => ({
+      id: msg.id,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      fromUser: msg.user_id === userID,
+      isRead: msg.is_read,
+    }));
+
+    setMessages(processedMessages);
+    scrollToBottom(false);
+  }, [userID, otherUser]);
+
+  // -- AUTH INITIALIZATION -- //
+
+  // Fetch the logged-in user's ID on mount
   useEffect(() => {
     const loadUser = async () => {
       setUserID((await supabase.auth.getSession()).data.session?.user.id);
     };
     loadUser();
-    // console.log("User ID: ", userID);
   }, []);
 
-  const { otherUserID } = useLocalSearchParams();
+  // -- SCREEN EFFECTS -- //
 
+  // Load other user when param changes
   useEffect(() => {
-    if (otherUserID) {
-      // console.log("Paramname: ", otherUserID)
-    }
-  }, [otherUserID]);
-
-  // Fetch the other user's information
-  useEffect(() => {
-    if (!otherUserID) return;
-
-    const loadOtherUser = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id, first_name, last_name')
-        .eq('id', otherUserID)
-        .single();
-
-      if (error) {
-        console.error('Error loading other user:', error);
-        return;
-      }
-      setOtherUser(data);
-      // console.log("Other User: ", otherUser);
-    };
     loadOtherUser();
-  }, []);
+  }, [loadOtherUser]);
 
-  // Make the screen title the other user's name
+  // Load messages when both users are ready
+  useEffect(() => {
+    loadMessages();
+  }, [loadMessages]);
+
+  // Set the screen title to the other user's name
   useEffect(() => {
     if (!otherUser) return;
 
@@ -121,53 +176,12 @@ export default function ConversationScreen() {
     const last = otherUser.last_name ?? '';
     const title = `${first} ${last}`.trim();
 
-    navigation.setOptions({
-      title,
-    });
-  }, [otherUser]);
+    navigation.setOptions({ title });
+  }, [otherUser, navigation]);
 
-  const [messages, setMessages] = useState<
-    {
-      id: number;
-      content: string;
-      timestamp: string;
-      fromUser: boolean;
-      isRead: boolean | null;
-    }[]
-  >([]);
+  // -- REALTIME SUBSCRIPTION -- //
 
-  // Fetch all messages between the two users
-  useEffect(() => {
-    if (!userID || !otherUser) return;
-
-    const loadMessages = async () => {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('id, user_id, recipient_id, content, timestamp, is_read')
-        .or(
-          `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
-            `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`,
-        )
-        .order('timestamp', { ascending: true });
-
-      if (error) {
-        console.error('Error loading messages:', error);
-        return;
-      }
-      const processedMessages = data.map((msg) => ({
-        id: msg.id,
-        content: msg.content,
-        timestamp: msg.timestamp,
-        fromUser: msg.user_id === userID,
-        isRead: msg.is_read,
-      }));
-      setMessages(processedMessages);
-      scrollToBottom(false);
-    };
-    loadMessages();
-  }, [userID, otherUser]);
-
-  // Fetch new messages from the other user in realtime
+  // Subscribe to new messages in this conversation
   useEffect(() => {
     if (!userID || !otherUser) return;
 
@@ -203,6 +217,8 @@ export default function ConversationScreen() {
               },
             ];
           });
+
+          scrollToBottom(true);
         },
       )
       .subscribe();
@@ -211,6 +227,8 @@ export default function ConversationScreen() {
       supabase.removeChannel(channel);
     };
   }, [userID, otherUser]);
+
+  // -- UI -- //
 
   return (
     <KeyboardAvoidingView
@@ -230,13 +248,13 @@ export default function ConversationScreen() {
               msg.fromUser ? styles.rowRight : styles.rowLeft,
             ]}
           >
-            {!msg.fromUser && otherUser && (
+            {!msg.fromUser && (
               <ProfilePicture
                 size={35}
                 source={require('@/assets/images/profile-picture.png')}
-                userId={otherUser.id}
               />
             )}
+
             <View
               style={{
                 flexDirection: 'column',
@@ -251,6 +269,7 @@ export default function ConversationScreen() {
               >
                 <Text style={{ fontSize: 18 }}>{msg.content}</Text>
               </View>
+
               <Text style={styles.timestamp}>
                 {new Date(msg.timestamp).toLocaleString()}
               </Text>
@@ -271,6 +290,7 @@ export default function ConversationScreen() {
             autoCapitalize="sentences"
           />
         </View>
+
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <ThemedText style={{ color: 'white' }}>Send</ThemedText>
         </TouchableOpacity>
