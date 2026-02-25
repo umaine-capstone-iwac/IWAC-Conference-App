@@ -106,31 +106,11 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
       <ThemedView style={styles.profileContainer}>
-        {profile?.avatar_url ? (
-          <Image
-            key={profile.avatar_url + String(Date.now())} // force remount / avoid stale cache
-            source={{
-              uri:
-                typeof profile.avatar_url === 'string'
-                  ? `${profile.avatar_url}${profile.avatar_url.includes('?') ? '&' : '?'}t=${Date.now()}`
-                  : undefined,
-            }}
-            style={{
-              width: 75,
-              height: 75,
-              borderRadius: 37.5,
-            }}
-            onError={(e) => {
-              console.error('Profile image load error:', e.nativeEvent);
-            }}
-            accessibilityLabel="Profile picture"
-          />
-        ) : (
-          <ProfilePicture
-            size={75}
-            source={require('@/assets/images/profile-picture.png')}
-          />
-        )}
+        <ProfilePicture
+          size={75}
+          avatarUrl={profile?.avatar_url}
+          userId={profile?.id}
+        />
         <View style={{ flexDirection: 'column', gap: 8 }}>
           {profile ? (
             <View key={profile.id}>
