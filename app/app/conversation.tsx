@@ -251,7 +251,6 @@ export default function ConversationScreen() {
             {!msg.fromUser && (
               <ProfilePicture
                 size={35}
-                source={require('@/assets/images/profile-picture.png')}
               />
             )}
 

@@ -26,16 +26,17 @@ export default function CreateAccount() {
       console.log('Your passwords do not match');
       return;
     }
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('Auth error:', error.message);
-    } else {
-      router.replace('/(tabs)');
+    else {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+    
+      if (error) {
+        console.error('Auth error:', error.message);
+      } else {
+        router.replace('/(tabs)');
+      }
     }
   };
 
@@ -97,9 +98,12 @@ export default function CreateAccount() {
         >
           <View style={styles.button2}>
             <Text style={styles.buttonText2}>
-              Already Have an Account. {'\n'} Go to Login Screen.
+              Already Have an Account. {'\n'}   Go to Login Screen.
             </Text>
           </View>
+            <Text style={styles.alertText1}>
+              Your passwords do not match
+            </Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -161,6 +165,12 @@ const styles = StyleSheet.create({
   buttonText2: {
     color: 'mediumblue',
     fontSize: 14,
+    fontWeight: '600',
+  },
+  alertText1: {
+    color: 'red',
+    alignSelf: 'center',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
