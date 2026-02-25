@@ -15,8 +15,10 @@ import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
+// -- Types -- //
+
+// Defines objects of conference events
 interface ConferenceEvent {
-  //defines event objects
   id: number;
   title: string;
   location: string;
@@ -26,7 +28,7 @@ interface ConferenceEvent {
   tag: string;
 }
 
-//response from supabase
+// Response from supabase when selecting user_agenda
 interface UserAgendaResponse {
   id: number;
   event_id: number;
@@ -35,17 +37,23 @@ interface UserAgendaResponse {
   conference_events: ConferenceEvent;
 }
 
+// -- Components -- //
+
+// Displays current user's favorited conference events, events fetcjed from user_agenda
 export default function MyAgendaScreen() {
-  const [myEvents, setMyEvents] = useState<ConferenceEvent[]>([]); // stores events pulled from database
+  const [myEvents, setMyEvents] = useState<ConferenceEvent[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const router = useRouter();
 
+  // Fetch agenda on intial mount
   useEffect(() => {
     fetchAgenda();
   }, []);
 
+  // -- Data Fetching -- //
+
+  // Fetches agenda of authenticated user's agenda, joins user_agenda and events tables and sorts results by session
   const fetchAgenda = async () => {
-    // fetches rows from user agenda
     try {
       const {
         data: { user },
@@ -73,14 +81,15 @@ export default function MyAgendaScreen() {
           )
         `,
         )
-        .eq('user_id', user.id) // fetches agenda rows for specific user
+        .eq('user_id', user.id)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      // type assertion for the joined data
+      // Type assertion for the joined data
       const typedData = data as unknown as UserAgendaResponse[];
 
+      // Sort by session label
       const events: ConferenceEvent[] =
         typedData?.map((item) => ({
           ...item.conference_events,
@@ -97,15 +106,18 @@ export default function MyAgendaScreen() {
     }
   };
 
+  // Re-fetch every time this tab/screen becomes active
   useFocusEffect(
     useCallback(() => {
-      // runs every time this tab/screen becomes active
       fetchAgenda();
     }, [fetchAgenda]),
   );
 
+
+  // -- Deletion -- //
+
+  // Deletes specific event from a user's agenda locally and in Supabase
   const removeFromAgenda = async (eventId: number) => {
-    //deletes event from user agenda
     try {
       const {
         data: { user },
@@ -124,11 +136,12 @@ export default function MyAgendaScreen() {
 
       if (error) throw error;
 
+      // Re-sort events by session after deltion
       setMyEvents(
         myEvents
           .filter((event) => event.id !== eventId)
           .sort((a, b) => a.session.localeCompare(b.session)),
-      ); // sort panels after deletion
+      );
 
       Alert.alert('Success', 'Event removed from your agenda');
     } catch (error) {
@@ -137,11 +150,17 @@ export default function MyAgendaScreen() {
     }
   };
 
+  // -- Navigation -- //
+  
+  // Go to Sessions page for browsing
   const navigateToBrowse = (): void => {
-    // go to agenda page for browsing
     router.push('/sessions');
   };
 
+
+  // -- Rendering -- //
+
+  // Shows spinner during initial fetch
   if (loading) {
     return (
       <View style={[styles.scrollContainer, styles.centerContent]}>
@@ -150,8 +169,8 @@ export default function MyAgendaScreen() {
     );
   }
 
+  // Shows button to go to Sessions if user has no favorited events
   if (myEvents.length === 0) {
-    // show when user hasn't favorited any events
     return (
       <View
         style={[styles.scrollContainer, styles.centerContent, styles.padding]}
@@ -169,9 +188,10 @@ export default function MyAgendaScreen() {
     );
   }
 
+  // Renders card for each event, each with a remove button
   return (
-    // renders a card for each event
     <ScrollView style={styles.scrollContainer}>
+      {/* Header row with a shortcut to browse more panels */}
       <View style={styles.headerContainer}>
         <TouchableOpacity
           style={styles.browseButton}
@@ -181,9 +201,11 @@ export default function MyAgendaScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* List of event cards*/}
       <View style={styles.eventsContainer}>
         {myEvents.map((event) => (
           <View key={event.id} style={styles.eventCard}>
+            {/* Remove button in top-right corner of each card */}
             <TouchableOpacity
               style={styles.removeButton}
               onPress={() => removeFromAgenda(event.id)}
@@ -191,12 +213,14 @@ export default function MyAgendaScreen() {
               <Text style={styles.removeButtonText}>✕</Text>
             </TouchableOpacity>
 
+            {/* Date label */}
             <View style={styles.dateTag}>
               <Text style={styles.dateText}>{event.date}</Text>
             </View>
 
             <ThemedText type="title">{event.title}</ThemedText>
 
+            {/* Session time */}
             <View style={styles.detailRow}>
               <IconSymbol
                 size={18}
@@ -206,6 +230,7 @@ export default function MyAgendaScreen() {
               <ThemedText>{event.session}</ThemedText>
             </View>
 
+            {/* Location */}
             <View style={styles.detailRow}>
               <IconSymbol
                 size={18}
@@ -215,6 +240,7 @@ export default function MyAgendaScreen() {
               <ThemedText>{event.location}</ThemedText>
             </View>
 
+            {/* Speaker */}
             <View style={styles.detailRow}>
               <IconSymbol
                 size={18}
@@ -229,6 +255,8 @@ export default function MyAgendaScreen() {
     </ScrollView>
   );
 }
+
+// -- UI Styling -- //
 
 const styles = StyleSheet.create({
   scrollContainer: {
