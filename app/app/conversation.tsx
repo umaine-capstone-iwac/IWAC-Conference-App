@@ -1,5 +1,5 @@
 import {
-  ScrollView,
+  FlatList,
   StyleSheet,
   View,
   Text,
@@ -29,6 +29,7 @@ export default function ConversationScreen() {
     id: string;
     first_name: string | null;
     last_name: string | null;
+    avatar_url: string | null;
   }>();
 
   // Messages state
@@ -47,7 +48,7 @@ export default function ConversationScreen() {
 
   // -- REFS -- //
 
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
 
   // -- PARAMS -- //
 
@@ -58,7 +59,7 @@ export default function ConversationScreen() {
   // Scroll to the bottom of the chat
   const scrollToBottom = (animated = true) => {
     setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated });
+      flatListRef.current?.scrollToOffset({ offset: 0, animated });
     }, 50);
   };
 
@@ -102,18 +103,33 @@ export default function ConversationScreen() {
   const loadOtherUser = useCallback(async () => {
     if (!otherUserID) return;
 
-    const { data, error } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .select('id, first_name, last_name')
       .eq('id', otherUserID)
       .single();
 
-    if (error) {
-      console.error('Error loading other user:', error);
+    if (userError || !userData) {
+      console.error('Error loading other user:', userError);
       return;
     }
 
-    setOtherUser(data);
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', otherUserID) // assuming profile.id = user.id
+      .single();
+
+    if (profileError) {
+      console.error('Error loading user profile:', profileError);
+    }
+
+    setOtherUser({
+      id: userData.id,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      avatar_url: profileData?.avatar_url ?? null,
+    });
   }, [otherUserID]);
 
   // Load all messages between the two users
@@ -230,48 +246,60 @@ export default function ConversationScreen() {
 
   // -- UI -- //
 
+  const otherUserProfilePic = otherUser ? (
+    <ProfilePicture
+      size={35}
+      avatarUrl={otherUser.avatar_url}
+      userId={otherUser.id}
+    />
+  ) : null;
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={80}
     >
-      <ScrollView
-        contentContainerStyle={styles.chatContainer}
-        ref={scrollViewRef}
-      >
-        {messages.map((msg) => (
+      <FlatList
+        ref={flatListRef}
+        data={messages.slice().reverse()}
+        inverted
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
           <View
-            key={msg.id}
             style={[
               styles.messageRow,
-              msg.fromUser ? styles.rowRight : styles.rowLeft,
+              item.fromUser ? styles.rowRight : styles.rowLeft,
             ]}
           >
-            {!msg.fromUser && <ProfilePicture size={35} />}
+            {!item.fromUser && otherUserProfilePic}
 
             <View
               style={{
                 flexDirection: 'column',
-                alignItems: msg.fromUser ? 'flex-end' : 'flex-start',
+                alignItems: item.fromUser ? 'flex-end' : 'flex-start',
               }}
             >
               <View
                 style={[
                   styles.messageBubble,
-                  msg.fromUser ? styles.bubbleUser : styles.bubbleOther,
+                  item.fromUser ? styles.bubbleUser : styles.bubbleOther,
                 ]}
               >
-                <Text style={{ fontSize: 18 }}>{msg.content}</Text>
+                <Text style={{ fontSize: 18 }}>{item.content}</Text>
               </View>
 
               <Text style={styles.timestamp}>
-                {new Date(msg.timestamp).toLocaleString()}
+                {new Date(item.timestamp).toLocaleString()}
               </Text>
             </View>
           </View>
-        ))}
-      </ScrollView>
+        )}
+        contentContainerStyle={styles.chatContainer}
+        initialNumToRender={15}
+        maxToRenderPerBatch={15}
+        windowSize={10}
+      />
 
       <SafeAreaView edges={['bottom']} style={styles.inputContainer}>
         <View style={{ flex: 1 }}>
@@ -302,6 +330,8 @@ const styles = StyleSheet.create({
   chatContainer: {
     padding: 20,
     gap: 20,
+    flexGrow: 1,
+    justifyContent: 'flex-end',
   },
   messageRow: {
     flexDirection: 'row',
@@ -337,7 +367,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderColor: Colors.awac.navy,
     backgroundColor: Colors.awac.beige,
-    // position: 'absolute',
     bottom: 0,
     alignItems: 'flex-end',
     width: '100%',

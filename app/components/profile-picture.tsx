@@ -14,12 +14,8 @@ export function ProfilePicture({
 }: ProfilePictureProps) {
   const image = avatarUrl ? (
     <Image
-      key={avatarUrl + String(Date.now())} // force remount / avoid stale cache
       source={{
-        uri:
-          typeof avatarUrl === 'string'
-            ? `${avatarUrl}${avatarUrl.includes('?') ? '&' : '?'}t=${Date.now()}`
-            : undefined,
+        uri: avatarUrl,
       }}
       style={[
         styles.profilePicture,

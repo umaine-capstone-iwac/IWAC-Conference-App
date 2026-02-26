@@ -18,6 +18,7 @@ export default function MessagesListScreen() {
     id: string;
     first_name: string | null;
     last_name: string | null;
+    avatar_url: string | null;
     lastMessage: string | null;
     timestamp: string | null;
   };
@@ -69,13 +70,27 @@ export default function MessagesListScreen() {
       return;
     }
 
-    // Attach last message and timestamp to each user
+    // Fetch profile avatars for those users
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, avatar_url')
+      .in('id', otherUserIds);
+
+    if (profilesError || !profilesData) {
+      console.error('Error fetching profiles:', profilesError);
+    }
+
+    // Attach avatar_url, lastMessage and timestamp to each user
     const usersWithLastMessage = usersData.map((user) => {
       const lastMsg = messages.find(
         (msg) => msg.user_id === user.id || msg.recipient_id === user.id,
       );
+
+      const profile = profilesData?.find((p) => p.id === user.id);
+
       return {
         ...user,
+        avatar_url: profile?.avatar_url ?? null,
         lastMessage: lastMsg?.content ?? null,
         timestamp: lastMsg?.timestamp ?? null,
       };
@@ -168,7 +183,11 @@ export default function MessagesListScreen() {
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
           >
             <View style={styles.messageContainer}>
-              <ProfilePicture size={40} />
+              <ProfilePicture
+                size={40}
+                avatarUrl={user.avatar_url}
+                userId={user.id}
+              />
               <View>
                 <ThemedText type="title" style={{ fontSize: 22 }}>
                   {user.first_name} {user.last_name}
