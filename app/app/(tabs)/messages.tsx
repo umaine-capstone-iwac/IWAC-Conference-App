@@ -168,9 +168,7 @@ export default function MessagesListScreen() {
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
           >
             <View style={styles.messageContainer}>
-              <ProfilePicture
-                size={40}
-              />
+              <ProfilePicture size={40} />
               <View>
                 <ThemedText type="title" style={{ fontSize: 22 }}>
                   {user.first_name} {user.last_name}

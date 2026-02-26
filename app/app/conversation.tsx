@@ -248,11 +248,7 @@ export default function ConversationScreen() {
               msg.fromUser ? styles.rowRight : styles.rowLeft,
             ]}
           >
-            {!msg.fromUser && (
-              <ProfilePicture
-                size={35}
-              />
-            )}
+            {!msg.fromUser && <ProfilePicture size={35} />}
 
             <View
               style={{
