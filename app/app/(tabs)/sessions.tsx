@@ -91,7 +91,9 @@ export default function SessionsScreen() {
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
 
-  //comments state
+  // -- Comment State -- //
+
+  // Comments fetched for the selected panel
   const [comments, setComments] = useState<
     {
       comment_id: string;
@@ -100,9 +102,13 @@ export default function SessionsScreen() {
       created_at: string;
     }[]
   >([]);
+  // For comment input field
   const [newComment, setNewComment] = useState('');
+  // True only while comments are being fetched
   const [commentsLoading, setCommentsLoading] = useState(false);
+  // True onlt while comment is posting
   const [submitting, setSubmitting] = useState(false);
+  // Used to scroll to bottom of comments after posting
   const scrollRef = useRef<ScrollView>(null);
 
   //resource state
@@ -310,8 +316,10 @@ export default function SessionsScreen() {
     }
   };
 
+  // -- Comment Logic -- //
+
+  // Fetch comments for a given panel, ordered by time posted
   const fetchComments = useCallback(async (eventId: number) => {
-    //fetch comments of panel
     setCommentsLoading(true);
     const { data, error } = await supabase
       .from('panel_comments')
@@ -323,6 +331,34 @@ export default function SessionsScreen() {
     else setComments(data ?? []);
     setCommentsLoading(false);
   }, []);
+
+  // Posts new comment to selected panel, then refreshes comment list
+  const submitComment = async () => {
+    // Adds comment to table with user and event ID
+    if (!userID) {
+      Alert.alert('Sign in required');
+      return;
+    }
+    if (!newComment.trim()) return;
+    if (!selectedPanel) return;
+
+    setSubmitting(true);
+    const { error } = await supabase.from('panel_comments').insert({
+      user_id: userID,
+      event_id: selectedPanel.id,
+      comment_content: newComment.trim(),
+    });
+
+    if (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to post comment');
+    } else {
+      setNewComment('');
+      await fetchComments(selectedPanel.id); // refresh list of comments
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }
+    setSubmitting(false);
+  };
 
   const fetchResources = useCallback(async (eventId: number) => {
     //fetch resources of panel
@@ -347,33 +383,6 @@ export default function SessionsScreen() {
     setResources([]);
     fetchResources(panel.id);
     fetchComments(panel.id);
-  };
-
-  const submitComment = async () => {
-    //add comment to table with user/event ID
-    if (!userID) {
-      Alert.alert('Sign in required');
-      return;
-    }
-    if (!newComment.trim()) return;
-    if (!selectedPanel) return;
-
-    setSubmitting(true);
-    const { error } = await supabase.from('panel_comments').insert({
-      user_id: userID,
-      event_id: selectedPanel.id,
-      comment_content: newComment.trim(),
-    });
-
-    if (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to post comment');
-    } else {
-      setNewComment('');
-      await fetchComments(selectedPanel.id); // refresh list of comments
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-    setSubmitting(false);
   };
 
   //build list of session tags
@@ -582,7 +591,7 @@ export default function SessionsScreen() {
                 })
               )}
 
-              {/* Comment Section */}
+              {/* Comments Section */}
               <ThemedText
                 style={{ fontWeight: '700', fontSize: 16, marginTop: 10 }}
               >
