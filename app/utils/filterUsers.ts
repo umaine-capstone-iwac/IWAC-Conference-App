@@ -2,6 +2,7 @@ export type User = {
   id: string;
   first_name: string | null;
   last_name: string | null;
+  avatar_url?: string | null;
 };
 
 export function filterUsers(users: User[], search: string): User[] {

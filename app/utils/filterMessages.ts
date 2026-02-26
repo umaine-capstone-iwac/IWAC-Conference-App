@@ -6,10 +6,13 @@ type MessageUser = {
   timestamp: string | null;
 };
 
-export function filterMessages(
-  users: MessageUser[],
-  search: string,
-): MessageUser[] {
+export function filterMessages<
+  T extends {
+    first_name: string | null;
+    last_name: string | null;
+    timestamp?: string | null;
+  },
+>(users: T[], search: string): T[] {
   const query = search.trim().toLowerCase();
 
   const filtered = users.filter((user) => {

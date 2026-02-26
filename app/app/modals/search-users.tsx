@@ -18,6 +18,7 @@ export default function SearchUsersScreen() {
       id: string;
       first_name: string | null;
       last_name: string | null;
+      avatar_url: string | null;
     }[]
   >([]);
 
@@ -36,17 +37,37 @@ export default function SearchUsersScreen() {
   const loadUsers = useCallback(async () => {
     if (!userID) return;
 
-    const { data, error } = await supabase
+    // Fetch all other users
+    const { data: usersData, error: usersError } = await supabase
       .from('users')
       .select('id, first_name, last_name')
       .neq('id', userID);
 
-    if (error) {
-      console.error('Error loading other users:', error);
+    if (usersError || !usersData) {
+      console.error('Error loading other users:', usersError);
       return;
     }
 
-    setUsers(data);
+    // Fetch profiles for these users to get avatar URLs
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, avatar_url')
+      .in(
+        'id',
+        usersData.map((u) => u.id),
+      );
+
+    if (profilesError || !profilesData) {
+      console.error('Error loading profiles:', profilesError);
+    }
+
+    // Merge avatar URLs into users
+    const usersWithAvatars = usersData.map((user) => {
+      const profile = profilesData?.find((p) => p.id === user.id);
+      return { ...user, avatar_url: profile?.avatar_url ?? null };
+    });
+
+    setUsers(usersWithAvatars);
   }, [userID]);
 
   // -- AUTH INITIALIZATION -- //
@@ -89,7 +110,8 @@ export default function SearchUsersScreen() {
           >
             <ProfilePicture
               size={40}
-              source={require('@/assets/images/profile-picture.png')}
+              avatarUrl={item.avatar_url}
+              userId={item.id}
             />
             <Text style={styles.userText}>
               {item.first_name} {item.last_name}
