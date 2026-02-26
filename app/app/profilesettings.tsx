@@ -37,7 +37,7 @@ export default function ProfileSettingsModal() {
   const [uploading, setUploading] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
 
-  // Load the user's profile data 
+  // Load the user's profile data
   useEffect(() => {
     const load = async () => {
       try {
@@ -201,107 +201,110 @@ export default function ProfileSettingsModal() {
 
   return (
     <KeyboardAvoidingView
-          style={styles.container}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={80}
-        > 
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        <ThemedText type="subtitle" style={styles.subtitle}>
-          Edit your profile information below:
-        </ThemedText>
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={80}
+    >
+      <View style={styles.container}>
+        <ScrollView contentContainerStyle={styles.contentContainer}>
+          <ThemedText type="subtitle" style={styles.subtitle}>
+            Edit your profile information below:
+          </ThemedText>
 
-        <TouchableOpacity onPress={pickImage}>
-          <View style={styles.avatarContainer}>
-            <ProfilePicture size={75} avatarUrl={avatarUri} userId={userID} />
-            <Text style={styles.avatarText}>Change Picture</Text>
+          <TouchableOpacity onPress={pickImage}>
+            <View style={styles.avatarContainer}>
+              <ProfilePicture size={75} avatarUrl={avatarUri} userId={userID} />
+              <Text style={styles.avatarText}>Change Picture</Text>
+            </View>
+          </TouchableOpacity>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              First name
+            </ThemedText>
+            <Input
+              value={firstName}
+              onChangeText={setFirstName}
+              style={styles.input}
+              text={''}
+            />
           </View>
-        </TouchableOpacity>
 
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            First name
-          </ThemedText>
-          <Input
-            value={firstName}
-            onChangeText={setFirstName}
-            style={styles.input}
-            text={''}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Last name
-          </ThemedText>
-          <Input
-            value={lastName}
-            onChangeText={setLastName}
-            style={styles.input}
-            text={''}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Institutional Affiliation
-          </ThemedText>
-          <Input
-            value={profession}
-            onChangeText={setProfession}
-            style={styles.input}
-            text={''}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            About Me
-          </ThemedText>
-          <Input
-            value={aboutMe}
-            onChangeText={setAboutMe}
-            multiline
-            style={[styles.input, { height: 120 }]}
-            text={''}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Interests
-          </ThemedText>
-          <Input
-            value={interests}
-            onChangeText={setInterests}
-            multiline
-            style={[styles.input, { height: 120 }]}
-            text={''}
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            My Sessions
-          </ThemedText>
-          <Input
-            value={mySessions}
-            onChangeText={setMySessions}
-            multiline
-            style={[styles.input, { height: 140 }]}
-            text={''}
-          />
-        </View>
-
-        <TouchableOpacity onPress={saveChanges} disabled={saving || uploading}>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>
-              {saving || uploading ? 'Saving...' : 'Save Changes'}
-            </Text>
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Last name
+            </ThemedText>
+            <Input
+              value={lastName}
+              onChangeText={setLastName}
+              style={styles.input}
+              text={''}
+            />
           </View>
-        </TouchableOpacity>
-      </ScrollView>
-    </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Institutional Affiliation
+            </ThemedText>
+            <Input
+              value={profession}
+              onChangeText={setProfession}
+              style={styles.input}
+              text={''}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              About Me
+            </ThemedText>
+            <Input
+              value={aboutMe}
+              onChangeText={setAboutMe}
+              multiline
+              style={[styles.input, { height: 120 }]}
+              text={''}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Interests
+            </ThemedText>
+            <Input
+              value={interests}
+              onChangeText={setInterests}
+              multiline
+              style={[styles.input, { height: 120 }]}
+              text={''}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              My Sessions
+            </ThemedText>
+            <Input
+              value={mySessions}
+              onChangeText={setMySessions}
+              multiline
+              style={[styles.input, { height: 140 }]}
+              text={''}
+            />
+          </View>
+
+          <TouchableOpacity
+            onPress={saveChanges}
+            disabled={saving || uploading}
+          >
+            <View style={styles.button}>
+              <Text style={styles.buttonText}>
+                {saving || uploading ? 'Saving...' : 'Save Changes'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }

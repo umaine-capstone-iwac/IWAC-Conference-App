@@ -12,13 +12,21 @@ import { Colors } from '@/constants/theme';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-// Dummy user names to be replaced later
-
+// Define the structure of a notification
 interface Notification {
   id: string;
   text: string;
   read: boolean;
 }
+//The structure of the joined table (user_notifications basically)
+interface NotificationJoinedRow {
+  id: string;
+  is_read: boolean;
+  notifications: {
+    text: string;
+  } | null;
+}
+
 export default function NotificationsScreen() {
   const openSettings = () => {
     if (Platform.OS === 'ios') {
@@ -39,19 +47,19 @@ export default function NotificationsScreen() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('user_notifications') 
+        .from('user_notifications')
         .select('id, is_read, notifications(text)')
-        .order('created_at', { ascending: false }); // Order by most recent
+        .order('created_at', { ascending: false }) // Order by most recent
+        .returns<NotificationJoinedRow[]>();
 
       if (error) throw error;
 
-      const formattedNotifications = data.map((row: any) => ({
+      const formattedNotifications: Notification[] = data.map((row) => ({
         id: row.id,
-        text: row.notifications.text,
+        text: row.notifications?.text || 'No content available',
         read: row.is_read,
-      }))
+      }));
 
-      
       setNotifications(formattedNotifications);
     } catch (error) {
       console.error(error);
@@ -89,14 +97,16 @@ export default function NotificationsScreen() {
         .update({ is_read: true, read_at: new Date() })
         .eq('id', notificationId);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        // Update local state to reflect the change
-        setNotifications((prev) =>
-          prev.map((notif) => (notif.id === notificationId ? { ...notif, read: true } : notif))
-        );
+      // Update local state to reflect the change
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif,
+        ),
+      );
     } catch (error) {
-      console.error('Update failed:',error);
+      console.error('Update failed:', error);
     }
   };
   return (
@@ -110,16 +120,28 @@ export default function NotificationsScreen() {
       </Pressable>
 
       {notifications.map((notification) => (
-        <Pressable key={notification.id} onPress={() => !notification.read && markAsRead(notification.id)}>
-
-        <View style={styles.userRow}>
-          <Text style={[styles.userText, !notification.read && styles.unreadText]}>
-            {notification.text}
-          </Text>
-          {!notification.read && (<View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.umaine.darkBlue}} />
+        <Pressable
+          key={notification.id}
+          onPress={() => !notification.read && markAsRead(notification.id)}
+        >
+          <View style={styles.userRow}>
+            <Text
+              style={[styles.userText, !notification.read && styles.unreadText]}
+            >
+              {notification.text}
+            </Text>
+            {!notification.read && (
+              <View
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: Colors.umaine.darkBlue,
+                }}
+              />
             )}
           </View>
-          </Pressable>
+        </Pressable>
       ))}
     </View>
   );
