@@ -5,7 +5,9 @@ import {
   Text,
   TouchableOpacity,
   Alert,
+  KeyboardAvoidingView,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
@@ -35,6 +37,7 @@ export default function ProfileSettingsModal() {
   const [uploading, setUploading] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
 
+  // Load the user's profile data 
   useEffect(() => {
     const load = async () => {
       try {
@@ -197,6 +200,11 @@ export default function ProfileSettingsModal() {
   }
 
   return (
+    <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={80}
+        > 
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <ThemedText type="subtitle" style={styles.subtitle}>
@@ -294,6 +302,7 @@ export default function ProfileSettingsModal() {
         </TouchableOpacity>
       </ScrollView>
     </View>
+    </KeyboardAvoidingView>
   );
 }
 

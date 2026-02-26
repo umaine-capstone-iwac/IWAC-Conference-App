@@ -37,17 +37,22 @@ export default function NotificationsScreen() {
 
   const fetchNotifications = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
-        .from('notifications')
-        .select('id, text, read');
-      //.order('created_at', { ascending: true });
+        .from('user_notifications') 
+        .select('id, is_read, notifications(text)')
+        .order('created_at', { ascending: false }); // Order by most recent
+
       if (error) throw error;
 
-      const displayedNotifications =
-        data
-          ?.map((row) => ({ id: row.id, text: row.text, read: row.read }))
-          .filter(Boolean) ?? [];
-      setNotifications(displayedNotifications);
+      const formattedNotifications = data.map((row: any) => ({
+        id: row.id,
+        text: row.notifications.text,
+        read: row.is_read,
+      }))
+
+      
+      setNotifications(formattedNotifications);
     } catch (error) {
       console.error(error);
       Alert.alert('Error', 'Could not fetch notifications.');
@@ -77,6 +82,23 @@ export default function NotificationsScreen() {
     );
   }
 
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('user_notifications')
+        .update({ is_read: true, read_at: new Date() })
+        .eq('id', notificationId);
+
+        if (error) throw error;
+
+        // Update local state to reflect the change
+        setNotifications((prev) =>
+          prev.map((notif) => (notif.id === notificationId ? { ...notif, read: true } : notif))
+        );
+    } catch (error) {
+      console.error('Update failed:',error);
+    }
+  };
   return (
     //loads the notifications from supabase
     <View style={styles.container}>
@@ -88,13 +110,16 @@ export default function NotificationsScreen() {
       </Pressable>
 
       {notifications.map((notification) => (
-        <View key={notification.id} style={styles.userRow}>
-          <Text
-            style={[styles.userText, !notification.read && styles.unreadText]}
-          >
+        <Pressable key={notification.id} onPress={() => !notification.read && markAsRead(notification.id)}>
+
+        <View style={styles.userRow}>
+          <Text style={[styles.userText, !notification.read && styles.unreadText]}>
             {notification.text}
           </Text>
-        </View>
+          {!notification.read && (<View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: Colors.umaine.darkBlue}} />
+            )}
+          </View>
+          </Pressable>
       ))}
     </View>
   );
