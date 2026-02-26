@@ -22,7 +22,7 @@ export default function CreateAccount() {
     if (!email || !password) {
       console.log('Email and password required');
       return;
-    } else if (passCheck != password) {
+    } else if (passCheck !== password) {
       console.log('Your passwords do not match');
       return;
     } else {
@@ -44,7 +44,7 @@ export default function CreateAccount() {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>
-          Enter Name, Email, and Password
+          Create Account
         </ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 24,
     marginTop: 25,
     paddingBottom: 50,
     alignSelf: 'center',

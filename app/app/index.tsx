@@ -39,7 +39,7 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>
-          Enter Username and Password
+          Login
         </ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 24,
     marginTop: 100,
     paddingBottom: 50,
     alignSelf: 'center',
