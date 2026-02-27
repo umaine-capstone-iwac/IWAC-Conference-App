@@ -13,28 +13,62 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function CreateAccount() {
+  //User input
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
   //const[toggleVisibility, setToggleVisibility] = useState(true);
 
+  //When create account or login button is pressed this function is called
   const handleSignIn = async () => {
+    //Checks user input
     if (!email || !password) {
       console.log('Email and password required');
       return;
     } else if (passCheck !== password) {
       console.log('Your passwords do not match');
       return;
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+    }
+    //Checks that user entered email is within 'users_registered' table in supabase database
+    const { count, error } = await supabase
+      .from('users_registered')
+      .select('Email', { count: 'exact', head: true })
+      .eq('Email', email)
+      .limit(1);
 
-      if (error) {
-        console.error('Auth error:', error.message);
-      } else {
-        router.replace('/(tabs)');
+    //if count > 0 then true, if count = 0 then no email was found in table
+    if (count !== null && count !== undefined) {
+      if (count === 0) {
+        console.log('Email not in registrants list');
+        return;
+      } else if (count === 1) {
+        if (error) {
+          console.log('Error searching for email', error);
+          return;
+        } else {
+          const { error } = await supabase.auth.signUp({
+            email,
+            password,
+          });
+          if (error) {
+            console.error('Auth error:', error.message);
+          } else {
+            const {
+              data: { user },
+            } = await supabase.auth.getUser();
+            if (user) {
+              await supabase
+                .from('users')
+                .insert({ id: user.id, first_name: name, admin: false });
+              await supabase.from('profiles').insert({ id: user.id });
+            }
+            router.replace('/(tabs)');
+          }
+        }
+      } else if (count > 1) {
+        console.log('More than one account found...');
+        return;
       }
     }
   };
@@ -50,7 +84,12 @@ export default function CreateAccount() {
           <ThemedText type="title" style={styles.label}>
             Name
           </ThemedText>
-          <Input text="Name" style={styles.input} />
+          <Input
+            text="Name"
+            onChangeText={(text) => setName(text)}
+            autoCapitalize="none"
+            style={styles.input}
+          />
         </View>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
@@ -93,7 +132,7 @@ export default function CreateAccount() {
           </View>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in app folder
+          onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in (tabs) folder
         >
           <View style={styles.button2}>
             <Text style={styles.buttonText2}>
