@@ -21,6 +21,7 @@ export default function MessagesListScreen() {
     avatar_url: string | null;
     lastMessage: string | null;
     timestamp: string | null;
+    hasUnread: boolean;
   };
   const [conversations, setConversationUsers] = useState<ConversationPreview[]>(
     [],
@@ -41,7 +42,7 @@ export default function MessagesListScreen() {
     // Fetch all messages involving the current user
     const { data: messages, error } = await supabase
       .from('messages')
-      .select('id, user_id, recipient_id, content, timestamp')
+      .select('id, user_id, recipient_id, content, timestamp, is_read')
       .or(`user_id.eq.${currentUserID},recipient_id.eq.${currentUserID}`)
       .order('timestamp', { ascending: false });
 
@@ -88,11 +89,17 @@ export default function MessagesListScreen() {
 
       const profile = profilesData?.find((p) => p.id === user.id);
 
+      const hasUnread =
+        lastMsg &&
+        lastMsg.recipient_id === currentUserID &&
+        lastMsg.is_read === false;
+
       return {
         ...user,
         avatar_url: profile?.avatar_url ?? null,
         lastMessage: lastMsg?.content ?? null,
         timestamp: lastMsg?.timestamp ?? null,
+        hasUnread: !!hasUnread,
       };
     });
 
@@ -182,7 +189,12 @@ export default function MessagesListScreen() {
             key={user.id}
             onPress={() => router.push(`/conversation?otherUserID=${user.id}`)}
           >
-            <View style={styles.messageContainer}>
+            <View
+              style={[
+                styles.messageContainer,
+                user.hasUnread && styles.unreadContainer,
+              ]}
+            >
               <ProfilePicture
                 size={40}
                 avatarUrl={user.avatar_url}
@@ -192,7 +204,12 @@ export default function MessagesListScreen() {
                 <ThemedText type="title" style={{ fontSize: 22 }}>
                   {user.first_name} {user.last_name}
                 </ThemedText>
-                <ThemedText numberOfLines={1}>{user.lastMessage}</ThemedText>
+                <ThemedText
+                  style={user.hasUnread && styles.unreadText}
+                  numberOfLines={1}
+                >
+                  {user.lastMessage}
+                </ThemedText>
               </View>
             </View>
           </Pressable>
@@ -228,12 +245,12 @@ const styles = StyleSheet.create({
     borderColor: Colors.awac.navy,
     padding: 10,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  unreadText: {
+    fontWeight: '800',
+  },
+  unreadContainer: {
+    borderColor: Colors.awac.orange,
+    backgroundColor: '#FFF5E9',
   },
   searchIcon: {
     width: 50,
