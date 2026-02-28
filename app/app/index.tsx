@@ -71,7 +71,8 @@ export default function LoginScreen() {
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.replace('/createAccount')}>
           <View style={styles.button2}>
-            <Text style={styles.buttonText2}>Create Account</Text>
+            <Text> New to the IWAC App? </Text>
+            <Text style={styles.buttonText2}> Create Account</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -83,7 +84,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     display: 'flex',
-    alignItems: 'center',
     backgroundColor: Colors.awac.beige,
   },
   contentContainer: {
@@ -101,6 +101,7 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 15,
+    marginHorizontal: '10%',
   },
   label: {
     fontSize: 16,
@@ -131,9 +132,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     alignSelf: 'center',
+    alignItems: 'center',
     marginBottom: 20,
   },
   buttonText2: {
+    marginTop: 10,
     color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
