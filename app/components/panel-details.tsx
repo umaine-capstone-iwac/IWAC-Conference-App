@@ -88,7 +88,10 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const openUrl = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
-      if (!supported) { Alert.alert("Can't open link"); return; }
+      if (!supported) {
+        Alert.alert("Can't open link");
+        return;
+      }
       await Linking.openURL(url);
     } catch (e) {
       console.error(e);
@@ -99,7 +102,10 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const downloadPdf = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
-      if (!supported) { Alert.alert("Can't download file"); return; }
+      if (!supported) {
+        Alert.alert("Can't download file");
+        return;
+      }
       await Linking.openURL(url);
     } catch (e) {
       console.error(e);
@@ -141,7 +147,10 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   // -- Comment Submission -- //
 
   const submitComment = async () => {
-    if (!userID) { Alert.alert('Sign in required'); return; }
+    if (!userID) {
+      Alert.alert('Sign in required');
+      return;
+    }
     if (!newComment.trim()) return;
 
     setSubmitting(true);
@@ -191,17 +200,31 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
             <ThemedText style={styles.title}>{panel.title}</ThemedText>
 
             <View style={styles.detailRow}>
-              <IconSymbol size={20} name="clock.fill" color={Colors.awac.navy} />
+              <IconSymbol
+                size={20}
+                name="clock.fill"
+                color={Colors.awac.navy}
+              />
               <ThemedText style={styles.detailText}>{panel.session}</ThemedText>
             </View>
 
             <View style={styles.detailRow}>
-              <IconSymbol size={20} name="mappin.circle.fill" color={Colors.awac.navy} />
-              <ThemedText style={styles.detailText}>{panel.location}</ThemedText>
+              <IconSymbol
+                size={20}
+                name="mappin.circle.fill"
+                color={Colors.awac.navy}
+              />
+              <ThemedText style={styles.detailText}>
+                {panel.location}
+              </ThemedText>
             </View>
 
             <View style={styles.detailRow}>
-              <IconSymbol size={20} name="person.fill" color={Colors.awac.navy} />
+              <IconSymbol
+                size={20}
+                name="person.fill"
+                color={Colors.awac.navy}
+              />
               <ThemedText style={styles.detailText}>{panel.speaker}</ThemedText>
             </View>
 
@@ -223,14 +246,22 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
               const url = r.url;
               const title = r.title?.trim() || url;
               const isPdf = r.type?.toLowerCase() === 'pdf' || isPdfUrl(url);
-              const ytId = r.type?.toLowerCase() === 'youtube' ? getYouTubeId(url) : null;
+              const ytId =
+                r.type?.toLowerCase() === 'youtube' ? getYouTubeId(url) : null;
 
               if (isPdf) {
                 return (
                   <ThemedView key={r.id} style={styles.resourceCard}>
-                    <ThemedText style={styles.resourceTitle}>📄 {title}</ThemedText>
-                    <TouchableOpacity onPress={() => downloadPdf(url)} style={styles.resourceButton}>
-                      <Text style={styles.resourceButtonText}>Download PDF</Text>
+                    <ThemedText style={styles.resourceTitle}>
+                      📄 {title}
+                    </ThemedText>
+                    <TouchableOpacity
+                      onPress={() => downloadPdf(url)}
+                      style={styles.resourceButton}
+                    >
+                      <Text style={styles.resourceButtonText}>
+                        Download PDF
+                      </Text>
                     </TouchableOpacity>
                   </ThemedView>
                 );
@@ -239,15 +270,23 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
               if (ytId) {
                 const thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
                 return (
-                  <TouchableOpacity key={r.id} activeOpacity={0.85} onPress={() => openUrl(url)}>
+                  <TouchableOpacity
+                    key={r.id}
+                    activeOpacity={0.85}
+                    onPress={() => openUrl(url)}
+                  >
                     <ThemedView style={[styles.resourceCard, { gap: 8 }]}>
-                      <ThemedText style={styles.resourceTitle}>▶️ {title}</ThemedText>
+                      <ThemedText style={styles.resourceTitle}>
+                        ▶️ {title}
+                      </ThemedText>
                       <Image
                         source={{ uri: thumb }}
                         style={{ width: '100%', height: 180, borderRadius: 8 }}
                         resizeMode="cover"
                       />
-                      <ThemedText style={{ color: Colors.awac.navy }}>Open YouTube</ThemedText>
+                      <ThemedText style={{ color: Colors.awac.navy }}>
+                        Open YouTube
+                      </ThemedText>
                     </ThemedView>
                   </TouchableOpacity>
                 );
@@ -285,7 +324,10 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
             <TouchableOpacity
               onPress={submitComment}
               disabled={submitting || !newComment.trim()}
-              style={[styles.postButton, { opacity: submitting || !newComment.trim() ? 0.5 : 1 }]}
+              style={[
+                styles.postButton,
+                { opacity: submitting || !newComment.trim() ? 0.5 : 1 },
+              ]}
             >
               <Text style={styles.postButtonText}>Post</Text>
             </TouchableOpacity>

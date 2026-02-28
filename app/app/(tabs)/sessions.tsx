@@ -272,7 +272,7 @@ export default function SessionsScreen() {
     );
   }
 
-   // Panel detail view — shared component
+  // Panel detail view — shared component
   if (selectedPanel) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
@@ -288,119 +288,123 @@ export default function SessionsScreen() {
   //main UI
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-        <ScrollView
-          style={styles.scrollContainer}
-          keyboardShouldPersistTaps="always"
-        >
-          <View style={styles.container}>
-            <Input
-              text="Search events..."
-              value={search}
-              onChangeText={setSearch}
-            />
+      <ScrollView
+        style={styles.scrollContainer}
+        keyboardShouldPersistTaps="always"
+      >
+        <View style={styles.container}>
+          <Input
+            text="Search events..."
+            value={search}
+            onChangeText={setSearch}
+          />
 
-            {/* session tag filters */}
-            <View style={styles.tagRow}>
-              {sessionTags.map((label) => (
-                <TouchableOpacity
-                  key={label}
-                  style={[
-                    styles.tagButton,
-                    sessionLabel === label && styles.tagButtonActive,
-                  ]}
-                  onPress={() =>
-                    setSessionLabel((prev) => (prev === label ? null : label))
+          {/* session tag filters */}
+          <View style={styles.tagRow}>
+            {sessionTags.map((label) => (
+              <TouchableOpacity
+                key={label}
+                style={[
+                  styles.tagButton,
+                  sessionLabel === label && styles.tagButtonActive,
+                ]}
+                onPress={() =>
+                  setSessionLabel((prev) => (prev === label ? null : label))
+                }
+              >
+                <Text
+                  style={
+                    sessionLabel === label
+                      ? styles.tagTextActive
+                      : styles.tagText
                   }
                 >
-                  <Text
-                    style={
-                      sessionLabel === label
-                        ? styles.tagTextActive
-                        : styles.tagText
-                    }
-                  >
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {/* topic/tag filters */}
-            <View style={styles.tagRow}>
-              {tagTags.map((t) => (
-                <TouchableOpacity
-                  key={t}
-                  style={[
-                    styles.tagButton,
-                    tagFilter === t && styles.tagButtonActive,
-                  ]}
-                  onPress={() =>
-                    setTagFilter((prev) => (prev === t ? null : t))
-                  }
-                >
-                  <Text
-                    style={
-                      tagFilter === t ? styles.tagTextActive : styles.tagText
-                    }
-                  >
-                    {t}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {filteredSessions.map((slot) => (
-              <View key={slot.id}>
-                <ThemedText style={{ fontWeight: '700' }}>
-                  {slot.label}
-                </ThemedText>
-
-                {slot.panels.map((panel) => (
-                  <TouchableOpacity
-                    key={panel.id}
-                    activeOpacity={0.85}
-                    onPress={() => setSelectedPanel(panel)}
-                  >
-                    <ThemedView style={styles.sessionCardDetails}>
-                      <Pressable
-                        style={styles.heartButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          toggleSavePanel(panel.id);
-                        }}
-                        hitSlop={12}
-                      >
-                        <Ionicons
-                          name={
-                            savedPanels.includes(panel.id)
-                              ? 'heart'
-                              : 'heart-outline'
-                          }
-                          size={32}
-                          color={
-                            savedPanels.includes(panel.id) ? 'red' : '#888'
-                          }
-                        />
-                      </Pressable>
-
-                      <ThemedText type="title">{panel.title}</ThemedText>
-
-                      <View style={styles.detailRow}>
-                        <IconSymbol size={18} name="mappin.circle.fill" color={Colors.awac.navy} />
-                        <ThemedText>{panel.location}</ThemedText>
-                      </View>
-
-                      <View style={styles.detailRow}>
-                        <IconSymbol size={18} name="person.fill" color={Colors.awac.navy} />
-                        <ThemedText>{panel.speaker}</ThemedText>
-                      </View>
-                    </ThemedView>
-                  </TouchableOpacity>
-                ))}
-              </View>
+                  {label}
+                </Text>
+              </TouchableOpacity>
             ))}
           </View>
-        </ScrollView>
+
+          {/* topic/tag filters */}
+          <View style={styles.tagRow}>
+            {tagTags.map((t) => (
+              <TouchableOpacity
+                key={t}
+                style={[
+                  styles.tagButton,
+                  tagFilter === t && styles.tagButtonActive,
+                ]}
+                onPress={() => setTagFilter((prev) => (prev === t ? null : t))}
+              >
+                <Text
+                  style={
+                    tagFilter === t ? styles.tagTextActive : styles.tagText
+                  }
+                >
+                  {t}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {filteredSessions.map((slot) => (
+            <View key={slot.id}>
+              <ThemedText style={{ fontWeight: '700' }}>
+                {slot.label}
+              </ThemedText>
+
+              {slot.panels.map((panel) => (
+                <TouchableOpacity
+                  key={panel.id}
+                  activeOpacity={0.85}
+                  onPress={() => setSelectedPanel(panel)}
+                >
+                  <ThemedView style={styles.sessionCardDetails}>
+                    <Pressable
+                      style={styles.heartButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        toggleSavePanel(panel.id);
+                      }}
+                      hitSlop={12}
+                    >
+                      <Ionicons
+                        name={
+                          savedPanels.includes(panel.id)
+                            ? 'heart'
+                            : 'heart-outline'
+                        }
+                        size={32}
+                        color={savedPanels.includes(panel.id) ? 'red' : '#888'}
+                      />
+                    </Pressable>
+
+                    <ThemedText type="title">{panel.title}</ThemedText>
+
+                    <View style={styles.detailRow}>
+                      <IconSymbol
+                        size={18}
+                        name="mappin.circle.fill"
+                        color={Colors.awac.navy}
+                      />
+                      <ThemedText>{panel.location}</ThemedText>
+                    </View>
+
+                    <View style={styles.detailRow}>
+                      <IconSymbol
+                        size={18}
+                        name="person.fill"
+                        color={Colors.awac.navy}
+                      />
+                      <ThemedText>{panel.speaker}</ThemedText>
+                    </View>
+                  </ThemedView>
+                </TouchableOpacity>
+              ))}
+            </View>
+          ))}
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

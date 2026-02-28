@@ -40,7 +40,10 @@ export default function MyAgendaScreen() {
   useEffect(() => {
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getSession();
-      if (error) { console.error(error); return; }
+      if (error) {
+        console.error(error);
+        return;
+      }
       setUserID(data.session?.user?.id);
     };
     loadUser();
@@ -170,7 +173,7 @@ export default function MyAgendaScreen() {
     );
   }
 
-   // Panel detail view — shared component
+  // Panel detail view — shared component
   if (selectedPanel) {
     return (
       <PanelDetail
@@ -221,53 +224,56 @@ export default function MyAgendaScreen() {
             activeOpacity={0.85}
             onPress={() => setSelectedPanel(event)}
           >
-          <View style={styles.eventCard}>
-            {/* Remove button in top-right corner of each card */}
-            <TouchableOpacity
-              style={styles.removeButton}
-              onPress={(e) => { e.stopPropagation?.(); removeFromAgenda(event.id); }}
-            >
-              <Text style={styles.removeButtonText}>✕</Text>
-            </TouchableOpacity>
+            <View style={styles.eventCard}>
+              {/* Remove button in top-right corner of each card */}
+              <TouchableOpacity
+                style={styles.removeButton}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  removeFromAgenda(event.id);
+                }}
+              >
+                <Text style={styles.removeButtonText}>✕</Text>
+              </TouchableOpacity>
 
-            {/* Date label */}
-            <View style={styles.dateTag}>
-              <Text style={styles.dateText}>{event.date}</Text>
+              {/* Date label */}
+              <View style={styles.dateTag}>
+                <Text style={styles.dateText}>{event.date}</Text>
+              </View>
+
+              <ThemedText type="title">{event.title}</ThemedText>
+
+              {/* Session time */}
+              <View style={styles.detailRow}>
+                <IconSymbol
+                  size={18}
+                  name="clock.fill"
+                  color={Colors.awac.navy}
+                />
+                <ThemedText>{event.session}</ThemedText>
+              </View>
+
+              {/* Location */}
+              <View style={styles.detailRow}>
+                <IconSymbol
+                  size={18}
+                  name="mappin.circle.fill"
+                  color={Colors.awac.navy}
+                />
+                <ThemedText>{event.location}</ThemedText>
+              </View>
+
+              {/* Speaker */}
+              <View style={styles.detailRow}>
+                <IconSymbol
+                  size={18}
+                  name="person.fill"
+                  color={Colors.awac.navy}
+                />
+                <ThemedText>{event.speaker}</ThemedText>
+              </View>
             </View>
-
-            <ThemedText type="title">{event.title}</ThemedText>
-
-            {/* Session time */}
-            <View style={styles.detailRow}>
-              <IconSymbol
-                size={18}
-                name="clock.fill"
-                color={Colors.awac.navy}
-              />
-              <ThemedText>{event.session}</ThemedText>
-            </View>
-
-            {/* Location */}
-            <View style={styles.detailRow}>
-              <IconSymbol
-                size={18}
-                name="mappin.circle.fill"
-                color={Colors.awac.navy}
-              />
-              <ThemedText>{event.location}</ThemedText>
-            </View>
-
-            {/* Speaker */}
-            <View style={styles.detailRow}>
-              <IconSymbol
-                size={18}
-                name="person.fill"
-                color={Colors.awac.navy}
-              />
-              <ThemedText>{event.speaker}</ThemedText>
-            </View>
-          </View>
-        </TouchableOpacity>
+          </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
