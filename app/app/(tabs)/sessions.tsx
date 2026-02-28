@@ -18,19 +18,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Input } from '@/components/input';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
-
-type Panel = {
-  id: number;
-  title: string;
-  location: string;
-  speaker: string;
-  date: string;
-  session: string;
-  tag: string;
-};
+import PanelDetail, { Panel } from '@/components/panel-details';
 
 type SessionSlot = {
   id: string;
@@ -48,15 +40,6 @@ type ConferenceEventRow = {
   date: string;
   session: string;
   tag: string;
-};
-
-type PanelResource = {
-  id: number;
-  created_at: string;
-  event_id: number;
-  type: string | null;
-  title: string | null;
-  url: string;
 };
 
 export default function SessionsScreen() {
@@ -90,83 +73,6 @@ export default function SessionsScreen() {
   const [sessionLabel, setSessionLabel] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
-
-  // -- Comment State -- //
-
-  // Comments fetched for the selected panel
-  const [comments, setComments] = useState<
-    {
-      comment_id: string;
-      user_id: string;
-      comment_content: string;
-      created_at: string;
-    }[]
-  >([]);
-  // For comment input field
-  const [newComment, setNewComment] = useState('');
-  // True only while comments are being fetched
-  const [commentsLoading, setCommentsLoading] = useState(false);
-  // True onlt while comment is posting
-  const [submitting, setSubmitting] = useState(false);
-  // Used to scroll to bottom of comments after posting
-  const scrollRef = useRef<ScrollView>(null);
-
-  //resource state
-  const [resources, setResources] = useState<PanelResource[]>([]);
-  const [resourcesLoading, setResourcesLoading] = useState(false);
-
-  const isPdfUrl = (url: string) => /\.pdf(\?|#|$)/i.test(url);
-
-  const getYouTubeId = (url: string) => {
-    try {
-      const u = new URL(url);
-
-      //youtu.be/<id>
-      if (u.hostname === 'youtu.be') {
-        return u.pathname.split('/')[1] || null;
-      }
-
-      //youtube.com/watch?v=<id>
-      if (
-        (u.hostname === 'youtube.com' || u.hostname === 'www.youtube.com') &&
-        u.pathname === '/watch'
-      ) {
-        return u.searchParams.get('v');
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
-  const openUrl = async (url: string) => {
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Can't open link");
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Failed to open link');
-    }
-  };
-
-  const downloadPdf = async (url: string) => {
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Can't download file");
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Failed to download PDF');
-    }
-  };
 
   //fetch events from conference_events
   const fetchSessions = useCallback(async () => {
@@ -316,75 +222,6 @@ export default function SessionsScreen() {
     }
   };
 
-  // -- Comment Logic -- //
-
-  // Fetch comments for a given panel, ordered by time posted
-  const fetchComments = useCallback(async (eventId: number) => {
-    setCommentsLoading(true);
-    const { data, error } = await supabase
-      .from('panel_comments')
-      .select('comment_id, user_id, comment_content, created_at')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
-
-    if (error) console.error(error);
-    else setComments(data ?? []);
-    setCommentsLoading(false);
-  }, []);
-
-  // Posts new comment to selected panel, then refreshes comment list
-  const submitComment = async () => {
-    // Adds comment to table with user and event ID
-    if (!userID) {
-      Alert.alert('Sign in required');
-      return;
-    }
-    if (!newComment.trim()) return;
-    if (!selectedPanel) return;
-
-    setSubmitting(true);
-    const { error } = await supabase.from('panel_comments').insert({
-      user_id: userID,
-      event_id: selectedPanel.id,
-      comment_content: newComment.trim(),
-    });
-
-    if (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to post comment');
-    } else {
-      setNewComment('');
-      await fetchComments(selectedPanel.id); // refresh list of comments
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }
-    setSubmitting(false);
-  };
-
-  const fetchResources = useCallback(async (eventId: number) => {
-    //fetch resources of panel
-    setResourcesLoading(true);
-
-    const { data, error } = await supabase
-      .from('panel_resources')
-      .select('id, created_at, event_id, type, title, url')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
-
-    if (error) console.error(error);
-    else setResources((data ?? []) as PanelResource[]);
-
-    setResourcesLoading(false);
-  }, []);
-
-  const openPanel = (panel: Panel) => {
-    setSelectedPanel(panel);
-    setComments([]);
-    setNewComment('');
-    setResources([]);
-    fetchResources(panel.id);
-    fetchComments(panel.id);
-  };
-
   //build list of session tags
   const sessionTags = useMemo(() => sessions.map((s) => s.label), [sessions]);
 
@@ -435,229 +272,22 @@ export default function SessionsScreen() {
     );
   }
 
+   // Panel detail view — shared component
+  if (selectedPanel) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
+        <PanelDetail
+          panel={selectedPanel}
+          userID={userID}
+          onBack={() => setSelectedPanel(null)}
+        />
+      </SafeAreaView>
+    );
+  }
+
   //main UI
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-      {/* panel detail view */}
-      {selectedPanel ? (
-        <KeyboardAvoidingView
-          style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 160 : 60}
-        >
-          <ScrollView
-            ref={scrollRef}
-            style={styles.scrollContainer}
-            keyboardShouldPersistTaps="always"
-            contentContainerStyle={{ paddingBottom: 40 }}
-          >
-            <View style={styles.container}>
-              {/* back button */}
-              <TouchableOpacity onPress={() => setSelectedPanel(null)}>
-                <Text style={{ fontSize: 18, color: Colors.awac.navy }}>
-                  ← Back
-                </Text>
-              </TouchableOpacity>
-
-              <ThemedText type="title">{selectedPanel.title}</ThemedText>
-
-              <ThemedView style={styles.sessionCardDetails}>
-                <Pressable
-                  style={styles.heartButton}
-                  onPress={() => toggleSavePanel(selectedPanel.id)}
-                  hitSlop={12}
-                >
-                  <Ionicons
-                    name={
-                      savedPanels.includes(selectedPanel.id)
-                        ? 'heart'
-                        : 'heart-outline'
-                    }
-                    size={32}
-                    color={
-                      savedPanels.includes(selectedPanel.id) ? 'red' : '#888'
-                    }
-                  />
-                </Pressable>
-
-                <ThemedText>{selectedPanel.date}</ThemedText>
-                <ThemedText>{selectedPanel.session}</ThemedText>
-                <ThemedText>{selectedPanel.tag}</ThemedText>
-                <ThemedText>{selectedPanel.location}</ThemedText>
-                <ThemedText>{selectedPanel.speaker}</ThemedText>
-              </ThemedView>
-
-              {/* resources section */}
-              <ThemedText
-                style={{ fontWeight: '700', fontSize: 16, marginTop: 10 }}
-              >
-                Resources
-              </ThemedText>
-              {resourcesLoading ? (
-                <ActivityIndicator size="small" color={Colors.awac.navy} />
-              ) : resources.length === 0 ? (
-                <ThemedText style={{ color: '#888' }}>
-                  No resources yet
-                </ThemedText>
-              ) : (
-                resources.map((r) => {
-                  const url = r.url;
-                  const title = r.title?.trim() || url;
-
-                  const isPdf =
-                    r.type?.toLowerCase() === 'pdf' || isPdfUrl(url);
-                  const ytId =
-                    r.type?.toLowerCase() === 'youtube'
-                      ? getYouTubeId(url)
-                      : null;
-
-                  if (isPdf) {
-                    return (
-                      <ThemedView
-                        key={r.id}
-                        style={{
-                          padding: 12,
-                          borderRadius: 10,
-                          borderWidth: 1,
-                          borderColor: Colors.awac.navy,
-                          backgroundColor: Colors.lightestBlue,
-                          marginTop: 8,
-                        }}
-                      >
-                        <ThemedText
-                          style={{ fontWeight: '600', marginBottom: 6 }}
-                        >
-                          📄 {title}
-                        </ThemedText>
-
-                        <TouchableOpacity
-                          onPress={() => downloadPdf(url)}
-                          style={{
-                            backgroundColor: Colors.awac.navy,
-                            paddingVertical: 10,
-                            paddingHorizontal: 14,
-                            borderRadius: 8,
-                            alignSelf: 'flex-start',
-                          }}
-                        >
-                          <Text style={{ color: '#fff', fontWeight: '600' }}>
-                            Download PDF
-                          </Text>
-                        </TouchableOpacity>
-                      </ThemedView>
-                    );
-                  }
-
-                  if (ytId) {
-                    const thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                    return (
-                      <TouchableOpacity
-                        key={r.id}
-                        activeOpacity={0.85}
-                        onPress={() => openUrl(url)}
-                      >
-                        <ThemedView
-                          style={{
-                            padding: 12,
-                            borderRadius: 10,
-                            borderWidth: 1,
-                            borderColor: Colors.awac.navy,
-                            backgroundColor: Colors.lightestBlue,
-                            marginTop: 8,
-                            gap: 8,
-                          }}
-                        >
-                          <ThemedText style={{ fontWeight: '600' }}>
-                            ▶️ {title}
-                          </ThemedText>
-                          <Image
-                            source={{ uri: thumb }}
-                            style={{
-                              width: '100%',
-                              height: 180,
-                              borderRadius: 8,
-                            }}
-                            resizeMode="cover"
-                          />
-                          <ThemedText style={{ color: Colors.awac.navy }}>
-                            Open YouTube
-                          </ThemedText>
-                        </ThemedView>
-                      </TouchableOpacity>
-                    );
-                  }
-
-                  return null;
-                })
-              )}
-
-              {/* Comments Section */}
-              <ThemedText
-                style={{ fontWeight: '700', fontSize: 16, marginTop: 10 }}
-              >
-                Comments
-              </ThemedText>
-              {commentsLoading ? (
-                <ActivityIndicator size="small" color={Colors.awac.navy} />
-              ) : comments.length === 0 ? (
-                <ThemedText style={{ color: '#888' }}>
-                  No comments yet
-                </ThemedText>
-              ) : (
-                comments.map((c) => (
-                  <ThemedView
-                    key={c.comment_id}
-                    style={{
-                      padding: 12,
-                      borderRadius: 10,
-                      borderWidth: 1,
-                      borderColor: Colors.awac.navy,
-                      backgroundColor: Colors.lightestBlue,
-                      marginTop: 8,
-                    }}
-                  >
-                    <ThemedText
-                      style={{ fontSize: 12, color: '#888', marginBottom: 4 }}
-                    >
-                      {new Date(c.created_at).toLocaleString()}
-                    </ThemedText>
-                    <ThemedText>{c.comment_content}</ThemedText>
-                  </ThemedView>
-                ))
-              )}
-              {/* Comment Input */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 10,
-                  alignItems: 'center',
-                  marginTop: 12,
-                }}
-              >
-                <Input
-                  text="Add a comment..."
-                  value={newComment}
-                  onChangeText={setNewComment}
-                  style={{ flex: 1 }}
-                />
-                <TouchableOpacity
-                  onPress={submitComment}
-                  disabled={submitting || !newComment.trim()}
-                  style={{
-                    backgroundColor: Colors.awac.navy,
-                    paddingVertical: 10,
-                    paddingHorizontal: 16,
-                    borderRadius: 10,
-                    opacity: submitting || !newComment.trim() ? 0.5 : 1,
-                  }}
-                >
-                  <Text style={{ color: '#fff', fontWeight: '600' }}>Post</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      ) : (
         <ScrollView
           style={styles.scrollContainer}
           keyboardShouldPersistTaps="always"
@@ -729,7 +359,7 @@ export default function SessionsScreen() {
                   <TouchableOpacity
                     key={panel.id}
                     activeOpacity={0.85}
-                    onPress={() => openPanel(panel)}
+                    onPress={() => setSelectedPanel(panel)}
                   >
                     <ThemedView style={styles.sessionCardDetails}>
                       <Pressable
@@ -752,10 +382,18 @@ export default function SessionsScreen() {
                           }
                         />
                       </Pressable>
+
                       <ThemedText type="title">{panel.title}</ThemedText>
-                      <ThemedText>{panel.tag}</ThemedText>
-                      <ThemedText>{panel.location}</ThemedText>
-                      <ThemedText>{panel.speaker}</ThemedText>
+
+                      <View style={styles.detailRow}>
+                        <IconSymbol size={18} name="mappin.circle.fill" color={Colors.awac.navy} />
+                        <ThemedText>{panel.location}</ThemedText>
+                      </View>
+
+                      <View style={styles.detailRow}>
+                        <IconSymbol size={18} name="person.fill" color={Colors.awac.navy} />
+                        <ThemedText>{panel.speaker}</ThemedText>
+                      </View>
                     </ThemedView>
                   </TouchableOpacity>
                 ))}
@@ -763,7 +401,6 @@ export default function SessionsScreen() {
             ))}
           </View>
         </ScrollView>
-      )}
     </SafeAreaView>
   );
 }
@@ -787,4 +424,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightestBlue,
   },
   heartButton: { position: 'absolute', top: 10, right: 15, zIndex: 10 },
+  dateTag: {
+    backgroundColor: Colors.umaine.lightBlue,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  dateText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.awac.navy,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
 });

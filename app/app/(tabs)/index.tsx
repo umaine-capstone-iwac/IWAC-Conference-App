@@ -14,19 +14,9 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import PanelDetail, { Panel } from '@/components/panel-details';
 
 // -- Types -- //
-
-// Defines objects of conference events
-interface ConferenceEvent {
-  id: number;
-  title: string;
-  location: string;
-  speaker: string;
-  date: string;
-  session: string;
-  tag: string;
-}
 
 // Response from supabase when selecting user_agenda
 interface UserAgendaResponse {
@@ -34,16 +24,27 @@ interface UserAgendaResponse {
   event_id: number;
   user_id: string;
   created_at: string;
-  conference_events: ConferenceEvent;
+  conference_events: Panel;
 }
-
 // -- Components -- //
 
 // Displays current user's favorited conference events, events fetcjed from user_agenda
 export default function MyAgendaScreen() {
-  const [myEvents, setMyEvents] = useState<ConferenceEvent[]>([]);
+  const [myEvents, setMyEvents] = useState<Panel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [userID, setUserID] = useState<string | undefined>();
+  const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
   const router = useRouter();
+
+  // Load current user
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) { console.error(error); return; }
+      setUserID(data.session?.user?.id);
+    };
+    loadUser();
+  }, []);
 
   // Fetch agenda on intial mount
   useEffect(() => {
@@ -90,7 +91,7 @@ export default function MyAgendaScreen() {
       const typedData = data as unknown as UserAgendaResponse[];
 
       // Sort by session label
-      const events: ConferenceEvent[] =
+      const events: Panel[] =
         typedData?.map((item) => ({
           ...item.conference_events,
         })) || [];
@@ -136,11 +137,13 @@ export default function MyAgendaScreen() {
       if (error) throw error;
 
       // Re-sort events by session after deltion
-      setMyEvents(
-        myEvents
-          .filter((event) => event.id !== eventId)
+      setMyEvents((prev) =>
+        prev
+          .filter((e) => e.id !== eventId)
           .sort((a, b) => a.session.localeCompare(b.session)),
       );
+
+      if (selectedPanel?.id === eventId) setSelectedPanel(null);
 
       Alert.alert('Success', 'Event removed from your agenda');
     } catch (error) {
@@ -164,6 +167,17 @@ export default function MyAgendaScreen() {
       <View style={[styles.scrollContainer, styles.centerContent]}>
         <ActivityIndicator size="large" color={Colors.umaine.darkBlue} />
       </View>
+    );
+  }
+
+   // Panel detail view — shared component
+  if (selectedPanel) {
+    return (
+      <PanelDetail
+        panel={selectedPanel}
+        userID={userID}
+        onBack={() => setSelectedPanel(null)}
+      />
     );
   }
 
@@ -202,11 +216,16 @@ export default function MyAgendaScreen() {
       {/* List of event cards*/}
       <View style={styles.eventsContainer}>
         {myEvents.map((event) => (
-          <View key={event.id} style={styles.eventCard}>
+          <TouchableOpacity
+            key={event.id}
+            activeOpacity={0.85}
+            onPress={() => setSelectedPanel(event)}
+          >
+          <View style={styles.eventCard}>
             {/* Remove button in top-right corner of each card */}
             <TouchableOpacity
               style={styles.removeButton}
-              onPress={() => removeFromAgenda(event.id)}
+              onPress={(e) => { e.stopPropagation?.(); removeFromAgenda(event.id); }}
             >
               <Text style={styles.removeButtonText}>✕</Text>
             </TouchableOpacity>
@@ -248,6 +267,7 @@ export default function MyAgendaScreen() {
               <ThemedText>{event.speaker}</ThemedText>
             </View>
           </View>
+        </TouchableOpacity>
         ))}
       </View>
     </ScrollView>
