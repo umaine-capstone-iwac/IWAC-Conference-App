@@ -34,8 +34,8 @@ export default function CreateAccount() {
     //Checks that user entered email is within 'users_registered' table in supabase database
     const { count, error } = await supabase
       .from('users_registered')
-      .select('Email', { count: 'exact', head: true })
-      .eq('Email', email)
+      .select('email', { count: 'exact', head: true })
+      .eq('email', email)
       .limit(1);
 
     //if count > 0 then true, if count = 0 then no email was found in table
