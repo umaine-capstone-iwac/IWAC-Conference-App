@@ -41,7 +41,7 @@ type PanelResource = {
 };
 
 type Comment = {
-  comment_id: string;
+  comment_id: number;
   user_id: string;
   comment_content: string;
   created_at: string;
@@ -143,6 +143,21 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     fetchComments();
     fetchResources();
   }, [fetchComments, fetchResources]);
+
+  // -- Comment Deletion -- //
+
+  const deleteComment = async (commentId: number) => {
+    const { error } = await supabase
+      .from('panel_comments')
+      .delete()
+      .eq('comment_id', commentId)
+      .eq('user_id', userID);
+    if (!error) {
+      setComments((prev) => prev.filter((c) => c.comment_id !== commentId));
+    } else {
+      Alert.alert('Error', 'Failed to delete comment');
+    }
+  };
 
   // -- Comment Submission -- //
 
@@ -304,12 +319,22 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
             <ThemedText style={styles.emptyText}>No comments yet</ThemedText>
           ) : (
             comments.map((c) => (
-              <ThemedView key={c.comment_id} style={styles.commentCard}>
-                <ThemedText style={styles.commentTime}>
-                  {new Date(c.created_at).toLocaleString()}
-                </ThemedText>
-                <ThemedText>{c.comment_content}</ThemedText>
-              </ThemedView>
+              <View key={c.comment_id}>
+                <ThemedView key={c.comment_id} style={styles.commentCard}>
+                  <ThemedText style={styles.commentTime}>
+                    {new Date(c.created_at).toLocaleString()}
+                  </ThemedText>
+                  <ThemedText>{c.comment_content}</ThemedText>
+
+                  <TouchableOpacity
+                    onPress={() => deleteComment(c.comment_id)}
+                    style={styles.deleteButton}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={styles.deleteButtonText}>x</Text>
+                  </TouchableOpacity>
+                </ThemedView>
+              </View>
             ))
           )}
 
@@ -434,6 +459,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.awac.navy,
     backgroundColor: Colors.lightestBlue,
     marginTop: 8,
+    position: 'relative',
+  },
+  deleteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+  },
+  deleteButtonText: {
+    fontSize: 12,
+    color: '#888',
+    fontWeight: '600',
   },
   commentTime: {
     fontSize: 12,
