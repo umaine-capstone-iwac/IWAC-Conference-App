@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react';
+import { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -8,10 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  Linking,
-  Image,
   KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,6 +19,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
+import { Dropdown } from 'react-native-element-dropdown';
 import PanelDetail, { Panel } from '@/components/panel-details';
 
 type SessionSlot = {
@@ -43,10 +41,10 @@ type ConferenceEventRow = {
 };
 
 export default function SessionsScreen() {
-  //loading state for initial fetch
+  // Loading state for initial fetch
   const [loading, setLoading] = useState(true);
 
-  //fetch the logged in user's ID
+  // Fetch the logged in user's ID
   const [userID, setUserID] = useState<string | undefined>();
 
   useEffect(() => {
@@ -62,24 +60,24 @@ export default function SessionsScreen() {
     loadUser();
   }, []);
 
-  //grouped sessions built from conference_events
+  // Grouped sessions built from conference_events
   const [sessions, setSessions] = useState<SessionSlot[]>([]);
 
-  //ids of events saved in user_agenda
+  // ID's of events saved in user_agenda
   const [savedPanels, setSavedPanels] = useState<number[]>([]);
 
-  //UI state
+  // UI state
   const [search, setSearch] = useState('');
   const [sessionLabel, setSessionLabel] = useState<string | null>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
 
-  //fetch events from conference_events
+  // Fetch events from conference_events
   const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
 
-      //pull all events ordered by date + session
+      // Pull all events ordered by date + session
       const { data, error } = await supabase
         .from('conference_events')
         .select('id,title,location,speaker,date,session,tag')
@@ -90,7 +88,7 @@ export default function SessionsScreen() {
 
       const rows = (data ?? []) as ConferenceEventRow[];
 
-      //group events by session
+      // Group events by session
       const grouped = new Map<
         string,
         { date: string; session: string; panels: Panel[] }
@@ -99,12 +97,12 @@ export default function SessionsScreen() {
       rows.forEach((r) => {
         const key = r.session;
 
-        //create new session bucket if needed
+        // Create new session bucket if needed
         if (!grouped.has(key)) {
           grouped.set(key, { date: r.date, session: r.session, panels: [] });
         }
 
-        //push event into its session
+        // Push event into its session
         grouped.get(key)!.panels.push({
           id: r.id,
           title: r.title,
@@ -116,11 +114,11 @@ export default function SessionsScreen() {
         });
       });
 
-      //convert grouped sessions into SessionSlot list
+      // Convert grouped sessions into SessionSlot list
       const built: SessionSlot[] = Array.from(grouped.entries()).map(
         ([key, value]) => ({
           id: key,
-          label: key, //show the session string
+          label: key,
           date: value.date,
           session: value.session,
           panels: value.panels,
@@ -136,7 +134,7 @@ export default function SessionsScreen() {
     }
   }, []);
 
-  //fetch saved events for current user
+  // Fetch saved events for current user
   const fetchSavedPanels = useCallback(async () => {
     if (!userID) {
       setSavedPanels([]);
@@ -159,17 +157,16 @@ export default function SessionsScreen() {
   useEffect(() => {
     fetchSessions();
     fetchSavedPanels();
-  }, []);
+  }, [fetchSessions, fetchSavedPanels]);
 
   useFocusEffect(
-    useCallback(() => {
-      // runs every time this tab/screen becomes active
+    useCallback(() => { // Runs every time this tab/screen becomes active
       fetchSessions();
       fetchSavedPanels();
     }, [fetchSessions, fetchSavedPanels]),
   );
 
-  //add event to user_agenda
+  // Add event to user_agenda
   const addToAgenda = async (eventId: number) => {
     const { error } = await supabase
       .from('user_agenda')
@@ -177,7 +174,7 @@ export default function SessionsScreen() {
     if (error) throw error;
   };
 
-  //remove event from user_agenda
+  // Remove event from user_agenda
   const removeFromAgenda = async (eventId: number) => {
     if (!userID) return;
 
@@ -190,7 +187,7 @@ export default function SessionsScreen() {
     if (error) throw error;
   };
 
-  //toggle heart save/unsave
+  // Toggle heart save/unsave
   const toggleSavePanel = async (panelId: number) => {
     if (!userID) {
       Alert.alert('Sign in required');
@@ -199,7 +196,7 @@ export default function SessionsScreen() {
 
     const isSaved = savedPanels.includes(panelId);
 
-    //UI update
+    // UI update
     setSavedPanels((prev) =>
       isSaved ? prev.filter((id) => id !== panelId) : [...prev, panelId],
     );
@@ -210,7 +207,7 @@ export default function SessionsScreen() {
     } catch (err) {
       console.error(err);
 
-      //rollback UI on failure
+      // Rollback UI on failure
       setSavedPanels((prev) =>
         isSaved ? [...prev, panelId] : prev.filter((id) => id !== panelId),
       );
@@ -222,23 +219,32 @@ export default function SessionsScreen() {
     }
   };
 
-  //build list of session tags
-  const sessionTags = useMemo(() => sessions.map((s) => s.label), [sessions]);
+  // Dropdown options
+  const sessionOptions = useMemo(
+    () => [
+      { label: 'All Sessions', value: 'ALL' },
+      ...sessions.map((s) => ({ label: s.label, value: s.label })),
+    ],
+    [sessions],
+  );
 
-  //build list of tags
-  const tagTags = useMemo(() => {
+  const topicOptions = useMemo(() => {
     const set = new Set<string>();
     sessions.forEach((s) => s.panels.forEach((p) => p.tag && set.add(p.tag)));
-    return Array.from(set);
+    return [
+      { label: 'All Topics', value: 'ALL' },
+      ...Array.from(set).map((t) => ({ label: t, value: t })),
+    ];
   }, [sessions]);
 
-  //apply search + session + tag filters
+  // Search + session + tag filters
   const filteredSessions = useMemo(() => {
     const q = search.trim().toLowerCase();
 
-    const visible = sessionLabel
-      ? sessions.filter((s) => s.label === sessionLabel)
-      : sessions;
+    const visible =
+      sessionLabel && sessionLabel !== 'ALL'
+        ? sessions.filter((s) => s.label === sessionLabel)
+        : sessions;
 
     return visible
       .map((slot) => {
@@ -251,7 +257,8 @@ export default function SessionsScreen() {
             p.tag.toLowerCase().includes(q) ||
             p.session.toLowerCase().includes(q);
 
-          const matchesTag = tagFilter ? p.tag === tagFilter : true;
+          const matchesTag =
+            tagFilter && tagFilter !== 'ALL' ? p.tag === tagFilter : true;
 
           return matchesSearch && matchesTag;
         });
@@ -261,7 +268,7 @@ export default function SessionsScreen() {
       .filter((slot) => slot.panels.length > 0);
   }, [sessions, search, sessionLabel, tagFilter]);
 
-  //loading state
+  // Loading state
   if (loading) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
@@ -285,7 +292,7 @@ export default function SessionsScreen() {
     );
   }
 
-  //main UI
+  // Main UI
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
       <ScrollView
@@ -299,53 +306,37 @@ export default function SessionsScreen() {
             onChangeText={setSearch}
           />
 
-          {/* session tag filters */}
-          <View style={styles.tagRow}>
-            {sessionTags.map((label) => (
-              <TouchableOpacity
-                key={label}
-                style={[
-                  styles.tagButton,
-                  sessionLabel === label && styles.tagButtonActive,
-                ]}
-                onPress={() =>
-                  setSessionLabel((prev) => (prev === label ? null : label))
-                }
-              >
-                <Text
-                  style={
-                    sessionLabel === label
-                      ? styles.tagTextActive
-                      : styles.tagText
-                  }
-                >
-                  {label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Dropdown for sessions */}
+          <ThemedView style={styles.dropdownWrap}>
+            <ThemedText style={styles.dropdownLabel}>Session</ThemedText>
+            <Dropdown
+              style={styles.dropdown}
+              data={sessionOptions}
+              labelField="label"
+              valueField="value"
+              value={sessionLabel ?? 'ALL'}
+              placeholder="Select session"
+              onChange={(item) =>
+                setSessionLabel(item.value === 'ALL' ? null : item.value)
+              }
+            />
+          </ThemedView>
 
-          {/* topic/tag filters */}
-          <View style={styles.tagRow}>
-            {tagTags.map((t) => (
-              <TouchableOpacity
-                key={t}
-                style={[
-                  styles.tagButton,
-                  tagFilter === t && styles.tagButtonActive,
-                ]}
-                onPress={() => setTagFilter((prev) => (prev === t ? null : t))}
-              >
-                <Text
-                  style={
-                    tagFilter === t ? styles.tagTextActive : styles.tagText
-                  }
-                >
-                  {t}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {/* Dropdown for topics */}
+          <ThemedView style={styles.dropdownWrap}>
+            <ThemedText style={styles.dropdownLabel}>Topic</ThemedText>
+            <Dropdown
+              style={styles.dropdown}
+              data={topicOptions}
+              labelField="label"
+              valueField="value"
+              value={tagFilter ?? 'ALL'}
+              placeholder="Select topic"
+              onChange={(item) =>
+                setTagFilter(item.value === 'ALL' ? null : item.value)
+              }
+            />
+          </ThemedView>
 
           {filteredSessions.map((slot) => (
             <View key={slot.id}>
@@ -413,11 +404,26 @@ const styles = StyleSheet.create({
   scrollContainer: { flex: 1, backgroundColor: Colors.awac.beige },
   centerContent: { justifyContent: 'center', alignItems: 'center' },
   container: { padding: 20, gap: 20 },
-  tagRow: { flexDirection: 'row', gap: 10, flexWrap: 'wrap' },
-  tagButton: { padding: 8, backgroundColor: '#e1e1e1', borderRadius: 12 },
-  tagButtonActive: { backgroundColor: Colors.awac.navy },
-  tagText: { fontWeight: '600', color: '#333' },
-  tagTextActive: { color: '#fff', fontWeight: '600' },
+
+  dropdownWrap: {
+    width: '20%',
+    borderWidth: 1,
+    borderColor: Colors.awac.navy,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: Colors.lightestBlue,
+  },
+  dropdownLabel: {
+    fontWeight: '700',
+    paddingHorizontal: 12,
+    paddingTop: 10,
+    color: Colors.awac.navy,
+  },
+  dropdown: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+
   sessionCardDetails: {
     padding: 15,
     borderWidth: 2,
@@ -428,18 +434,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightestBlue,
   },
   heartButton: { position: 'absolute', top: 10, right: 15, zIndex: 10 },
-  dateTag: {
-    backgroundColor: Colors.umaine.lightBlue,
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  dateText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.awac.navy,
-  },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
