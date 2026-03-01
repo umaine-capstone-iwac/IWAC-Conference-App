@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
@@ -80,6 +81,9 @@ export default function CreateAccount() {
         <ThemedText type="subtitle" style={styles.subtitle}>
           Create Account
         </ThemedText>
+        <ThemedText type="subtitle" style={styles.alertText1}>
+          Your passwords do not match
+        </ThemedText>
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Name
@@ -114,18 +118,18 @@ export default function CreateAccount() {
             secureTextEntry={true}
           />
         </View>
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Confirm Password
-          </ThemedText>
-          <Input
-            text="Password"
-            onChangeText={(text) => setPassCheck(text)}
-            autoCapitalize="none"
-            style={styles.input}
-            secureTextEntry={true}
-          />
-        </View>
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Confirm Password
+            </ThemedText>
+            <Input
+              text="Password"
+              onChangeText={(text) => setPassCheck(text)}
+              autoCapitalize="none"
+              style={styles.input}
+              secureTextEntry={true}
+            />
+          </View>
         <TouchableOpacity onPress={handleSignIn}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
@@ -136,10 +140,9 @@ export default function CreateAccount() {
         >
           <View style={styles.button2}>
             <Text style={styles.buttonText2}>
-              Already Have an Account. {'\n'} Go to Login Screen.
+              Already Have an Account.{'\n'}      Go to Login Screen.
             </Text>
           </View>
-          <Text style={styles.alertText1}>Your passwords do not match</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -161,7 +164,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 24,
     marginTop: 25,
-    paddingBottom: 50,
+    paddingBottom: 30,
     alignSelf: 'center',
   },
   inputGroup: {
@@ -205,8 +208,9 @@ const styles = StyleSheet.create({
   },
   alertText1: {
     color: 'red',
+    marginTop: 5,
+    paddingBottom: 30,
     alignSelf: 'center',
     fontSize: 16,
-    fontWeight: '600',
   },
 });
