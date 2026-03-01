@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
@@ -19,33 +18,52 @@ export default function CreateAccount() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
-  //const[toggleVisibility, setToggleVisibility] = useState(true);
+
+  //To toggle alert texts based on user input
+  const [isVisibile, setIsVisibile] = useState(false); //No text in email or password box
+  const [isVisibile2, setIsVisibile2] = useState(false); //Password < 6 characters
+  const [isVisibile3, setIsVisibile3] = useState(false); //Password != confirmation password
+  const [isVisibile4, setIsVisibile4] = useState(false); //Email not in 'users_registered' table in supabase database
+  const [isVisibile5, setIsVisibile5] = useState(false); //Errors related to database, signing up user, searching for user, etc
 
   //When create account or login button is pressed this function is called
   const handleSignIn = async () => {
+    setIsVisibile(false);
+    setIsVisibile2(false);
+    setIsVisibile3(false);
+    setIsVisibile4(false);
+    setIsVisibile5(false);
+
     //Checks user input
     if (!email || !password) {
       console.log('Email and password required');
+      setIsVisibile(true);
+      return;
+    } else if (password.length < 6) {
+      console.log('Password too short');
+      setIsVisibile2(true);
       return;
     } else if (passCheck !== password) {
       console.log('Your passwords do not match');
+      setIsVisibile3(true);
       return;
     }
     //Checks that user entered email is within 'users_registered' table in supabase database
     const { count, error } = await supabase
       .from('users_registered')
-      .select('Email', { count: 'exact', head: true })
-      .eq('Email', email)
-      .limit(1);
+      .select('email', { count: 'exact', head: true })
+      .eq('email', email);
 
-    //if count > 0 then true, if count = 0 then no email was found in table
+    //if count = 1 then true, if count = 0 then no email was found in table
     if (count !== null && count !== undefined) {
       if (count === 0) {
         console.log('Email not in registrants list');
+        setIsVisibile4(true);
         return;
       } else if (count === 1) {
         if (error) {
           console.log('Error searching for email', error);
+          setIsVisibile5(true);
           return;
         } else {
           const { error } = await supabase.auth.signUp({
@@ -54,6 +72,7 @@ export default function CreateAccount() {
           });
           if (error) {
             console.error('Auth error:', error.message);
+            setIsVisibile5(true);
           } else {
             const {
               data: { user },
@@ -69,6 +88,7 @@ export default function CreateAccount() {
         }
       } else if (count > 1) {
         console.log('More than one account found...');
+        setIsVisibile5(true);
         return;
       }
     }
@@ -81,9 +101,11 @@ export default function CreateAccount() {
         <ThemedText type="subtitle" style={styles.subtitle}>
           Create Account
         </ThemedText>
-        <ThemedText type="subtitle" style={styles.alertText1}>
-          Your passwords do not match
-        </ThemedText>
+        {isVisibile ? <ErText /> : null}
+        {isVisibile2 ? <ErText2 /> : null}
+        {isVisibile3 ? <ErText3 /> : null}
+        {isVisibile4 ? <ErText4 /> : null}
+        {isVisibile5 ? <ErText5 /> : null}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Name
@@ -118,18 +140,18 @@ export default function CreateAccount() {
             secureTextEntry={true}
           />
         </View>
-          <View style={styles.inputGroup}>
-            <ThemedText type="title" style={styles.label}>
-              Confirm Password
-            </ThemedText>
-            <Input
-              text="Password"
-              onChangeText={(text) => setPassCheck(text)}
-              autoCapitalize="none"
-              style={styles.input}
-              secureTextEntry={true}
-            />
-          </View>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>
+            Confirm Password
+          </ThemedText>
+          <Input
+            text="Password"
+            onChangeText={(text) => setPassCheck(text)}
+            autoCapitalize="none"
+            style={styles.input}
+            secureTextEntry={true}
+          />
+        </View>
         <TouchableOpacity onPress={handleSignIn}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
@@ -140,7 +162,7 @@ export default function CreateAccount() {
         >
           <View style={styles.button2}>
             <Text style={styles.buttonText2}>
-              Already Have an Account.{'\n'}      Go to Login Screen.
+              Already Have an Account.{'\n'} Go to Login Screen.
             </Text>
           </View>
         </TouchableOpacity>
@@ -148,6 +170,83 @@ export default function CreateAccount() {
     </View>
   );
 }
+
+const ErText = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      No email or password entered
+    </ThemedText>
+  );
+};
+
+const ErText2 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Passwords must be at least 6 characters
+    </ThemedText>
+  );
+};
+const ErText3 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Your passwords do not match
+    </ThemedText>
+  );
+};
+const ErText4 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Email not in registrants list
+    </ThemedText>
+  );
+};
+const ErText5 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      System error please ensure all information is correct and try again
+    </ThemedText>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -205,12 +304,5 @@ const styles = StyleSheet.create({
     color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
-  },
-  alertText1: {
-    color: 'red',
-    marginTop: 5,
-    paddingBottom: 30,
-    alignSelf: 'center',
-    fontSize: 16,
   },
 });

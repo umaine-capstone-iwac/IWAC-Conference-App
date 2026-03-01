@@ -10,7 +10,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 export default function RootLayout() {
   return (
     <ThemeProvider value={DefaultTheme}>
-      <Stack>
+      <Stack initialRouteName="index">
         <Stack.Screen name="createAccount" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

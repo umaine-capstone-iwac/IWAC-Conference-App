@@ -13,15 +13,54 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
+  //User input
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  //To toggle alert texts based on user input
+  const [isVisibile, setIsVisibile] = useState(false); //No text in email or password input
+  const [isVisibile2, setIsVisibile2] = useState(false); //Email not in 'users_registered' table in supabase database
+  const [isVisibile3, setIsVisibile3] = useState(false); //Error logging in, or database related
+
+  //When login button is pressed this function is called
   const handleLogin = async () => {
+    setIsVisibile(false);
+    setIsVisibile2(false);
+    setIsVisibile3(false);
+
+    //Checks user input
     if (!email || !password) {
       console.log('Email and password required');
+      setIsVisibile(true);
       return;
+    } else {
+      //Checks that user entered email is within 'users_registered' table in supabase database
+      const { count, error } = await supabase
+        .from('users_registered')
+        .select('email', { count: 'exact', head: true })
+        .eq('email', email);
+
+      if (error) {
+        console.log('Error searching for email', error);
+        setIsVisibile3(true);
+        return;
+      }
+
+      //if count = 1 then true, if count = 0 then no email was found in table
+      if (count !== null && count !== undefined) {
+        if (count === 0) {
+          console.log('Email not in registrants list');
+          setIsVisibile2(true);
+          return;
+        } else if (count > 1) {
+          console.log('Error more than one account');
+          setIsVisibile3(true);
+          return;
+        }
+      }
     }
 
+    //Signs user up on supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -29,6 +68,7 @@ export default function LoginScreen() {
 
     if (error) {
       console.error('Auth error:', error.message);
+      setIsVisibile3(true);
     } else {
       router.replace('/(tabs)');
     }
@@ -41,6 +81,9 @@ export default function LoginScreen() {
         <ThemedText type="subtitle" style={styles.subtitle}>
           Login
         </ThemedText>
+        {isVisibile ? <ErText /> : null}
+        {isVisibile2 ? <ErText2 /> : null}
+        {isVisibile3 ? <ErText3 /> : null}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Email
@@ -79,6 +122,53 @@ export default function LoginScreen() {
   );
 }
 
+const ErText = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Email and password required
+    </ThemedText>
+  );
+};
+
+const ErText2 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Email not in registrants list
+    </ThemedText>
+  );
+};
+const ErText3 = () => {
+  return (
+    <ThemedText
+      style={{
+        color: 'red',
+        marginTop: 5,
+        paddingBottom: 30,
+        alignSelf: 'center',
+        fontSize: 16,
+      }}
+    >
+      Error logging in, ensure email and password are entered correctly
+    </ThemedText>
+  );
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -95,8 +185,8 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 24,
-    marginTop: 100,
-    paddingBottom: 50,
+    marginTop: 50,
+    paddingBottom: 30,
     alignSelf: 'center',
   },
   inputGroup: {
