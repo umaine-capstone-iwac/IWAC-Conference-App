@@ -3,12 +3,10 @@ import {
   ScrollView,
   StyleSheet,
   View,
-  Text,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   Pressable,
-  KeyboardAvoidingView,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
 import PanelDetail, { Panel } from '@/components/panel-details';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 type SessionSlot = {
   id: string;
@@ -41,6 +40,15 @@ type ConferenceEventRow = {
 };
 
 export default function SessionsScreen() {
+  // Tag persistence logic
+  const router = useRouter();
+  const params = useLocalSearchParams();
+
+  const sessionLabel =
+    typeof params.session === 'string' ? params.session : null;
+
+  const tagFilter = typeof params.topic === 'string' ? params.topic : null;
+
   // Loading state for initial fetch
   const [loading, setLoading] = useState(true);
 
@@ -68,8 +76,6 @@ export default function SessionsScreen() {
 
   // UI state
   const [search, setSearch] = useState('');
-  const [sessionLabel, setSessionLabel] = useState<string | null>(null);
-  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
 
   // Fetch events from conference_events
@@ -318,7 +324,9 @@ export default function SessionsScreen() {
               value={sessionLabel ?? 'ALL'}
               placeholder="Select session"
               onChange={(item) =>
-                setSessionLabel(item.value === 'ALL' ? null : item.value)
+                router.setParams({
+                  session: item.value === 'ALL' ? undefined : item.value,
+                })
               }
             />
           </ThemedView>
@@ -334,7 +342,9 @@ export default function SessionsScreen() {
               value={tagFilter ?? 'ALL'}
               placeholder="Select topic"
               onChange={(item) =>
-                setTagFilter(item.value === 'ALL' ? null : item.value)
+                router.setParams({
+                  topic: item.value === 'ALL' ? undefined : item.value,
+                })
               }
             />
           </ThemedView>
