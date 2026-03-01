@@ -160,7 +160,8 @@ export default function SessionsScreen() {
   }, [fetchSessions, fetchSavedPanels]);
 
   useFocusEffect(
-    useCallback(() => { // Runs every time this tab/screen becomes active
+    useCallback(() => {
+      // Runs every time this tab/screen becomes active
       fetchSessions();
       fetchSavedPanels();
     }, [fetchSessions, fetchSavedPanels]),
