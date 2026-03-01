@@ -18,6 +18,7 @@ import { Input } from '@/components/input';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
+import { ProfilePicture } from '@/components/profile-picture';
 
 // -- Types -- //
 
@@ -47,6 +48,13 @@ type Comment = {
   created_at: string;
 };
 
+type CommentUser = {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+};
+
 type Props = {
   panel: Panel;
   userID: string | undefined;
@@ -62,6 +70,9 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const [newComment, setNewComment] = useState('');
   const [commentsLoading, setCommentsLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [commentUsers, setCommentUsers] = useState<Record<string, CommentUser>>(
+    {},
+  );
 
   const [resources, setResources] = useState<PanelResource[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
@@ -123,7 +134,34 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
       .eq('event_id', panel.id)
       .order('created_at', { ascending: true });
     if (error) console.error(error);
-    else setComments(data ?? []);
+    else {
+      setComments(data ?? []);
+      // Fetch user info of commenter
+      const uniqueUserIds = [...new Set((data ?? []).map((c) => c.user_id))];
+      if (uniqueUserIds.length > 0) {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, first_name, last_name')
+          .in('id', uniqueUserIds);
+
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, avatar_url')
+          .in('id', uniqueUserIds);
+
+        const usersMap: Record<string, CommentUser> = {};
+        (usersData ?? []).forEach((u) => {
+          const profile = profilesData?.find((p) => p.id === u.id);
+          usersMap[u.id] = {
+            user_id: u.id,
+            first_name: u.first_name,
+            last_name: u.last_name,
+            avatar_url: profile?.avatar_url ?? null,
+          };
+        });
+        setCommentUsers(usersMap);
+      }
+    }
     setCommentsLoading(false);
   }, [panel.id]);
 
@@ -318,24 +356,42 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           ) : comments.length === 0 ? (
             <ThemedText style={styles.emptyText}>No comments yet</ThemedText>
           ) : (
-            comments.map((c) => (
-              <View key={c.comment_id}>
-                <ThemedView key={c.comment_id} style={styles.commentCard}>
-                  <ThemedText style={styles.commentTime}>
-                    {new Date(c.created_at).toLocaleString()}
-                  </ThemedText>
-                  <ThemedText>{c.comment_content}</ThemedText>
-
-                  <TouchableOpacity
-                    onPress={() => deleteComment(c.comment_id)}
-                    style={styles.deleteButton}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Text style={styles.deleteButtonText}>x</Text>
-                  </TouchableOpacity>
-                </ThemedView>
-              </View>
-            ))
+            comments.map((c) => {
+              const user = commentUsers[c.user_id];
+              return (
+                <View key={c.comment_id}>
+                  <ThemedView style={styles.commentCard}>
+                    <View style={styles.commentHeader}>
+                      <ProfilePicture
+                        size={36}
+                        avatarUrl={user?.avatar_url ?? null}
+                        userId={c.user_id}
+                      />
+                      <View style={{ flex: 1 }}>
+                        <ThemedText style={styles.commentAuthor}>
+                          {user
+                            ? `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim()
+                            : 'Unknown'}
+                        </ThemedText>
+                        <ThemedText style={styles.commentTime}>
+                          {new Date(c.created_at).toLocaleString()}
+                        </ThemedText>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => deleteComment(c.comment_id)}
+                        style={styles.deleteButton}
+                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      >
+                        <Text style={styles.deleteButtonText}>x</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <ThemedText style={{ marginTop: 6 }}>
+                      {c.comment_content}
+                    </ThemedText>
+                  </ThemedView>
+                </View>
+              );
+            })
           )}
 
           {/* Comment Input */}
@@ -461,10 +517,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     position: 'relative',
   },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  commentAuthor: {
+    fontWeight: '600',
+    fontSize: 14,
+  },
   deleteButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
+    marginLeft: 'auto',
   },
   deleteButtonText: {
     fontSize: 12,
