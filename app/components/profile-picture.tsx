@@ -38,7 +38,9 @@ export function ProfilePicture({
 
   if (userId) {
     return (
-      <Pressable onPress={() => router.push(`/profile?otherUserID=${userId}`)}>
+      <Pressable
+        onPress={() => router.replace(`/profile?otherUserID=${userId}`)}
+      >
         {image}
       </Pressable>
     );

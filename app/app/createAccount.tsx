@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
@@ -95,7 +96,7 @@ export default function CreateAccount() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>
         {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
         <ThemedText type="subtitle" style={styles.subtitle}>
@@ -167,7 +168,7 @@ export default function CreateAccount() {
           </View>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -268,6 +269,7 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 15,
+    marginHorizontal: '10%',
   },
   label: {
     fontSize: 16,
@@ -298,9 +300,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     alignSelf: 'center',
+    alignItems: 'center',
     marginBottom: 20,
   },
   buttonText2: {
+    marginTop: 10,
     color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',

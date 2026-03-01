@@ -1,11 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  Pressable,
-  Image,
-} from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
 import { ProfilePicture } from '@/components/profile-picture';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -13,7 +6,6 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
 
 interface ProfileDetails {
   // Defines the profile details structure
@@ -30,10 +22,14 @@ interface ProfileDetails {
 export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
-  const { userID: routeUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
-  const viewedUserID = routeUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
+  const { otherUserID } = useLocalSearchParams();
+  // const { userID: otherUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
+  // const viewedUserID = otherUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
+  const viewedUserID = otherUserID ? String(otherUserID) : userID;
+  const isOwnProfile =
+    userID && viewedUserID && String(userID) === String(viewedUserID);
 
-  console.log('userID: ', userID);
+  // console.log('userID: ', userID);
   //fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -43,8 +39,8 @@ export default function ProfileScreen() {
   }, []);
 
   const fetchProfileData = useCallback(async () => {
-    const idToFetch = routeUserID ?? otherUserID ?? userID; // Determines which user to display based on route parameters, or logged in user ID
-    if (!idToFetch) return; //Don't load if we don't have a user ID to fetch for
+    //const viewedUserID = otherUserID ?? otherUserID ?? userID; // Determines which user to display based on route parameters, or logged in user ID
+    if (!viewedUserID) return; //Don't load if we don't have a user ID to fetch for
 
     try {
       const [
@@ -56,14 +52,14 @@ export default function ProfileScreen() {
           .select(
             'id, profession, about_me, interests, my_sessions, avatar_url',
           )
-          .eq('id', idToFetch) // Filter to get only the logged in user's profile data
+          .eq('id', viewedUserID) // Filter to get only the logged in user's profile data
           .single(), //expecting a single profile row for the user ID
 
         //Now to get the names
         supabase
           .from('users')
           .select('first_name, last_name')
-          .eq('id', idToFetch)
+          .eq('id', viewedUserID)
           .single(),
       ]);
 
@@ -89,20 +85,22 @@ export default function ProfileScreen() {
     } catch (err) {
       console.error('Unexpected error fetching profile data:', err);
     }
-  }, [userID, routeUserID, otherUserID]);
+  }, [viewedUserID]);
 
   useEffect(() => {
     // fetch once when userID becomes available
-    if (userID) fetchProfileData();
-  }, [userID, fetchProfileData]);
+    if (viewedUserID) fetchProfileData();
+  }, [viewedUserID, fetchProfileData]);
 
   // re-fetch whenever the screen gains focus
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfileData();
-    }, [fetchProfileData]),
-  );
-
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchProfileData();
+  //   }, [fetchProfileData]),
+  // );
+  console.log(otherUserID);
+  console.log('userID:', userID);
+  console.log('viewedUserID:', viewedUserID);
   return (
     <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
       <ThemedView style={styles.profileContainer}>
@@ -122,13 +120,15 @@ export default function ProfileScreen() {
               </ThemedText>
             </View>
           ) : null}
-          {viewedUserID && userID === viewedUserID ? ( // Only show edit button if we're viewing our own profile
+          {isOwnProfile && (
             <Pressable onPress={() => router.push('/profilesettings')}>
               <View style={styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </View>
             </Pressable>
-          ) : viewedUserID ? ( // Only show message button if we're viewing someone else's profile
+          )}
+
+          {!isOwnProfile && viewedUserID && (
             <Pressable
               onPress={() =>
                 router.push(`/conversation?otherUserID=${viewedUserID}`)
@@ -138,7 +138,7 @@ export default function ProfileScreen() {
                 <Text style={styles.editButtonText}>Message User</Text>
               </View>
             </Pressable>
-          ) : null}
+          )}
         </View>
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>

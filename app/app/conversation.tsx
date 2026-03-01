@@ -117,7 +117,7 @@ export default function ConversationScreen() {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('avatar_url')
-      .eq('id', otherUserID) // assuming profile.id = user.id
+      .eq('id', otherUserID)
       .single();
 
     if (profileError) {
@@ -162,6 +162,23 @@ export default function ConversationScreen() {
     scrollToBottom(false);
   }, [userID, otherUser]);
 
+  // Mark messages from otherUser as read
+  const markConversationAsRead = useCallback(async () => {
+    if (!userID || !otherUser) return;
+
+    const { error } = await supabase
+      .from('messages')
+      .update({ is_read: true })
+      .eq('recipient_id', userID)
+      .eq('user_id', otherUser.id)
+      .eq('is_read', false);
+
+    if (error) {
+      console.error('Error marking messages as read:', error);
+      return;
+    }
+  }, [userID, otherUser]);
+
   // -- AUTH INITIALIZATION -- //
 
   // Fetch the logged-in user's ID on mount
@@ -194,6 +211,12 @@ export default function ConversationScreen() {
 
     navigation.setOptions({ title });
   }, [otherUser, navigation]);
+
+  //Mark new messages as read on screen open
+  useEffect(() => {
+    if (!userID || !otherUser) return;
+    markConversationAsRead();
+  }, [userID, otherUser, markConversationAsRead]);
 
   // -- REALTIME SUBSCRIPTION -- //
 
@@ -233,6 +256,14 @@ export default function ConversationScreen() {
               },
             ];
           });
+
+          // Mark new message from other user as read in DB
+          if (msg.user_id === otherUser.id && msg.recipient_id === userID) {
+            supabase
+              .from('messages')
+              .update({ is_read: true })
+              .eq('id', msg.id);
+          }
 
           scrollToBottom(true);
         },
