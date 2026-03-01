@@ -1,9 +1,10 @@
 import {
-  ScrollView,
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Input } from '@/components/input';
 import { ThemedText } from '@/components/themed-text';
@@ -75,51 +76,58 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.content}>
         <ThemedText type="subtitle" style={styles.subtitle}>
           Login
         </ThemedText>
-        {isVisibile ? <ErText /> : null}
-        {isVisibile2 ? <ErText2 /> : null}
-        {isVisibile3 ? <ErText3 /> : null}
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Email
           </ThemedText>
           <Input
             text="email@address.com"
-            onChangeText={(text) => setEmail(text)}
+            onChangeText={setEmail}
             autoCapitalize="none"
             style={styles.input}
           />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Password
           </ThemedText>
           <Input
             text="password"
-            onChangeText={(text) => setPassword(text)}
+            onChangeText={setPassword}
             autoCapitalize="none"
             style={styles.input}
-            secureTextEntry={true}
+            secureTextEntry
           />
         </View>
+
         <TouchableOpacity onPress={handleLogin}>
           <View style={styles.button}>
             <Text style={styles.buttonText}>Login</Text>
           </View>
         </TouchableOpacity>
+
+        {isVisibile && <ErText />}
+        {isVisibile2 && <ErText2 />}
+        {isVisibile3 && <ErText3 />}
+
         <TouchableOpacity onPress={() => router.replace('/createAccount')}>
           <View style={styles.button2}>
-            <Text> New to the IWAC App? </Text>
-            <Text style={styles.buttonText2}> Create Account</Text>
+            <Text>New to the IWAC App?</Text>
+            <Text style={styles.buttonText2}>Create Account</Text>
           </View>
         </TouchableOpacity>
-      </ScrollView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -129,7 +137,7 @@ const ErText = () => {
       style={{
         color: 'red',
         marginTop: 5,
-        paddingBottom: 30,
+        paddingBottom: 15,
         alignSelf: 'center',
         fontSize: 16,
       }}
@@ -145,7 +153,7 @@ const ErText2 = () => {
       style={{
         color: 'red',
         marginTop: 5,
-        paddingBottom: 30,
+        paddingBottom: 15,
         alignSelf: 'center',
         fontSize: 16,
       }}
@@ -160,7 +168,7 @@ const ErText3 = () => {
       style={{
         color: 'red',
         marginTop: 5,
-        paddingBottom: 30,
+        paddingBottom: 15,
         alignSelf: 'center',
         fontSize: 16,
       }}
@@ -173,10 +181,11 @@ const ErText3 = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    display: 'flex',
     backgroundColor: Colors.awac.beige,
   },
-  contentContainer: {
+  content: {
+    flex: 1,
+    justifyContent: 'center', // vertical center
     padding: 20,
   },
   title: {
