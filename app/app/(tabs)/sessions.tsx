@@ -21,7 +21,6 @@ import { Dropdown } from 'react-native-element-dropdown';
 import PanelDetail, { Panel } from '@/components/panel-details';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
-
 // -- TYPES -- //
 
 type SessionSlot = {
@@ -43,9 +42,8 @@ type ConferenceEventRow = {
 };
 
 export default function SessionsScreen() {
-
   // -- ROUTING -- //
-  
+
   const router = useRouter();
   const params = useLocalSearchParams();
 
@@ -56,7 +54,6 @@ export default function SessionsScreen() {
   // Tag filter persistence
   const tagFilter = typeof params.topic === 'string' ? params.topic : null;
 
-
   // -- STATE -- //
 
   // Loading state for initial fetch
@@ -65,7 +62,7 @@ export default function SessionsScreen() {
   // Fetch the logged in user's ID
   const [userID, setUserID] = useState<string | undefined>();
 
-    // Grouped sessions built from conference_events
+  // Grouped sessions built from conference_events
   const [sessions, setSessions] = useState<SessionSlot[]>([]);
 
   // ID's of events saved in user_agenda
@@ -74,7 +71,6 @@ export default function SessionsScreen() {
   // UI state
   const [search, setSearch] = useState('');
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
-
 
   // -- AUTH INITIALIZATION -- //
   useEffect(() => {
@@ -89,7 +85,6 @@ export default function SessionsScreen() {
 
     loadUser();
   }, []);
-
 
   // -- DATA FETCHING -- //
 
@@ -175,7 +170,6 @@ export default function SessionsScreen() {
     setSavedPanels((data ?? []).map((r) => r.event_id));
   }, [userID]);
 
-
   // -- SCREEN EFFECTS -- //
 
   useEffect(() => {
@@ -190,7 +184,6 @@ export default function SessionsScreen() {
       fetchSavedPanels();
     }, [fetchSessions, fetchSavedPanels]),
   );
-
 
   // -- ACTIONS -- //
 
@@ -246,7 +239,6 @@ export default function SessionsScreen() {
       );
     }
   };
-
 
   // -- FILTERING -- //
 
@@ -322,7 +314,6 @@ export default function SessionsScreen() {
       </SafeAreaView>
     );
   }
-
 
   // -- UI -- //
 
@@ -409,10 +400,10 @@ export default function SessionsScreen() {
                         color={savedPanels.includes(panel.id) ? 'red' : '#888'}
                       />
                     </Pressable>
-                    
+
                     {/* Panel title */}
                     <ThemedText type="title">{panel.title}</ThemedText>
-                    
+
                     {/* Location row */}
                     <View style={styles.detailRow}>
                       <IconSymbol
@@ -422,7 +413,7 @@ export default function SessionsScreen() {
                       />
                       <ThemedText>{panel.location}</ThemedText>
                     </View>
-                    
+
                     {/* Speaker row */}
                     <View style={styles.detailRow}>
                       <IconSymbol
@@ -442,7 +433,6 @@ export default function SessionsScreen() {
     </SafeAreaView>
   );
 }
-
 
 // -- STYLES -- //
 
