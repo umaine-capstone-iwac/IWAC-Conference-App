@@ -133,15 +133,7 @@ export default function LoginScreen() {
 
 const ErText = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 15,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Email and password required
     </ThemedText>
   );
@@ -149,30 +141,14 @@ const ErText = () => {
 
 const ErText2 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 15,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Email not in registrants list
     </ThemedText>
   );
 };
 const ErText3 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 15,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Error logging in, ensure email and password are entered correctly
     </ThemedText>
   );
@@ -239,5 +215,12 @@ const styles = StyleSheet.create({
     color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
+    paddingBottom: 15,
+    alignSelf: 'center',
+    fontSize: 16,
   },
 });

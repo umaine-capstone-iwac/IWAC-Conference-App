@@ -162,9 +162,8 @@ export default function CreateAccount() {
           onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in (tabs) folder
         >
           <View style={styles.button2}>
-            <Text style={styles.buttonText2}>
-              Already Have an Account.{'\n'} Go to Login Screen.
-            </Text>
+            <Text> Already have an Account?</Text>
+            <Text style={styles.buttonText2}>Go to Login Screen</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -174,15 +173,7 @@ export default function CreateAccount() {
 
 const ErText = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 30,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       No email or password entered
     </ThemedText>
   );
@@ -190,60 +181,28 @@ const ErText = () => {
 
 const ErText2 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 30,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Passwords must be at least 6 characters
     </ThemedText>
   );
 };
 const ErText3 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 30,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Your passwords do not match
     </ThemedText>
   );
 };
 const ErText4 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 30,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       Email not in registrants list
     </ThemedText>
   );
 };
 const ErText5 = () => {
   return (
-    <ThemedText
-      style={{
-        color: 'red',
-        marginTop: 5,
-        paddingBottom: 30,
-        alignSelf: 'center',
-        fontSize: 16,
-      }}
-    >
+    <ThemedText style={styles.errorText}>
       System error please ensure all information is correct and try again
     </ThemedText>
   );
@@ -308,5 +267,12 @@ const styles = StyleSheet.create({
     color: 'mediumblue',
     fontSize: 14,
     fontWeight: '600',
+  },
+  errorText: {
+    color: 'red',
+    marginTop: 5,
+    paddingBottom: 15,
+    alignSelf: 'center',
+    fontSize: 16,
   },
 });
