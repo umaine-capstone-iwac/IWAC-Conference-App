@@ -12,8 +12,10 @@ import { filterMessages } from '@/utils/filterMessages';
 export default function MessagesListScreen() {
   // -- STATE -- //
 
+  // Current authenticated user's ID
   const [currentUserID, setUserID] = useState<string>();
 
+  // Shape of each conversation preview row
   type ConversationPreview = {
     id: string;
     first_name: string | null;
@@ -23,10 +25,13 @@ export default function MessagesListScreen() {
     timestamp: string | null;
     hasUnread: boolean;
   };
+
+  // List of conversation previews
   const [conversations, setConversationUsers] = useState<ConversationPreview[]>(
     [],
   );
 
+  // Search input state
   const [search, setSearch] = useState('');
 
   // -- DERIVED DATA -- //
@@ -34,12 +39,23 @@ export default function MessagesListScreen() {
   // Filter conversations based on search input
   const filteredConversations = filterMessages(conversations, search);
 
-  // -- DATA LOADING -- //
+  // -- AUTH INITIALIZATION -- //
+
+  // Fetch the currently logged-in user's ID on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+  }, []);
+
+  // -- DATA FETCHING -- //
 
   // Load all conversations involving the current user
   const loadConversations = useCallback(async () => {
     if (!currentUserID) return;
-    // Fetch all messages involving the current user
+
+    // Fetch all messages sent or received by the current user
     const { data: messages, error } = await supabase
       .from('messages')
       .select('id, user_id, recipient_id, content, timestamp, is_read')
@@ -51,7 +67,7 @@ export default function MessagesListScreen() {
       return;
     }
 
-    // Extract unique IDs of users involved in conversations
+    // Extract unique conversation partner IDs
     const otherUserIds = Array.from(
       new Set(
         messages.map((msg) =>
@@ -71,7 +87,7 @@ export default function MessagesListScreen() {
       return;
     }
 
-    // Fetch profile avatars for those users
+    // Fetch profile picture urls
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, avatar_url')
@@ -81,14 +97,16 @@ export default function MessagesListScreen() {
       console.error('Error fetching profiles:', profilesError);
     }
 
-    // Attach avatar_url, lastMessage and timestamp to each user
+    // Construct conversation preview objects
     const usersWithLastMessage = usersData.map((user) => {
+      // Most recent message with this user
       const lastMsg = messages.find(
         (msg) => msg.user_id === user.id || msg.recipient_id === user.id,
       );
 
       const profile = profilesData?.find((p) => p.id === user.id);
 
+      // Determine if latest message is unread
       const hasUnread =
         lastMsg &&
         lastMsg.recipient_id === currentUserID &&
@@ -106,19 +124,9 @@ export default function MessagesListScreen() {
     setConversationUsers(usersWithLastMessage);
   }, [currentUserID]);
 
-  // -- AUTH INITIALIZATION -- //
-
-  // Fetch the currently logged-in user's ID on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      setUserID((await supabase.auth.getSession()).data.session?.user.id);
-    };
-    loadUser();
-  }, []);
-
   // -- SCREEN LIFECYCLE -- //
 
-  // Refresh conversations whenever this screen gains focus
+  // Refresh conversations whenever screen gains focus
   useFocusEffect(
     useCallback(() => {
       loadConversations();
@@ -127,10 +135,11 @@ export default function MessagesListScreen() {
 
   // -- REALTIME SUBSCRIPTION -- //
 
-  // Subscribe to message changes relevant to the current user
+  // Subscribe to message DB changes involving the current user
   useEffect(() => {
     if (!currentUserID) return;
 
+    // Subscribe to messages sent by the current user
     const sentChannel = supabase
       .channel('messages-sent')
       .on(
@@ -145,6 +154,7 @@ export default function MessagesListScreen() {
       )
       .subscribe();
 
+    // Subscribe to messages received by the current user
     const receivedChannel = supabase
       .channel('messages-received')
       .on(
@@ -159,6 +169,7 @@ export default function MessagesListScreen() {
       )
       .subscribe();
 
+    // Cleanup subscriptions when user changes or screen unmounts
     return () => {
       supabase.removeChannel(sentChannel);
       supabase.removeChannel(receivedChannel);
@@ -172,7 +183,7 @@ export default function MessagesListScreen() {
       <View style={styles.messagesContainer}>
         <View style={styles.searchBarContainer}>
           <Input
-            text="Search for a message..."
+            text="Search for a user..."
             value={search}
             onChangeText={setSearch}
             style={styles.searchBar}
@@ -218,6 +229,8 @@ export default function MessagesListScreen() {
     </ScrollView>
   );
 }
+
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   titleContainer: {
