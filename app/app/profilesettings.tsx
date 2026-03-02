@@ -32,7 +32,7 @@ export default function ProfileSettingsModal() {
   const [interests, setInterests] = useState('');
   const [mySessions, setMySessions] = useState('');
 
-  // For handling profile picture updates
+  // State for handling profile picture updates
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
@@ -46,11 +46,13 @@ export default function ProfileSettingsModal() {
         const id = data.session?.user?.id;
         setUserID(id || undefined);
 
+        // If we don't have a user ID, we can't load profile data
         if (!id) {
           setLoading(false);
           return;
         }
 
+        // Fetch profile details and user names in parallel, from different tables
         const [
           { data: profileRows, error: pErr },
           { data: userRows, error: uErr },
@@ -72,11 +74,13 @@ export default function ProfileSettingsModal() {
 
         if (pErr || uErr) throw pErr ?? uErr;
 
+        // Set the first and last name states from the users table
         if (userRows) {
           setFirstName(userRows.first_name ?? '');
           setLastName(userRows.last_name ?? '');
         }
 
+        // Set the rest of the profile details from the profiles table
         if (profileRows) {
           setProfession(profileRows.profession ?? '');
           setAboutMe(profileRows.about_me ?? '');
@@ -96,6 +100,7 @@ export default function ProfileSettingsModal() {
     load();
   }, []);
 
+  // Function to handle updating the profile picture
   const pickImage = async () => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -114,6 +119,7 @@ export default function ProfileSettingsModal() {
     }
   };
 
+  // Upload the new avatar to Supabase, return the public URL
   const uploadAvatar = async (): Promise<string | null> => {
     if (!avatarUri || !userID) return null;
 
@@ -125,11 +131,13 @@ export default function ProfileSettingsModal() {
       const response = await fetch(avatarUri);
       const blob = await response.blob();
 
+      // Upload the blob to Supabase storage
       const { data, error } = await supabase.storage
         .from('avatars')
         .upload(fileName, blob as never);
       if (error) throw error;
 
+      // Get the public URL of the uploaded image
       const {
         data: { publicUrl },
       } = supabase.storage.from('avatars').getPublicUrl(fileName);
@@ -144,6 +152,7 @@ export default function ProfileSettingsModal() {
     }
   };
 
+  // Function to save all profile changes to Supabase
   const saveChanges = async () => {
     if (!userID) {
       Alert.alert('Not signed in');
@@ -168,7 +177,7 @@ export default function ProfileSettingsModal() {
         .eq('id', userID);
       if (userError) throw userError;
 
-      // Upsert profile details in the profiles table
+      // Update profile details in the profiles table
       const payload = {
         id: userID,
         profession: profession,
@@ -199,6 +208,7 @@ export default function ProfileSettingsModal() {
     );
   }
 
+  // -- UI -- //
   return (
     <KeyboardAvoidingView
       style={styles.container}

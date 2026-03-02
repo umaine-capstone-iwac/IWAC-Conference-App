@@ -28,6 +28,7 @@ interface NotificationJoinedRow {
 }
 
 export default function NotificationsScreen() {
+  // -- STATE -- //
   const openSettings = () => {
     if (Platform.OS === 'ios') {
       Linking.openURL('app-settings:');
@@ -43,6 +44,7 @@ export default function NotificationsScreen() {
     fetchNotifications();
   }, []);
 
+  // -- DATA FETCHING -- //
   const fetchNotifications = async () => {
     try {
       setLoading(true);
@@ -54,12 +56,14 @@ export default function NotificationsScreen() {
 
       if (error) throw error;
 
+      // Transform the joined data into the Notification structure we want to use in our component
       const formattedNotifications: Notification[] = data.map((row) => ({
         id: row.id,
         text: row.notifications?.text || 'No content available',
         read: row.is_read,
       }));
 
+      // Set the notifications state with the formatted data
       setNotifications(formattedNotifications);
     } catch (error) {
       console.error(error);
@@ -69,6 +73,7 @@ export default function NotificationsScreen() {
     }
   };
 
+  // -- RENDERING -- //
   if (loading) {
     return (
       <View style={styles.container}>
@@ -77,6 +82,7 @@ export default function NotificationsScreen() {
     );
   }
 
+  // If there are no notifications, show a message and the manage notifications button
   if (notifications.length === 0) {
     return (
       <View style={styles.container}>
@@ -90,6 +96,7 @@ export default function NotificationsScreen() {
     );
   }
 
+  // Function to mark a notification as read
   const markAsRead = async (notificationId: string) => {
     try {
       const { error } = await supabase
@@ -109,6 +116,7 @@ export default function NotificationsScreen() {
       console.error('Update failed:', error);
     }
   };
+  // -- UI -- //
   return (
     //loads the notifications from supabase
     <View style={styles.container}>
