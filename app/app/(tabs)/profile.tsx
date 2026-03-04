@@ -29,7 +29,7 @@ export default function ProfileScreen() {
   const viewedUserID = otherUserID ? String(otherUserID) : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
-  
+
   // -- DATA LOADING -- //
 
   //fetch the logged in user's ID
