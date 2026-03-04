@@ -95,6 +95,8 @@ export default function NotificationsScreen() {
       </View>
     );
   }
+  
+  // -- INTERACTIONS -- //
 
   // Function to mark a notification as read
   const markAsRead = async (notificationId: string) => {

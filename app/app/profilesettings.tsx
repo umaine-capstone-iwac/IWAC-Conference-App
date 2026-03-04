@@ -37,6 +37,8 @@ export default function ProfileSettingsModal() {
   const [uploading, setUploading] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
 
+  // -- DATA LOADING -- //
+
   // Load the user's profile data
   useEffect(() => {
     const load = async () => {
@@ -99,6 +101,8 @@ export default function ProfileSettingsModal() {
 
     load();
   }, []);
+
+  // -- IMAGE HANDLING -- //
 
   // Function to handle updating the profile picture
   const pickImage = async () => {
@@ -200,6 +204,7 @@ export default function ProfileSettingsModal() {
     }
   };
 
+  // -- RENDERING -- //
   if (loading) {
     return (
       <View style={styles.container}>

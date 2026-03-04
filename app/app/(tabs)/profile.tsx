@@ -27,6 +27,8 @@ export default function ProfileScreen() {
   const viewedUserID = otherUserID ? String(otherUserID) : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
+  
+  // -- DATA LOADING -- //
 
   //fetch the logged in user's ID
   useEffect(() => {
@@ -36,6 +38,7 @@ export default function ProfileScreen() {
     loadUser();
   }, []);
 
+  // Fetch profile data for the user you wish to view
   const fetchProfileData = useCallback(async () => {
     if (!viewedUserID) return; //Don't load if we don't have a user ID to fetch for
 
@@ -84,6 +87,9 @@ export default function ProfileScreen() {
     }
   }, [viewedUserID]);
 
+  // -- SCREEN LIFECYCLE -- //
+
+  // Fetch profile data when the screen loads or when the viewed user ID changes
   useEffect(() => {
     // fetch once when userID becomes available
     if (viewedUserID) fetchProfileData();
