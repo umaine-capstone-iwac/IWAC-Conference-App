@@ -110,7 +110,7 @@ export default function LoginScreen() {
         return;
       } else if (count === 1) {
         await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: 'app://reset-password',
+          redirectTo: 'iwacapp://resetpassword',
         })
       }
     }
