@@ -14,9 +14,9 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function CreateAccount() {
-// -- STATE -- //
+  // -- STATE -- //
 
-// -- DERIVED DATA -- //
+  // -- DERIVED DATA -- //
   //User input
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
