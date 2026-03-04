@@ -14,6 +14,9 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
+  // -- STATE -- //
+
+  // -- DERIVED DATA -- //
   //User input
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -22,12 +25,14 @@ export default function LoginScreen() {
   const [isVisibile, setIsVisibile] = useState(false); //No text in email or password input
   const [isVisibile2, setIsVisibile2] = useState(false); //Email not in 'users_registered' table in supabase database
   const [isVisibile3, setIsVisibile3] = useState(false); //Error logging in, or database related
+  const [isVisibile4, setIsVisibile4] = useState(false); //No email entered for forgot password
 
   //When login button is pressed this function is called
   const handleLogin = async () => {
     setIsVisibile(false);
     setIsVisibile2(false);
     setIsVisibile3(false);
+    setIsVisibile4(false);
 
     //Checks user input
     if (!email || !password) {
@@ -61,6 +66,7 @@ export default function LoginScreen() {
       }
     }
 
+    // -- AUTH INITIALIZATION -- //
     //Signs user up on supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -75,6 +81,42 @@ export default function LoginScreen() {
     }
   };
 
+  const handlePasswordReset = async () => {
+    setIsVisibile2(false);
+    setIsVisibile3(false);
+
+    if (!email) {
+      console.log('Email required');
+      setIsVisibile4(true);
+      return;
+    }
+    const { count, error } = await supabase
+      .from('users_registered')
+      .select('email', { count: 'exact', head: true })
+      .eq('email', email);
+
+    if (count !== null && count !== undefined) {
+      if (count === 0) {
+        console.log('Email not in registrants list');
+        setIsVisibile2(true);
+        return;
+      } else if (count > 1) {
+        console.log('Error more than one account');
+        setIsVisibile3(true);
+        return;
+      } else if (error) {
+        console.log('Error while searching for email in database, try again');
+        setIsVisibile3(true);
+        return;
+      } else if (count === 1) {
+        await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: 'app://reset-password',
+        })
+      }
+    }
+  }
+
+  // -- UI -- //
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -119,11 +161,17 @@ export default function LoginScreen() {
         {isVisibile && <ErText />}
         {isVisibile2 && <ErText2 />}
         {isVisibile3 && <ErText3 />}
+        {isVisibile4 && <ErText4 />}
 
         <TouchableOpacity onPress={() => router.replace('/createAccount')}>
           <View style={styles.button2}>
             <Text>New to the IWAC App?</Text>
             <Text style={styles.buttonText2}>Create Account</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handlePasswordReset}>
+          <View style={styles.button2}>
+            <Text style={styles.buttonText2}>Forgot Password</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -149,7 +197,14 @@ const ErText2 = () => {
 const ErText3 = () => {
   return (
     <ThemedText style={styles.errorText}>
-      Error logging in, ensure email and password are entered correctly
+      Error, ensure information is entered correctly
+    </ThemedText>
+  );
+};
+const ErText4 = () => {
+  return (
+    <ThemedText style={styles.errorText}>
+      Please enter email
     </ThemedText>
   );
 };
