@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import PanelDetail, { Panel } from '@/components/panel-details';
 
-// -- Types -- //
+// -- TYPES -- //
 
 // Response from supabase when selecting user_agenda
 interface UserAgendaResponse {
@@ -26,7 +26,7 @@ interface UserAgendaResponse {
   created_at: string;
   conference_events: Panel;
 }
-// -- Components -- //
+// -- COMPONENTS -- //
 
 // Displays current user's favorited conference events, events fetcjed from user_agenda
 export default function MyAgendaScreen() {
@@ -54,7 +54,7 @@ export default function MyAgendaScreen() {
     fetchAgenda();
   }, []);
 
-  // -- Data Fetching -- //
+  // -- DATA FETCHING -- //
 
   // Fetches agenda of authenticated user's agenda, joins user_agenda and events tables and sorts results by session
   const fetchAgenda = async () => {
@@ -117,7 +117,7 @@ export default function MyAgendaScreen() {
     }, [fetchAgenda]),
   );
 
-  // -- Deletion -- //
+  // -- DELETION -- //
 
   // Deletes specific event from a user's agenda locally and in Supabase
   const removeFromAgenda = async (eventId: number) => {
@@ -155,14 +155,14 @@ export default function MyAgendaScreen() {
     }
   };
 
-  // -- Navigation -- //
+  // -- NAVIGATION -- //
 
   // Go to Sessions page for browsing
   const navigateToBrowse = (): void => {
     router.push('/sessions');
   };
 
-  // -- Rendering -- //
+  // -- RENDERING -- //
 
   // Shows spinner during initial fetch
   if (loading) {
@@ -202,6 +202,8 @@ export default function MyAgendaScreen() {
       </View>
     );
   }
+
+  // -- UI -- //
 
   // Renders card for each event, each with a remove button
   return (
@@ -280,7 +282,7 @@ export default function MyAgendaScreen() {
   );
 }
 
-// -- UI Styling -- //
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   scrollContainer: {

@@ -5,10 +5,10 @@ import 'react-native-reanimated';
 import { StyleSheet } from 'react-native';
 import { Colors } from '@/constants/theme';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
+// Root layout that defines global navigation stack and theme
 export default function RootLayout() {
   return (
+    // Provides navigation theme to the entire app
     <ThemeProvider value={DefaultTheme}>
       <Stack initialRouteName="index">
         <Stack.Screen name="createAccount" options={{ headerShown: false }} />

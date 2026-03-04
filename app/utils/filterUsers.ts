@@ -1,3 +1,8 @@
+// -- FILTER USERS -- //
+
+// - Filters messages by first name, last name, or full name
+// - Sorts alphabetically by last name, then first name.
+
 export type User = {
   id: string;
   first_name: string | null;
@@ -6,11 +11,14 @@ export type User = {
 };
 
 export function filterUsers(users: User[], search: string): User[] {
+  // Normalize search input for consistent matching
   const query = search.trim().toLowerCase();
 
   const filtered = !query
-    ? users
-    : users.filter((user) => {
+    ? // If search is empty, skip filtering and return full list
+      users
+    : // Else, match against first name, last name, or full name
+      users.filter((user) => {
         const first = user.first_name?.toLowerCase() ?? '';
         const last = user.last_name?.toLowerCase() ?? '';
         const fullName = `${first} ${last}`.trim();

@@ -1,10 +1,7 @@
-type MessageUser = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  lastMessage: string | null;
-  timestamp: string | null;
-};
+// -- FILTER MESSAGES -- //
+
+// - Filters users by first name, last name, or full name (case-insensitive),
+// - Sorts results by most recent message timestamp (newest first).
 
 export function filterMessages<
   T extends {
@@ -13,8 +10,10 @@ export function filterMessages<
     timestamp?: string | null;
   },
 >(users: T[], search: string): T[] {
+  // Normalize search input for case-insensitive matching
   const query = search.trim().toLowerCase();
 
+  // Filter text for matches to first name, last name, or full name
   const filtered = users.filter((user) => {
     const first = user.first_name?.toLowerCase() ?? '';
     const last = user.last_name?.toLowerCase() ?? '';
@@ -25,9 +24,10 @@ export function filterMessages<
     );
   });
 
+  // Sort descending so most recent conversations appear first
   return [...filtered].sort((a, b) => {
     const aTime = a.timestamp ?? '';
     const bTime = b.timestamp ?? '';
-    return bTime.localeCompare(aTime); //Put newest message first
+    return bTime.localeCompare(aTime);
   });
 }

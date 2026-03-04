@@ -20,7 +20,7 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { ProfilePicture } from '@/components/profile-picture';
 
-// -- Types -- //
+// -- TYPES -- //
 
 export type Panel = {
   id: number;
@@ -61,7 +61,7 @@ type Props = {
   onBack: () => void;
 };
 
-// -- Component -- //
+// -- COMPONENT -- //
 
 export default function PanelDetail({ panel, userID, onBack }: Props) {
   const scrollRef = useRef<ScrollView>(null);
@@ -77,7 +77,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const [resources, setResources] = useState<PanelResource[]>([]);
   const [resourcesLoading, setResourcesLoading] = useState(true);
 
-  // -- Helpers -- //
+  // -- HELPERS -- //
 
   const isPdfUrl = (url: string) => /\.pdf(\?|#|$)/i.test(url);
 
@@ -124,7 +124,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     }
   };
 
-  // -- Data Fetching -- //
+  // -- DATA FETCHING -- //
 
   const fetchComments = useCallback(async () => {
     setCommentsLoading(true);
@@ -182,7 +182,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     fetchResources();
   }, [fetchComments, fetchResources]);
 
-  // -- Comment Deletion -- //
+  // -- COMMENT DELETION -- //
 
   const deleteComment = async (commentId: number) => {
     const { error } = await supabase
@@ -197,7 +197,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     }
   };
 
-  // -- Comment Submission -- //
+  // -- COMMENT SUBMISSION -- //
 
   const submitComment = async () => {
     if (!userID) {
@@ -224,7 +224,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     setSubmitting(false);
   };
 
-  // -- Rendering -- //
+  // -- UI -- //
 
   return (
     <KeyboardAvoidingView
@@ -419,7 +419,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   );
 }
 
-// -- Styles -- //
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   scrollContainer: {
