@@ -7,6 +7,8 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
 
+// -- INTERFACES -- //
+
 interface ProfileDetails {
   // Defines the profile details structure
   id: string;
