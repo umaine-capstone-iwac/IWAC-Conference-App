@@ -14,6 +14,9 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function CreateAccount() {
+// -- STATE -- //
+
+// -- DERIVED DATA -- //
   //User input
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -49,6 +52,8 @@ export default function CreateAccount() {
       setIsVisibile3(true);
       return;
     }
+
+    // -- Searching Database -- //
     //Checks that user entered email is within 'users_registered' table in supabase database
     const { count, error } = await supabase
       .from('users_registered')
@@ -67,6 +72,7 @@ export default function CreateAccount() {
           setIsVisibile5(true);
           return;
         } else {
+          // -- AUTH INITIALIZATION -- //
           const { error } = await supabase.auth.signUp({
             email,
             password,
@@ -95,6 +101,7 @@ export default function CreateAccount() {
     }
   };
 
+  // -- UI -- //
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.contentContainer}>

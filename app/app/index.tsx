@@ -14,6 +14,9 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
+  // -- STATE -- //
+
+  // -- DERIVED DATA -- //
   //User input
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +38,7 @@ export default function LoginScreen() {
       setIsVisibile(true);
       return;
     } else {
+      // -- Searching Database -- //
       //Checks that user entered email is within 'users_registered' table in supabase database
       const { count, error } = await supabase
         .from('users_registered')
@@ -61,6 +65,8 @@ export default function LoginScreen() {
       }
     }
 
+    // -- AUTH INITIALIZATION -- //
+
     //Signs user up on supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -75,6 +81,7 @@ export default function LoginScreen() {
     }
   };
 
+  // -- UI -- //
   return (
     <KeyboardAvoidingView
       style={styles.container}
