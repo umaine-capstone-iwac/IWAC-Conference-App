@@ -18,7 +18,8 @@ export default function CreateAccount() {
 
   // -- DERIVED DATA -- //
   //User input
-  const [name, setName] = useState('');
+  const [fName, setFName] = useState('');
+  const [lName, setLName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
@@ -87,7 +88,7 @@ export default function CreateAccount() {
             if (user) {
               await supabase
                 .from('users')
-                .insert({ id: user.id, first_name: name, admin: false });
+                .insert({ id: user.id, first_name: fName, last_name: lName, admin: false });
               await supabase.from('profiles').insert({ id: user.id });
             }
             router.replace('/(tabs)');
@@ -109,18 +110,24 @@ export default function CreateAccount() {
         <ThemedText type="subtitle" style={styles.subtitle}>
           Create Account
         </ThemedText>
-        {isVisibile ? <ErText /> : null}
-        {isVisibile2 ? <ErText2 /> : null}
-        {isVisibile3 ? <ErText3 /> : null}
-        {isVisibile4 ? <ErText4 /> : null}
-        {isVisibile5 ? <ErText5 /> : null}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
-            Name
+            First Name
           </ThemedText>
           <Input
-            text="Name"
-            onChangeText={(text) => setName(text)}
+            text="First Name"
+            onChangeText={(text) => setFName(text)}
+            autoCapitalize="none"
+            style={styles.input}
+          />
+        </View>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>
+            Last Name
+          </ThemedText>
+          <Input
+            text="Last Name"
+            onChangeText={(text) => setLName(text)}
             autoCapitalize="none"
             style={styles.input}
           />
@@ -165,6 +172,11 @@ export default function CreateAccount() {
             <Text style={styles.buttonText}>Login</Text>
           </View>
         </TouchableOpacity>
+        {isVisibile ? <ErText /> : null}
+        {isVisibile2 ? <ErText2 /> : null}
+        {isVisibile3 ? <ErText3 /> : null}
+        {isVisibile4 ? <ErText4 /> : null}
+        {isVisibile5 ? <ErText5 /> : null}
         <TouchableOpacity
           onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in (tabs) folder
         >
