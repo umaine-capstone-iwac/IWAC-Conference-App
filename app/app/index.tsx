@@ -113,10 +113,10 @@ export default function LoginScreen() {
       } else if (count === 1) {
         await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: 'iwacapp://resetpassword',
-        })
+        });
       }
     }
-  }
+  };
 
   // -- UI -- //
   return (
@@ -204,11 +204,7 @@ const ErText3 = () => {
   );
 };
 const ErText4 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Please enter email
-    </ThemedText>
-  );
+  return <ThemedText style={styles.errorText}>Please enter email</ThemedText>;
 };
 
 const styles = StyleSheet.create({

@@ -6,7 +6,7 @@ import LoginScreen from './app/index';
 import ResetPasswordScreen from './app/resetpassword';
 
 //Contains methods to define/navigate screens
-const Stack = createNativeStackNavigator<RootStackParamList>()
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App(): React.JSX.Element {
   return (
@@ -17,5 +17,5 @@ export default function App(): React.JSX.Element {
         <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       </Stack.Navigator>
     </NavigationContainer>
-  )
+  );
 }

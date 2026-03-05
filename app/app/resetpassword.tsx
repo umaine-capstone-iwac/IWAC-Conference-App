@@ -17,13 +17,13 @@ export default function ResetPasswordScreen(): React.JSX.Element {
     });
 
     if (error) {
-        Alert.alert('Error', error.message);
-        console.log('Error updating password', error.message);
+      Alert.alert('Error', error.message);
+      console.log('Error updating password', error.message);
     } else {
       Alert.alert('Success', 'Password updated successfully');
       console.log('Success', 'Password updated successfully');
     }
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -36,7 +36,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
       />
       <Button title="Update Password" onPress={handleResetPassword} />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderRadius: 6,
   },
-})
+});

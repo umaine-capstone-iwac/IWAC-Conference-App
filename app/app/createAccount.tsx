@@ -86,9 +86,12 @@ export default function CreateAccount() {
               data: { user },
             } = await supabase.auth.getUser();
             if (user) {
-              await supabase
-                .from('users')
-                .insert({ id: user.id, first_name: fName, last_name: lName, admin: false });
+              await supabase.from('users').insert({
+                id: user.id,
+                first_name: fName,
+                last_name: lName,
+                admin: false,
+              });
               await supabase.from('profiles').insert({ id: user.id });
             }
             router.replace('/(tabs)');
