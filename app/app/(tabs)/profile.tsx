@@ -7,6 +7,8 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
 
+// -- INTERFACES -- //
+
 interface ProfileDetails {
   // Defines the profile details structure
   id: string;
@@ -20,16 +22,16 @@ interface ProfileDetails {
 }
 
 export default function ProfileScreen() {
+  // -- STATE -- //
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
   const { otherUserID } = useLocalSearchParams();
-  // const { userID: otherUserID, otherUserID } = useLocalSearchParams(); // Get userID from route parameters if available
-  // const viewedUserID = otherUserID ?? userID; // Determine which userID to use for fetching profile data (route parameter or logged in user). used for viewing other peoples' profiles
   const viewedUserID = otherUserID ? String(otherUserID) : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
 
-  // console.log('userID: ', userID);
+  // -- DATA LOADING -- //
+
   //fetch the logged in user's ID
   useEffect(() => {
     const loadUser = async () => {
@@ -38,8 +40,8 @@ export default function ProfileScreen() {
     loadUser();
   }, []);
 
+  // Fetch profile data for the user you wish to view
   const fetchProfileData = useCallback(async () => {
-    //const viewedUserID = otherUserID ?? otherUserID ?? userID; // Determines which user to display based on route parameters, or logged in user ID
     if (!viewedUserID) return; //Don't load if we don't have a user ID to fetch for
 
     try {
@@ -87,20 +89,15 @@ export default function ProfileScreen() {
     }
   }, [viewedUserID]);
 
+  // -- SCREEN LIFECYCLE -- //
+
+  // Fetch profile data when the screen loads or when the viewed user ID changes
   useEffect(() => {
     // fetch once when userID becomes available
     if (viewedUserID) fetchProfileData();
   }, [viewedUserID, fetchProfileData]);
 
-  // re-fetch whenever the screen gains focus
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     fetchProfileData();
-  //   }, [fetchProfileData]),
-  // );
-  console.log(otherUserID);
-  console.log('userID:', userID);
-  console.log('viewedUserID:', viewedUserID);
+  // -- UI -- //
   return (
     <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
       <ThemedView style={styles.profileContainer}>

@@ -11,8 +11,10 @@ import { supabase } from '@/lib/supabase';
 export default function SearchUsersScreen() {
   // -- STATE -- //
 
+  // Current authenticated user's ID
   const [userID, setUserID] = useState<string>();
 
+  // All other users (with avatar data attached)
   const [users, setUsers] = useState<
     {
       id: string;
@@ -22,6 +24,7 @@ export default function SearchUsersScreen() {
     }[]
   >([]);
 
+  // Search input state
   const [search, setSearch] = useState('');
 
   // -- DERIVED DATA -- //
@@ -31,9 +34,19 @@ export default function SearchUsersScreen() {
     return filterUsers(users, search);
   }, [users, search]);
 
-  // -- DATA LOADING -- //
+  // -- AUTH INITIALIZATION -- //
 
-  // Load all users except the current user
+  // Fetch the logged-in user's ID on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+  }, []);
+
+  // -- DATA FETCHING -- //
+
+  // Load all users except for the current user
   const loadUsers = useCallback(async () => {
     if (!userID) return;
 
@@ -48,7 +61,7 @@ export default function SearchUsersScreen() {
       return;
     }
 
-    // Fetch profiles for these users to get avatar URLs
+    // Fetch avatar url profile data
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
       .select('id, avatar_url')
@@ -61,7 +74,7 @@ export default function SearchUsersScreen() {
       console.error('Error loading profiles:', profilesError);
     }
 
-    // Merge avatar URLs into users
+    // Merge avatar URLs into user records
     const usersWithAvatars = usersData.map((user) => {
       const profile = profilesData?.find((p) => p.id === user.id);
       return { ...user, avatar_url: profile?.avatar_url ?? null };
@@ -69,16 +82,6 @@ export default function SearchUsersScreen() {
 
     setUsers(usersWithAvatars);
   }, [userID]);
-
-  // -- AUTH INITIALIZATION -- //
-
-  // Fetch the logged-in user's ID on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      setUserID((await supabase.auth.getSession()).data.session?.user.id);
-    };
-    loadUser();
-  }, []);
 
   // -- SCREEN EFFECTS -- //
 
@@ -122,6 +125,8 @@ export default function SearchUsersScreen() {
     </SafeAreaView>
   );
 }
+
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   container: {

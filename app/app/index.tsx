@@ -40,6 +40,7 @@ export default function LoginScreen() {
       setIsVisibile(true);
       return;
     } else {
+      // -- Searching Database -- //
       //Checks that user entered email is within 'users_registered' table in supabase database
       const { count, error } = await supabase
         .from('users_registered')
@@ -67,6 +68,7 @@ export default function LoginScreen() {
     }
 
     // -- AUTH INITIALIZATION -- //
+
     //Signs user up on supabase
     const { error } = await supabase.auth.signInWithPassword({
       email,

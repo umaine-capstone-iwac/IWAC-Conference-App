@@ -1,5 +1,7 @@
 import 'react-native-url-polyfill/auto';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// Initialize and export shared Supabase client using Expo environment variables
+
 import { createClient } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 

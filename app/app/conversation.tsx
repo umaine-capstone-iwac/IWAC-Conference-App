@@ -54,19 +54,94 @@ export default function ConversationScreen() {
 
   const { otherUserID } = useLocalSearchParams();
 
-  // -- DATA LOADING FUNCTIONS -- //
+  // -- AUTH INITIALIZATION -- //
 
-  // Scroll to the bottom of the chat
-  const scrollToBottom = (animated = true) => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToOffset({ offset: 0, animated });
-    }, 50);
-  };
+  // Fetch the logged-in user's ID on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      setUserID((await supabase.auth.getSession()).data.session?.user.id);
+    };
+    loadUser();
+  }, []);
+
+  // -- DATA FETCHING -- //
+
+  // Load the other user's profile info
+  const loadOtherUser = useCallback(async () => {
+    if (!otherUserID) return;
+
+    // Fetch id, first name, and last name from 'users'
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id, first_name, last_name')
+      .eq('id', otherUserID)
+      .single();
+
+    if (userError || !userData) {
+      console.error('Error loading other user:', userError);
+      return;
+    }
+
+    // Fetch profile picture url from 'profiles'
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('avatar_url')
+      .eq('id', otherUserID)
+      .single();
+
+    if (profileError) {
+      console.error('Error loading user profile:', profileError);
+    }
+
+    setOtherUser({
+      id: userData.id,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      avatar_url: profileData?.avatar_url ?? null,
+    });
+  }, [otherUserID]);
+
+  // Load all messages between the two users
+  const loadMessages = useCallback(async () => {
+    if (!userID || !otherUser) return;
+
+    // Fetch message id, userID, otherUserID, content, timestamp, and read status
+    // from 'messages'
+    const { data, error } = await supabase
+      .from('messages')
+      .select('id, user_id, recipient_id, content, timestamp, is_read')
+      .or(
+        `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
+          `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`,
+      )
+      .order('timestamp', { ascending: true });
+
+    if (error) {
+      console.error('Error loading messages:', error);
+      return;
+    }
+
+    // Store all messages in processedMessages
+    const processedMessages = data.map((msg) => ({
+      id: msg.id,
+      content: msg.content,
+      timestamp: msg.timestamp,
+      fromUser: msg.user_id === userID,
+      isRead: msg.is_read,
+    }));
+
+    setMessages(processedMessages);
+    // Show most recent message after loading, without scroll animation
+    scrollToBottom(false);
+  }, [userID, otherUser]);
+
+  // -- DATA UPLOADING -- //
 
   // Send a new message
   const sendMessage = async () => {
     if (!newMessage.trim() || !userID || !otherUser) return;
 
+    // Insert the new message into 'messages'
     const { data, error } = await supabase
       .from('messages')
       .insert({
@@ -95,77 +170,15 @@ export default function ConversationScreen() {
       },
     ]);
 
-    setNewMessage('');
-    scrollToBottom(true);
+    setNewMessage(''); // Clear input field
+    scrollToBottom(true); // Animated scroll to the newly sent message
   };
-
-  // Load the other user's profile info
-  const loadOtherUser = useCallback(async () => {
-    if (!otherUserID) return;
-
-    const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id, first_name, last_name')
-      .eq('id', otherUserID)
-      .single();
-
-    if (userError || !userData) {
-      console.error('Error loading other user:', userError);
-      return;
-    }
-
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('avatar_url')
-      .eq('id', otherUserID)
-      .single();
-
-    if (profileError) {
-      console.error('Error loading user profile:', profileError);
-    }
-
-    setOtherUser({
-      id: userData.id,
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      avatar_url: profileData?.avatar_url ?? null,
-    });
-  }, [otherUserID]);
-
-  // Load all messages between the two users
-  const loadMessages = useCallback(async () => {
-    if (!userID || !otherUser) return;
-
-    const { data, error } = await supabase
-      .from('messages')
-      .select('id, user_id, recipient_id, content, timestamp, is_read')
-      .or(
-        `and(user_id.eq.${userID},recipient_id.eq.${otherUser.id}),` +
-          `and(user_id.eq.${otherUser.id},recipient_id.eq.${userID})`,
-      )
-      .order('timestamp', { ascending: true });
-
-    if (error) {
-      console.error('Error loading messages:', error);
-      return;
-    }
-
-    const processedMessages = data.map((msg) => ({
-      id: msg.id,
-      content: msg.content,
-      timestamp: msg.timestamp,
-      fromUser: msg.user_id === userID,
-      isRead: msg.is_read,
-    }));
-
-    setMessages(processedMessages);
-    scrollToBottom(false);
-  }, [userID, otherUser]);
 
   // Mark messages from otherUser as read
   const markConversationAsRead = useCallback(async () => {
     if (!userID || !otherUser) return;
 
+    // Change is_read to True in 'messages'
     const { error } = await supabase
       .from('messages')
       .update({ is_read: true })
@@ -179,24 +192,14 @@ export default function ConversationScreen() {
     }
   }, [userID, otherUser]);
 
-  // -- AUTH INITIALIZATION -- //
-
-  // Fetch the logged-in user's ID on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      setUserID((await supabase.auth.getSession()).data.session?.user.id);
-    };
-    loadUser();
-  }, []);
-
   // -- SCREEN EFFECTS -- //
 
-  // Load other user when param changes
+  // Trigger profile fetch when the conversation partner changes
   useEffect(() => {
     loadOtherUser();
   }, [loadOtherUser]);
 
-  // Load messages when both users are ready
+  // After both users are resolved, load the conversation history
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
@@ -212,7 +215,7 @@ export default function ConversationScreen() {
     navigation.setOptions({ title });
   }, [otherUser, navigation]);
 
-  //Mark new messages as read on screen open
+  // Mark new messages as read on screen open
   useEffect(() => {
     if (!userID || !otherUser) return;
     markConversationAsRead();
@@ -224,6 +227,7 @@ export default function ConversationScreen() {
   useEffect(() => {
     if (!userID || !otherUser) return;
 
+    // Create a realtime channel scoped to this conversation
     const channel = supabase
       .channel(`conversation-${userID}-${otherUser.id}`)
       .on(
@@ -236,12 +240,14 @@ export default function ConversationScreen() {
         (payload) => {
           const msg = payload.new;
 
+          // Ensure the inserted message belongs to THIS conversation
           const isThisConversation =
             (msg.user_id === userID && msg.recipient_id === otherUser.id) ||
             (msg.user_id === otherUser.id && msg.recipient_id === userID);
 
           if (!isThisConversation) return;
 
+          // Add message to local state (avoid duplicates from optimistic updates)
           setMessages((prev) => {
             if (prev.some((m) => m.id === msg.id)) return prev;
 
@@ -257,7 +263,7 @@ export default function ConversationScreen() {
             ];
           });
 
-          // Mark new message from other user as read in DB
+          // If new message was sent to the current user, mark it as read in DB
           if (msg.user_id === otherUser.id && msg.recipient_id === userID) {
             supabase
               .from('messages')
@@ -265,6 +271,7 @@ export default function ConversationScreen() {
               .eq('id', msg.id);
           }
 
+          // Animated sroll to the bottom of the chat
           scrollToBottom(true);
         },
       )
@@ -277,6 +284,14 @@ export default function ConversationScreen() {
 
   // -- UI -- //
 
+  // Scroll to the bottom of the chat
+  const scrollToBottom = (animated = true) => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToOffset({ offset: 0, animated });
+    }, 50);
+  };
+
+  // Construct the other user's profile piture once for efficiency
   const otherUserProfilePic = otherUser ? (
     <ProfilePicture
       size={35}
@@ -285,6 +300,7 @@ export default function ConversationScreen() {
     />
   ) : null;
 
+  // Conversation screen UI
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -352,6 +368,8 @@ export default function ConversationScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   container: {

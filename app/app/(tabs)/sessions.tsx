@@ -21,6 +21,8 @@ import { Dropdown } from 'react-native-element-dropdown';
 import PanelDetail, { Panel } from '@/components/panel-details';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
+// -- TYPES -- //
+
 type SessionSlot = {
   id: string;
   label: string;
@@ -40,14 +42,19 @@ type ConferenceEventRow = {
 };
 
 export default function SessionsScreen() {
-  // Tag persistence logic
+  // -- ROUTING -- //
+
   const router = useRouter();
   const params = useLocalSearchParams();
 
+  // Session filter persistence
   const sessionLabel =
     typeof params.session === 'string' ? params.session : null;
 
+  // Tag filter persistence
   const tagFilter = typeof params.topic === 'string' ? params.topic : null;
+
+  // -- STATE -- //
 
   // Loading state for initial fetch
   const [loading, setLoading] = useState(true);
@@ -55,6 +62,17 @@ export default function SessionsScreen() {
   // Fetch the logged in user's ID
   const [userID, setUserID] = useState<string | undefined>();
 
+  // Grouped sessions built from conference_events
+  const [sessions, setSessions] = useState<SessionSlot[]>([]);
+
+  // ID's of events saved in user_agenda
+  const [savedPanels, setSavedPanels] = useState<number[]>([]);
+
+  // UI state
+  const [search, setSearch] = useState('');
+  const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
+
+  // -- AUTH INITIALIZATION -- //
   useEffect(() => {
     const loadUser = async () => {
       const { data, error } = await supabase.auth.getSession();
@@ -68,15 +86,7 @@ export default function SessionsScreen() {
     loadUser();
   }, []);
 
-  // Grouped sessions built from conference_events
-  const [sessions, setSessions] = useState<SessionSlot[]>([]);
-
-  // ID's of events saved in user_agenda
-  const [savedPanels, setSavedPanels] = useState<number[]>([]);
-
-  // UI state
-  const [search, setSearch] = useState('');
-  const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
+  // -- DATA FETCHING -- //
 
   // Fetch events from conference_events
   const fetchSessions = useCallback(async () => {
@@ -160,6 +170,8 @@ export default function SessionsScreen() {
     setSavedPanels((data ?? []).map((r) => r.event_id));
   }, [userID]);
 
+  // -- SCREEN EFFECTS -- //
+
   useEffect(() => {
     fetchSessions();
     fetchSavedPanels();
@@ -172,6 +184,8 @@ export default function SessionsScreen() {
       fetchSavedPanels();
     }, [fetchSessions, fetchSavedPanels]),
   );
+
+  // -- ACTIONS -- //
 
   // Add event to user_agenda
   const addToAgenda = async (eventId: number) => {
@@ -225,6 +239,8 @@ export default function SessionsScreen() {
       );
     }
   };
+
+  // -- FILTERING -- //
 
   // Dropdown options
   const sessionOptions = useMemo(
@@ -299,7 +315,8 @@ export default function SessionsScreen() {
     );
   }
 
-  // Main UI
+  // -- UI -- //
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
       <ScrollView
@@ -349,12 +366,14 @@ export default function SessionsScreen() {
             />
           </ThemedView>
 
+          {/* Render each session group + panels */}
           {filteredSessions.map((slot) => (
             <View key={slot.id}>
               <ThemedText style={{ fontWeight: '700' }}>
                 {slot.label}
               </ThemedText>
 
+              {/* Panel cards */}
               {slot.panels.map((panel) => (
                 <TouchableOpacity
                   key={panel.id}
@@ -362,6 +381,7 @@ export default function SessionsScreen() {
                   onPress={() => setSelectedPanel(panel)}
                 >
                   <ThemedView style={styles.sessionCardDetails}>
+                    {/* Heart button + save to agenda */}
                     <Pressable
                       style={styles.heartButton}
                       onPress={(e) => {
@@ -381,8 +401,10 @@ export default function SessionsScreen() {
                       />
                     </Pressable>
 
+                    {/* Panel title */}
                     <ThemedText type="title">{panel.title}</ThemedText>
 
+                    {/* Location row */}
                     <View style={styles.detailRow}>
                       <IconSymbol
                         size={18}
@@ -392,6 +414,7 @@ export default function SessionsScreen() {
                       <ThemedText>{panel.location}</ThemedText>
                     </View>
 
+                    {/* Speaker row */}
                     <View style={styles.detailRow}>
                       <IconSymbol
                         size={18}
@@ -410,6 +433,8 @@ export default function SessionsScreen() {
     </SafeAreaView>
   );
 }
+
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   scrollContainer: { flex: 1, backgroundColor: Colors.awac.beige },

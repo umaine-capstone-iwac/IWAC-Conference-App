@@ -4,6 +4,7 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 
+// Main tab layout for the app
 export default function TabLayout() {
   return (
     <Tabs
@@ -26,20 +27,6 @@ export default function TabLayout() {
           ),
         }}
       />
-      {/* <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="house.fill" color={color} />,
-        }}
-      /> */}
-      {/* <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={30} name="paperplane.fill" color={color} />,
-        }}
-      /> */}
       <Tabs.Screen
         name="sessions"
         options={{

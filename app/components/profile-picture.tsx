@@ -7,6 +7,7 @@ export type ProfilePictureProps = {
   userId?: string;
 };
 
+// -- COMPONENT -- //
 export function ProfilePicture({
   size,
   avatarUrl,
@@ -36,6 +37,9 @@ export function ProfilePicture({
     />
   );
 
+  // -- NAVIGATION -- //
+
+  // If a userId is provided, make the profile picture clickable to navigate to that user's profile
   if (userId) {
     return (
       <Pressable

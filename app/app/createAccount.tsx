@@ -53,6 +53,8 @@ export default function CreateAccount() {
       setIsVisibile3(true);
       return;
     }
+
+    // -- Searching Database -- //
     //Checks that user entered email is within 'users_registered' table in supabase database
     const { count, error } = await supabase
       .from('users_registered')
