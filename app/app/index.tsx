@@ -12,7 +12,6 @@ import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-
 export default function LoginScreen() {
   // -- STATE -- //
 

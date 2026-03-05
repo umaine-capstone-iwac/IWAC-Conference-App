@@ -14,6 +14,6 @@ export const supabase = createClient(supabaseUrl!, supabaseAnonKey!, {
     storage: AsyncStorage, //where user session is stored, AsyncStorage is specifically for IOS/Android
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false, //Mobile only
+    detectSessionInUrl: true,
   },
 });
