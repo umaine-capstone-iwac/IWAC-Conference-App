@@ -26,6 +26,7 @@ interface UserAgendaResponse {
   created_at: string;
   conference_events: Panel;
 }
+
 // -- COMPONENTS -- //
 
 // Displays current user's favorited conference events, events fetcjed from user_agenda
@@ -243,7 +244,9 @@ export default function MyAgendaScreen() {
                 <Text style={styles.dateText}>{event.date}</Text>
               </View>
 
-              <ThemedText type="title">{event.title}</ThemedText>
+              <ThemedText style={{ fontSize: 19 }} type="title">
+                {event.title}
+              </ThemedText>
 
               {/* Session time */}
               <View style={styles.detailRow}>

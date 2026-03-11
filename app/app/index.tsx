@@ -15,109 +15,94 @@ import { supabase } from '@/lib/supabase';
 export default function LoginScreen() {
   // -- STATE -- //
 
-  // -- DERIVED DATA -- //
-  //User input
+  //User input state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  //To toggle alert texts based on user input
-  const [isVisibile, setIsVisibile] = useState(false); //No text in email or password input
-  const [isVisibile2, setIsVisibile2] = useState(false); //Email not in 'users_registered' table in supabase database
-  const [isVisibile3, setIsVisibile3] = useState(false); //Error logging in, or database related
-  const [isVisibile4, setIsVisibile4] = useState(false); //No email entered for forgot password
+  //Error text state
+  const [errorText, setErrorText] = useState('');
 
-  //When login button is pressed this function is called
-  const handleLogin = async () => {
-    setIsVisibile(false);
-    setIsVisibile2(false);
-    setIsVisibile3(false);
-    setIsVisibile4(false);
+  // -- AUTHENTICATION HELPERS -- //
 
-    //Checks user input
-    if (!email || !password) {
-      console.log('Email and password required');
-      setIsVisibile(true);
-      return;
-    } else {
-      // -- Searching Database -- //
-      //Checks that user entered email is within 'users_registered' table in supabase database
-      const { count, error } = await supabase
-        .from('users_registered')
-        .select('email', { count: 'exact', head: true })
-        .eq('email', email);
-
-      if (error) {
-        console.log('Error searching for email', error);
-        setIsVisibile3(true);
-        return;
-      }
-
-      //if count = 1 then true, if count = 0 then no email was found in table
-      if (count !== null && count !== undefined) {
-        if (count === 0) {
-          console.log('Email not in registrants list');
-          setIsVisibile2(true);
-          return;
-        } else if (count > 1) {
-          console.log('Error more than one account');
-          setIsVisibile3(true);
-          return;
-        }
-      }
-    }
-
-    // -- AUTH INITIALIZATION -- //
-
-    //Signs user up on supabase
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      console.error('Auth error:', error.message);
-      setIsVisibile3(true);
-    } else {
-      router.replace('/(tabs)');
-    }
-  };
-
-  const handlePasswordReset = async () => {
-    setIsVisibile2(false);
-    setIsVisibile3(false);
-
-    if (!email) {
-      console.log('Email required');
-      setIsVisibile4(true);
-      return;
-    }
+  // Check if an email is registered for the conference
+  const checkRegistrant = async (email: string) => {
     const { count, error } = await supabase
       .from('users_registered')
       .select('email', { count: 'exact', head: true })
       .eq('email', email);
 
-    if (count !== null && count !== undefined) {
-      if (count === 0) {
-        console.log('Email not in registrants list');
-        setIsVisibile2(true);
-        return;
-      } else if (count > 1) {
-        console.log('Error more than one account');
-        setIsVisibile3(true);
-        return;
-      } else if (error) {
-        console.log('Error while searching for email in database, try again');
-        setIsVisibile3(true);
-        return;
-      } else if (count === 1) {
-        await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: 'iwacapp://resetpassword',
-        });
-      }
+    if (error)
+      return { valid: false, message: 'Error checking registrants list' };
+    if (!count || count === 0)
+      return { valid: false, message: 'Email not in registrants list' };
+
+    return { valid: true, message: '' };
+  };
+
+  // -- LOGIN -- //
+
+  // Attempt to log in user on button press
+  const handleLogin = async () => {
+    // Verify both fields are entered
+    if (!email || !password) {
+      setErrorText('Email and password required');
+      return;
+    }
+
+    // Check that user is registered
+    const result = await checkRegistrant(email);
+
+    // Return if not registered
+    if (!result.valid) {
+      setErrorText(result.message);
+      return;
+    }
+
+    // Attempt to sign in with provided credentials
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    // If failure, show error
+    if (error) {
+      console.error('Auth error:', error.message);
+      setErrorText('Error, ensure information is entered correctly');
+    }
+    // If success, take user to MyAgenda
+    else {
+      router.replace('/(tabs)');
     }
   };
 
+  // -- FORGOT PASSWORD -- //
+
+  const handlePasswordReset = async () => {
+    setErrorText('');
+
+    // Verify email is entered
+    if (!email) {
+      setErrorText('Email required');
+      return;
+    }
+
+    // Check that user is registered
+    const result = await checkRegistrant(email);
+
+    // Return if not registered
+    if (!result.valid) {
+      setErrorText(result.message);
+      return; //
+    }
+
+    // If registered, send reset password email
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'iwacapp://resetpassword',
+    });
+  };
+
   // -- UI -- //
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -154,25 +139,24 @@ export default function LoginScreen() {
         </View>
 
         <TouchableOpacity onPress={handleLogin}>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
+          <View style={styles.loginButton}>
+            <Text style={styles.loginButtonText}>Login</Text>
           </View>
         </TouchableOpacity>
 
-        {isVisibile && <ErText />}
-        {isVisibile2 && <ErText2 />}
-        {isVisibile3 && <ErText3 />}
-        {isVisibile4 && <ErText4 />}
+        {errorText && (
+          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+        )}
 
         <TouchableOpacity onPress={() => router.replace('/createAccount')}>
-          <View style={styles.button2}>
+          <View style={styles.linkButton}>
             <Text>New to the IWAC App?</Text>
-            <Text style={styles.buttonText2}>Create Account</Text>
+            <Text style={styles.linkButtonText}>Create Account</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={handlePasswordReset}>
-          <View style={styles.button2}>
-            <Text style={styles.buttonText2}>Forgot Password</Text>
+          <View style={styles.linkButton}>
+            <Text style={styles.linkButtonText}>Forgot Password?</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -180,31 +164,7 @@ export default function LoginScreen() {
   );
 }
 
-const ErText = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Email and password required
-    </ThemedText>
-  );
-};
-
-const ErText2 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Email not in registrants list
-    </ThemedText>
-  );
-};
-const ErText3 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Error, ensure information is entered correctly
-    </ThemedText>
-  );
-};
-const ErText4 = () => {
-  return <ThemedText style={styles.errorText}>Please enter email</ThemedText>;
-};
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   container: {
@@ -213,7 +173,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center', // vertical center
+    justifyContent: 'center',
     padding: 20,
   },
   title: {
@@ -240,7 +200,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
   },
-  button: {
+  loginButton: {
     backgroundColor: Colors.awac.orange,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -248,12 +208,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-  buttonText: {
+  loginButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
-  button2: {
+  linkButton: {
     backgroundColor: Colors.awac.beige,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -262,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  buttonText2: {
+  linkButtonText: {
     marginTop: 10,
     color: 'mediumblue',
     fontSize: 14,
