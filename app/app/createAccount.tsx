@@ -16,176 +16,189 @@ import { supabase } from '@/lib/supabase';
 export default function CreateAccount() {
   // -- STATE -- //
 
-  // -- DERIVED DATA -- //
-  //User input
+  // User input state
   const [fName, setFName] = useState('');
   const [lName, setLName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
 
-  //To toggle alert texts based on user input
-  const [isVisibile, setIsVisibile] = useState(false); //No text in email or password box
-  const [isVisibile2, setIsVisibile2] = useState(false); //Password < 6 characters
-  const [isVisibile3, setIsVisibile3] = useState(false); //Password != confirmation password
-  const [isVisibile4, setIsVisibile4] = useState(false); //Email not in 'users_registered' table in supabase database
-  const [isVisibile5, setIsVisibile5] = useState(false); //Errors related to database, signing up user, searching for user, etc
+  // Error text state
+  const [errorText, setErrorText] = useState('');
 
-  //When create account or login button is pressed this function is called
-  const handleSignIn = async () => {
-    setIsVisibile(false);
-    setIsVisibile2(false);
-    setIsVisibile3(false);
-    setIsVisibile4(false);
-    setIsVisibile5(false);
+  // -- AUTHENTICATION HELPERS -- //
 
-    //Checks user input
-    if (!email || !password) {
-      console.log('Email and password required');
-      setIsVisibile(true);
-      return;
-    } else if (password.length < 6) {
-      console.log('Password too short');
-      setIsVisibile2(true);
-      return;
-    } else if (passCheck !== password) {
-      console.log('Your passwords do not match');
-      setIsVisibile3(true);
-      return;
-    }
-
-    // -- Searching Database -- //
-    //Checks that user entered email is within 'users_registered' table in supabase database
+  // Check if an email is registered for the conference
+  const checkRegistrant = async (email: string) => {
     const { count, error } = await supabase
       .from('users_registered')
       .select('email', { count: 'exact', head: true })
       .eq('email', email);
 
-    //if count = 1 then true, if count = 0 then no email was found in table
-    if (count !== null && count !== undefined) {
-      if (count === 0) {
-        console.log('Email not in registrants list');
-        setIsVisibile4(true);
-        return;
-      } else if (count === 1) {
-        if (error) {
-          console.log('Error searching for email', error);
-          setIsVisibile5(true);
-          return;
-        } else {
-          // -- AUTH INITIALIZATION -- //
-          const { error } = await supabase.auth.signUp({
-            email,
-            password,
-          });
-          if (error) {
-            console.error('Auth error:', error.message);
-            setIsVisibile5(true);
-          } else {
-            const {
-              data: { user },
-            } = await supabase.auth.getUser();
-            if (user) {
-              await supabase.from('users').insert({
-                id: user.id,
-                first_name: fName,
-                last_name: lName,
-                admin: false,
-              });
-              await supabase.from('profiles').insert({ id: user.id });
-            }
-            router.replace('/(tabs)');
-          }
-        }
-      } else if (count > 1) {
-        console.log('More than one account found...');
-        setIsVisibile5(true);
-        return;
-      }
+    if (error)
+      return { valid: false, message: 'Error checking registrants list' };
+    if (!count || count === 0)
+      return { valid: false, message: 'Email not in registrants list' };
+
+    return { valid: true, message: '' };
+  };
+
+  // -- CREATE ACCOUNT -- //
+
+  const handleCreateAccount = async () => {
+    setErrorText('');
+
+    // Verify all fields are entered
+    if (!email || !password || !passCheck) {
+      setErrorText('Email and password required');
+      return;
+    } else if (!fName || !lName) {
+      setErrorText('First and last name required');
+      return;
     }
+
+    // Verify password length
+    if (password.length < 6) {
+      setErrorText('Password must be at least 6 characters');
+      return;
+    }
+
+    // Verify passwords match
+    if (passCheck !== password) {
+      setErrorText('Passwords do not match');
+      return;
+    }
+
+    // Check that user is registered
+    const result = await checkRegistrant(email);
+    if (!result.valid) {
+      setErrorText(result.message);
+      return;
+    }
+
+    // Attempt to create account with provided credentials
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: 'iwacapp://login',
+        data: { first_name: fName, last_name: lName },
+      },
+    });
+
+    // If failure, show error
+    if (error) {
+      console.error('Auth error:', error.message);
+      if (error.message === 'User already registered') {
+        setErrorText('An account already exists with this email.');
+      } else {
+        setErrorText('Error creating account, please try again');
+      }
+      return;
+    }
+
+    // If success, insert user data and navigate to app
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      await supabase.from('users').insert({
+        id: user.id,
+        first_name: fName,
+        last_name: lName,
+        admin: false,
+      });
+      await supabase.from('profiles').insert({ id: user.id });
+    }
+
+    router.replace('/(tabs)');
   };
 
   // -- UI -- //
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* <ThemedText type="title" style={styles.title}>Profile Settings</ThemedText> */}
+      <ScrollView>
         <ThemedText type="subtitle" style={styles.subtitle}>
           Create Account
         </ThemedText>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             First Name
           </ThemedText>
           <Input
             text="First Name"
-            onChangeText={(text) => setFName(text)}
+            onChangeText={setFName}
             autoCapitalize="none"
             style={styles.input}
           />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Last Name
           </ThemedText>
           <Input
             text="Last Name"
-            onChangeText={(text) => setLName(text)}
+            onChangeText={setLName}
             autoCapitalize="none"
             style={styles.input}
           />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Email
           </ThemedText>
           <Input
-            text="Email"
-            onChangeText={(text) => setEmail(text)}
+            text="email@address.com"
+            onChangeText={setEmail}
             autoCapitalize="none"
             style={styles.input}
           />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Password
           </ThemedText>
           <Input
-            text="Password"
-            onChangeText={(text) => setPassword(text)}
+            text="password"
+            onChangeText={setPassword}
             autoCapitalize="none"
             style={styles.input}
-            secureTextEntry={true}
+            secureTextEntry
           />
         </View>
+
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Confirm Password
           </ThemedText>
           <Input
-            text="Password"
-            onChangeText={(text) => setPassCheck(text)}
+            text="password"
+            onChangeText={setPassCheck}
             autoCapitalize="none"
             style={styles.input}
-            secureTextEntry={true}
+            secureTextEntry
           />
         </View>
-        <TouchableOpacity onPress={handleSignIn}>
-          <View style={styles.button}>
-            <Text style={styles.buttonText}>Login</Text>
+
+        <TouchableOpacity onPress={handleCreateAccount}>
+          <View style={styles.createButton}>
+            <Text style={styles.createButtonText}>Create Account</Text>
           </View>
         </TouchableOpacity>
-        {isVisibile ? <ErText /> : null}
-        {isVisibile2 ? <ErText2 /> : null}
-        {isVisibile3 ? <ErText3 /> : null}
-        {isVisibile4 ? <ErText4 /> : null}
-        {isVisibile5 ? <ErText5 /> : null}
-        <TouchableOpacity
-          onPress={() => router.replace('/')} //Reroutes to login screen or index.tsx file in (tabs) folder
-        >
-          <View style={styles.button2}>
-            <Text> Already have an Account?</Text>
-            <Text style={styles.buttonText2}>Go to Login Screen</Text>
+
+        {errorText && (
+          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+        )}
+
+        <TouchableOpacity onPress={() => router.replace('/')}>
+          <View style={styles.linkButton}>
+            <Text>Already have an account?</Text>
+            <Text style={styles.linkButtonText}>Go to Login</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
@@ -193,54 +206,12 @@ export default function CreateAccount() {
   );
 }
 
-const ErText = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      No email or password entered
-    </ThemedText>
-  );
-};
-
-const ErText2 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Passwords must be at least 6 characters
-    </ThemedText>
-  );
-};
-const ErText3 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Your passwords do not match
-    </ThemedText>
-  );
-};
-const ErText4 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      Email not in registrants list
-    </ThemedText>
-  );
-};
-const ErText5 = () => {
-  return (
-    <ThemedText style={styles.errorText}>
-      System error please ensure all information is correct and try again
-    </ThemedText>
-  );
-};
+// -- STYLES -- //
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.awac.beige,
-  },
-  contentContainer: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 28,
-    marginBottom: 10,
   },
   subtitle: {
     fontSize: 24,
@@ -262,7 +233,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 16,
   },
-  button: {
+  createButton: {
     backgroundColor: Colors.awac.orange,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -270,12 +241,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-  buttonText: {
+  createButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',
   },
-  button2: {
+  linkButton: {
     backgroundColor: Colors.awac.beige,
     paddingHorizontal: 15,
     paddingVertical: 10,
@@ -284,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  buttonText2: {
+  linkButtonText: {
     marginTop: 10,
     color: 'mediumblue',
     fontSize: 14,

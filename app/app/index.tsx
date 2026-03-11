@@ -67,7 +67,9 @@ export default function LoginScreen() {
     // If failure, show error
     if (error) {
       console.error('Auth error:', error.message);
-      setErrorText('Error, ensure information is entered correctly');
+      setErrorText(
+        'Incorrect password, or no account found.\nPlease verify password or create an account.',
+      );
     }
     // If success, take user to MyAgenda
     else {
@@ -174,7 +176,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     justifyContent: 'center',
-    padding: 20,
   },
   title: {
     fontSize: 28,
