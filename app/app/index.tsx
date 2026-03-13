@@ -59,7 +59,7 @@ export default function LoginScreen() {
     }
 
     // Attempt to sign in with provided credentials
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -70,11 +70,46 @@ export default function LoginScreen() {
       setErrorText(
         'Incorrect password, or no account found.\nPlease verify password or create an account.',
       );
+      return;
     }
-    // If success, take user to MyAgenda
-    else {
-      router.replace('/(tabs)');
+
+    const user = data.user;
+
+    if (!user) {
+      setErrorText('Unable to retrieve user.');
+      return;
     }
+
+    // Attempt to sign in user, and initialize tables if first login
+    try {
+      // Check if user row already exists
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      // If user row doesn't exist, create it
+      if (!existingUser) {
+        // Add user row to 'users'
+        await supabase.from('users').insert({
+          id: user.id,
+          first_name: user.user_metadata.first_name,
+          last_name: user.user_metadata.last_name,
+          admin: false,
+        });
+
+        // Add user row to 'profiles'
+        await supabase.from('profiles').insert({
+          id: user.id,
+        });
+      }
+    } catch (err) {
+      console.error('User setup error:', err);
+    }
+
+    // Enter the app
+    router.replace('/(tabs)');
   };
 
   // -- FORGOT PASSWORD -- //
@@ -216,17 +251,14 @@ const styles = StyleSheet.create({
   },
   linkButton: {
     backgroundColor: Colors.awac.beige,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 8,
     alignSelf: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingVertical: 10,
   },
   linkButtonText: {
     marginTop: 10,
     color: 'mediumblue',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   errorText: {

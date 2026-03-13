@@ -97,21 +97,11 @@ export default function CreateAccount() {
       return;
     }
 
-    // If success, insert user data and navigate to app
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('users').insert({
-        id: user.id,
-        first_name: fName,
-        last_name: lName,
-        admin: false,
-      });
-      await supabase.from('profiles').insert({ id: user.id });
-    }
+    alert(
+      'Check your email to verify your account. Once verified, return to the app and log in.',
+    );
 
-    router.replace('/(tabs)');
+    router.replace('/');
   };
 
   // -- UI -- //
