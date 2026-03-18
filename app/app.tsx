@@ -3,7 +3,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { linking, RootStackParamList } from './navigation';
 import LoginScreen from './app/index';
-import ResetPasswordScreen from './app/resetpassword';
+import ResetPasswordScreen from './app/resetPassword';
 
 //Contains methods to define/navigate screens
 const Stack = createNativeStackNavigator<RootStackParamList>();

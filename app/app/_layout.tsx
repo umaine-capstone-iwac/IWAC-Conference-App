@@ -80,9 +80,18 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="resetpassword"
+          name="resetPassword"
           options={{
             title: 'Reset Password',
+            headerStyle: styles.header,
+            headerTitleStyle: styles.headerTitle,
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        />
+        <Stack.Screen
+          name="forgotPassword"
+          options={{
+            title: 'Forgot Password',
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',

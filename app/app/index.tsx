@@ -12,15 +12,20 @@ import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import ForgotPasswordModal from '@/app/modals/forgotPassword';
+
 export default function LoginScreen() {
   // -- STATE -- //
 
-  //User input state
+  // User input state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  //Error text state
+  // Error text state
   const [errorText, setErrorText] = useState('');
+
+  // Forgot password modal visibility state
+  const [forgotModalVisible, setForgotModalVisible] = useState(false);
 
   // -- AUTHENTICATION HELPERS -- //
 
@@ -112,32 +117,6 @@ export default function LoginScreen() {
     router.replace('/(tabs)');
   };
 
-  // -- FORGOT PASSWORD -- //
-
-  const handlePasswordReset = async () => {
-    setErrorText('');
-
-    // Verify email is entered
-    if (!email) {
-      setErrorText('Email required');
-      return;
-    }
-
-    // Check that user is registered
-    const result = await checkRegistrant(email);
-
-    // Return if not registered
-    if (!result.valid) {
-      setErrorText(result.message);
-      return; //
-    }
-
-    // If registered, send reset password email
-    await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'iwacapp://resetpassword',
-    });
-  };
-
   // -- UI -- //
 
   return (
@@ -191,12 +170,20 @@ export default function LoginScreen() {
             <Text style={styles.linkButtonText}>Create Account</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity onPress={handlePasswordReset}>
+
+        {/* Opens forgot password modal */}
+        <TouchableOpacity onPress={() => setForgotModalVisible(true)}>
           <View style={styles.linkButton}>
             <Text style={styles.linkButtonText}>Forgot Password?</Text>
           </View>
         </TouchableOpacity>
       </View>
+
+      {/* Forgot password modal */}
+      <ForgotPasswordModal
+        visible={forgotModalVisible}
+        onClose={() => setForgotModalVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 }

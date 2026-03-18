@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Alert, StyleSheet, Text } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+} from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
+import { Input } from '@/components/input';
+import { ThemedText } from '@/components/themedText';
+import { Colors } from '@/constants/theme';
 
 export default function ResetPasswordScreen(): React.JSX.Element {
   // -- PARAMS -- //
@@ -12,7 +22,9 @@ export default function ResetPasswordScreen(): React.JSX.Element {
   // -- STATE -- //
 
   const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [sessionReady, setSessionReady] = useState(false);
+  const [errorText, setErrorText] = useState('');
 
   // -- SESSION INITIALIZATION -- //
 
@@ -47,7 +59,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
 
         if (error) {
           console.error('Session error:', error.message);
-          Alert.alert('Error', 'Reset link is invalid or expired.');
+          setErrorText('Reset link is invalid or expired.');
         } else {
           setSessionReady(true);
         }
@@ -61,20 +73,32 @@ export default function ResetPasswordScreen(): React.JSX.Element {
 
   // Update the user's password in Supabase
   const handleResetPassword = async (): Promise<void> => {
-    if (!password) {
-      Alert.alert('Error', 'Please enter a new password');
+    setErrorText('');
+
+    // Verify both fields are filled
+    if (!password || !confirmPassword) {
+      setErrorText('Please fill in both fields.');
+      return;
+    }
+
+    // Verify passwords match
+    if (password !== confirmPassword) {
+      setErrorText('Passwords do not match.');
       return;
     }
 
     const { error } = await supabase.auth.updateUser({ password });
 
+    // If failure, show error
     if (error) {
-      Alert.alert('Error', error.message);
-      console.log('Error updating password', error.message);
-    } else {
-      Alert.alert('Success', 'Password updated successfully');
-      await supabase.auth.signOut();
+      console.error('Error updating password:', error.message);
+      setErrorText(error.message);
+      return;
     }
+
+    // On success, sign out and return to login
+    await supabase.auth.signOut();
+    router.replace('/');
   };
 
   // -- UI -- //
@@ -82,29 +106,120 @@ export default function ResetPasswordScreen(): React.JSX.Element {
   // Show loading state until session is verified
   if (!sessionReady) {
     return (
-      <View style={styles.container}>
-        <Text>Verifying reset link...</Text>
-      </View>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.content}>
+          <ThemedText style={styles.verifyingText}>
+            Verifying reset link...
+          </ThemedText>
+        </View>
+      </KeyboardAvoidingView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        placeholder="Enter new password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-        style={styles.input}
-      />
-      <Button title="Update Password" onPress={handleResetPassword} />
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.content}>
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>
+            New Password
+          </ThemedText>
+          <Input
+            text="password"
+            onChangeText={setPassword}
+            autoCapitalize="none"
+            style={styles.input}
+            secureTextEntry
+          />
+        </View>
+
+        <View style={styles.inputGroup}>
+          <ThemedText type="title" style={styles.label}>
+            Confirm Password
+          </ThemedText>
+          <Input
+            text="password"
+            onChangeText={setConfirmPassword}
+            autoCapitalize="none"
+            style={styles.input}
+            secureTextEntry
+          />
+        </View>
+
+        <TouchableOpacity onPress={handleResetPassword}>
+          <View style={styles.submitButton}>
+            <Text style={styles.submitButtonText}>Update Password</Text>
+          </View>
+        </TouchableOpacity>
+
+        {errorText && (
+          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+        )}
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 // -- STYLES -- //
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
-  input: { borderWidth: 1, padding: 12, marginBottom: 16, borderRadius: 6 },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.awac.beige,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  subtitle: {
+    fontSize: 24,
+    marginTop: 50,
+    paddingBottom: 30,
+    alignSelf: 'center',
+  },
+  inputGroup: {
+    marginBottom: 15,
+    marginHorizontal: '10%',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  input: {
+    backgroundColor: Colors.lightestBlue,
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 16,
+  },
+  submitButton: {
+    backgroundColor: Colors.awac.orange,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  submitButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  errorText: {
+    color: 'red',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    fontSize: 16,
+    minHeight: 50,
+  },
+  verifyingText: {
+    alignSelf: 'center',
+    fontSize: 16,
+  },
 });
