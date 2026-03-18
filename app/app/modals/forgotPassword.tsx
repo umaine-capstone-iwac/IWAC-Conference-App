@@ -157,8 +157,8 @@ export default function ForgotPasswordModal({
                 <Text style={styles.submitButtonText}>Send Reset Link</Text>
               </View>
             </TouchableOpacity>
-            // Else, show nothing
-          ) : null}
+          ) : // Else, show nothing
+          null}
 
           <TouchableOpacity onPress={handleClose}>
             <Text style={styles.dismissText}>Dismiss</Text>
