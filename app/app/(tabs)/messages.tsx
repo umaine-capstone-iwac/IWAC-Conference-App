@@ -211,13 +211,14 @@ export default function MessagesListScreen() {
                 avatarUrl={user.avatar_url}
                 userId={user.id}
               />
-              <View>
+              <View style={{ flex: 1, flexShrink: 1 }}>
                 <ThemedText type="title" style={{ fontSize: 22 }}>
                   {user.first_name} {user.last_name}
                 </ThemedText>
                 <ThemedText
                   style={user.hasUnread && styles.unreadText}
                   numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {user.lastMessage}
                 </ThemedText>
