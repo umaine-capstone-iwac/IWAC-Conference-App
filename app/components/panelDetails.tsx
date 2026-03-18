@@ -12,13 +12,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themedText';
+import { ThemedView } from '@/components/themedView';
 import { Input } from '@/components/input';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
-import { ProfilePicture } from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profilePicture';
 
 // -- TYPES -- //
 

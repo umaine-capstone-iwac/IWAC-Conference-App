@@ -7,7 +7,7 @@ import {
   Platform,
 } from 'react-native';
 import { Input } from '@/components/input';
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/themedText';
 import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';

@@ -17,9 +17,9 @@ export default function RootLayout() {
 
       console.log('Root layout URL:', url);
 
-      if (url.includes('resetpassword') || url.includes('type=recovery')) {
+      if (url.includes('resetPassword') || url.includes('type=recovery')) {
         router.push({
-          pathname: '/resetpassword',
+          pathname: '/resetPassword',
           params: { url: encodeURIComponent(url) },
         });
       }
@@ -52,7 +52,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="modals/search-users"
+          name="modals/searchUsers"
           options={{
             presentation: 'modal',
             title: 'Start a Conversation',
@@ -61,7 +61,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="profilesettings"
+          name="profileSettings"
           options={{
             title: 'Profile Settings',
             headerStyle: styles.header,
@@ -70,7 +70,7 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="modals/notificationsettings"
+          name="modals/notificationSettings"
           options={{
             presentation: 'modal',
             title: 'Manage Notifications',

@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text, View, ScrollView } from 'react-native';
-import { ProfilePicture } from '@/components/profile-picture';
-import { ThemedText } from '@/components/themed-text';
+import { ProfilePicture } from '@/components/profilePicture';
+import { ThemedText } from '@/components/themedText';
 import { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import { Input } from '@/components/input';
@@ -189,7 +189,7 @@ export default function MessagesListScreen() {
             style={styles.searchBar}
           />
           <View style={styles.searchIcon}>
-            <Pressable onPress={() => router.push('/modals/search-users')}>
+            <Pressable onPress={() => router.push('/modals/searchUsers')}>
               <Text style={{ fontWeight: 'bold', fontSize: 24 }}> + </Text>
             </Pressable>
           </View>

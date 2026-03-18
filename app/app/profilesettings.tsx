@@ -9,14 +9,14 @@ import {
   ActivityIndicator,
   Platform,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/themedText';
 import { Input } from '@/components/input';
 import { Colors } from '@/constants/theme';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { ProfilePicture } from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profilePicture';
 
 export default function ProfileSettingsModal() {
   // State for loading and saving status

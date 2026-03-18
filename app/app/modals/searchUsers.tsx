@@ -2,7 +2,7 @@ import { Text, StyleSheet, FlatList, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { Input } from '@/components/input';
-import { ProfilePicture } from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profilePicture';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { filterUsers } from '@/utils/filterUsers';

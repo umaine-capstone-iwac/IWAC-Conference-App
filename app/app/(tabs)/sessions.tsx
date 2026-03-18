@@ -10,15 +10,15 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ThemedText } from '@/components/themedText';
+import { ThemedView } from '@/components/themedView';
 import { Input } from '@/components/input';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-import PanelDetail, { Panel } from '@/components/panel-details';
+import PanelDetail, { Panel } from '@/components/panelDetails';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 // -- TYPES -- //

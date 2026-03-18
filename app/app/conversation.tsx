@@ -7,9 +7,9 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/themedText';
 import { Input } from '@/components/input';
-import { ProfilePicture } from '@/components/profile-picture';
+import { ProfilePicture } from '@/components/profilePicture';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useRef, useCallback } from 'react';

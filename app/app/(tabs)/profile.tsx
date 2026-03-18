@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
-import { ProfilePicture } from '@/components/profile-picture';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
+import { ProfilePicture } from '@/components/profilePicture';
+import { ThemedText } from '@/components/themedText';
+import { ThemedView } from '@/components/themedView';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
@@ -118,7 +118,7 @@ export default function ProfileScreen() {
             </View>
           ) : null}
           {isOwnProfile && (
-            <Pressable onPress={() => router.push('/profilesettings')}>
+            <Pressable onPress={() => router.push('/profileSettings')}>
               <View style={styles.editButton}>
                 <Text style={styles.editButtonText}>Edit Profile</Text>
               </View>

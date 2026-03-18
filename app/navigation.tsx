@@ -11,7 +11,7 @@ export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['app://'],
   config: {
     screens: {
-      ResetPassword: 'reset-password',
+      ResetPassword: 'resetPassword',
     },
   },
 };

@@ -8,13 +8,13 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { ThemedText } from '@/components/themed-text';
+import { ThemedText } from '@/components/themedText';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import PanelDetail, { Panel } from '@/components/panel-details';
+import PanelDetail, { Panel } from '@/components/panelDetails';
 
 // -- TYPES -- //
 
