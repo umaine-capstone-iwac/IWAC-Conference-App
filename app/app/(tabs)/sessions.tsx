@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
+  Text,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,6 +41,9 @@ type ConferenceEventRow = {
   session: string;
   tag: string;
 };
+
+// Strips date from fetched session row
+const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
 
 export default function SessionsScreen() {
   // -- ROUTING -- //
@@ -402,7 +406,19 @@ export default function SessionsScreen() {
                     </Pressable>
 
                     {/* Panel title */}
-                    <ThemedText type="title">{panel.title}</ThemedText>
+                    <ThemedText style={{ fontSize: 19 }} type="title">
+                      {panel.title}
+                    </ThemedText>
+
+                    {/* Session time row */}
+                    <View style={styles.detailRow}>
+                      <IconSymbol
+                        size={18}
+                        name="clock.fill"
+                        color={Colors.awac.navy}
+                      />
+                      <ThemedText>{stripDate(panel.session)}</ThemedText>
+                    </View>
 
                     {/* Location row */}
                     <View style={styles.detailRow}>
@@ -459,7 +475,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-
   sessionCardDetails: {
     padding: 15,
     borderWidth: 2,
@@ -468,6 +483,11 @@ const styles = StyleSheet.create({
     marginTop: 10,
     position: 'relative',
     backgroundColor: Colors.lightestBlue,
+  },
+  dateText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.awac.navy,
   },
   heartButton: { position: 'absolute', top: 10, right: 15, zIndex: 10 },
   detailRow: {

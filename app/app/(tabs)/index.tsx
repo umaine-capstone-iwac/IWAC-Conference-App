@@ -29,6 +29,9 @@ interface UserAgendaResponse {
 
 // -- COMPONENTS -- //
 
+// Strips date from fetched session row
+const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
+
 // Displays current user's favorited conference events, events fetcjed from user_agenda
 export default function MyAgendaScreen() {
   const [myEvents, setMyEvents] = useState<Panel[]>([]);
@@ -255,7 +258,7 @@ export default function MyAgendaScreen() {
                   name="clock.fill"
                   color={Colors.awac.navy}
                 />
-                <ThemedText>{event.session}</ThemedText>
+                <ThemedText>{stripDate(event.session)}</ThemedText>
               </View>
 
               {/* Location */}

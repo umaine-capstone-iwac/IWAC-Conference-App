@@ -63,6 +63,9 @@ type Props = {
 
 // -- COMPONENT -- //
 
+// Strips date from fetched session row
+const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
+
 export default function PanelDetail({ panel, userID, onBack }: Props) {
   const scrollRef = useRef<ScrollView>(null);
 
@@ -258,7 +261,9 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
                 name="clock.fill"
                 color={Colors.awac.navy}
               />
-              <ThemedText style={styles.detailText}>{panel.session}</ThemedText>
+              <ThemedText style={styles.detailText}>
+                {stripDate(panel.session)}
+              </ThemedText>
             </View>
 
             <View style={styles.detailRow}>
@@ -289,11 +294,13 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           </View>
 
           {/* Resources Section */}
-          <ThemedText style={styles.sectionHeader}>Resources</ThemedText>
+          <ThemedText style={styles.sectionHeader}>
+            Session Materials
+          </ThemedText>
           {resourcesLoading ? (
             <ActivityIndicator size="small" color={Colors.awac.navy} />
           ) : resources.length === 0 ? (
-            <ThemedText style={styles.emptyText}>No resources yet</ThemedText>
+            <ThemedText style={styles.emptyText}>No materials yet</ThemedText>
           ) : (
             resources.map((r) => {
               const url = r.url;
