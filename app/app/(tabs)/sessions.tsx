@@ -40,6 +40,9 @@ type ConferencePanelRow = {
   date: string;
   session: string;
   tag: string;
+  abstract: string | null;
+  materials_title: string | null;
+  materials_link: string | null;
 };
 
 // Strips date from fetched session row
@@ -100,7 +103,7 @@ export default function SessionsScreen() {
       // Pull all panels ordered by date + session
       const { data, error } = await supabase
         .from('conference_panels')
-        .select('id,title,location,speaker,date,session,tag')
+        .select('id,title,location,speaker,date,session,tag,abstract,materials_title,materials_link',)
         .order('date', { ascending: true })
         .order('session', { ascending: true });
 
@@ -131,6 +134,9 @@ export default function SessionsScreen() {
           tag: r.tag,
           location: r.location,
           speaker: r.speaker,
+          abstract: r.abstract,
+          materials_title: r.materials_title,
+          materials_link: r.materials_link,
         });
       });
 
@@ -385,30 +391,32 @@ export default function SessionsScreen() {
                   onPress={() => setSelectedPanel(panel)}
                 >
                   <ThemedView style={styles.sessionCardDetails}>
-                    {/* Heart button + save to agenda */}
-                    <Pressable
-                      style={styles.heartButton}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        toggleSavePanel(panel.id);
-                      }}
-                      hitSlop={12}
-                    >
-                      <Ionicons
-                        name={
-                          savedPanels.includes(panel.id)
-                            ? 'heart'
-                            : 'heart-outline'
-                        }
-                        size={32}
-                        color={savedPanels.includes(panel.id) ? 'red' : '#888'}
-                      />
-                    </Pressable>
+                    <View style={styles.cardHeader}>
+                      {/* Panel title */}
+                      <ThemedText style={styles.panelTitle} type="title">
+                        {panel.title}
+                      </ThemedText>
 
-                    {/* Panel title */}
-                    <ThemedText style={{ fontSize: 19 }} type="title">
-                      {panel.title}
-                    </ThemedText>
+                      {/* Heart button + save to agenda */}
+                      <Pressable
+                        style={styles.heartButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          toggleSavePanel(panel.id);
+                        }}
+                        hitSlop={12}
+                      >
+                        <Ionicons
+                          name={
+                            savedPanels.includes(panel.id)
+                              ? 'heart'
+                              : 'heart-outline'
+                          }
+                          size={32}
+                          color={savedPanels.includes(panel.id) ? 'red' : '#888'}
+                        />
+                      </Pressable>
+                    </View>
 
                     {/* Session time row */}
                     <View style={styles.detailRow}>
@@ -458,7 +466,7 @@ const styles = StyleSheet.create({
   container: { padding: 20, gap: 20 },
 
   dropdownWrap: {
-    width: '20%',
+    width: '100%',
     borderWidth: 1,
     borderColor: Colors.awac.navy,
     borderRadius: 12,
@@ -489,7 +497,19 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.awac.navy,
   },
-  heartButton: { position: 'absolute', top: 10, right: 15, zIndex: 10 },
+  cardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 8,
+  },
+  panelTitle: {
+    fontSize: 19,
+    flex: 1,
+  },
+  heartButton: {
+    paddingTop: 2,
+  },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',

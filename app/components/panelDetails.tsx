@@ -30,15 +30,9 @@ export type Panel = {
   date: string;
   session: string;
   tag: string;
-};
-
-type PanelResource = {
-  id: number;
-  created_at: string;
-  panel_id: number;
-  type: string | null;
-  title: string | null;
-  url: string;
+  abstract: string | null;
+  materials_title: string | null;
+  materials_link: string | null;
 };
 
 type Comment = {
@@ -77,28 +71,9 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     {},
   );
 
-  const [resources, setResources] = useState<PanelResource[]>([]);
-  const [resourcesLoading, setResourcesLoading] = useState(true);
-
   // -- HELPERS -- //
-
-  const isPdfUrl = (url: string) => /\.pdf(\?|#|$)/i.test(url);
-
-  const getYouTubeId = (url: string) => {
-    try {
-      const u = new URL(url);
-      if (u.hostname === 'youtu.be') return u.pathname.split('/')[1] || null;
-      if (
-        (u.hostname === 'youtube.com' || u.hostname === 'www.youtube.com') &&
-        u.pathname === '/watch'
-      )
-        return u.searchParams.get('v');
-      return null;
-    } catch {
-      return null;
-    }
-  };
-
+  
+  // Open session materials link
   const openUrl = async (url: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -113,22 +88,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     }
   };
 
-  const downloadPdf = async (url: string) => {
-    try {
-      const supported = await Linking.canOpenURL(url);
-      if (!supported) {
-        Alert.alert("Can't download file");
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (e) {
-      console.error(e);
-      Alert.alert('Error', 'Failed to download PDF');
-    }
-  };
-
   // -- DATA FETCHING -- //
-
   const fetchComments = useCallback(async () => {
     setCommentsLoading(true);
     const { data, error } = await supabase
@@ -136,57 +96,54 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
       .select('comment_id, user_id, comment_content, created_at')
       .eq('panel_id', panel.id)
       .order('created_at', { ascending: true });
-    if (error) console.error(error);
-    else {
-      setComments(data ?? []);
-      // Fetch user info of commenter
-      const uniqueUserIds = [...new Set((data ?? []).map((c) => c.user_id))];
-      if (uniqueUserIds.length > 0) {
-        const { data: usersData } = await supabase
-          .from('users')
-          .select('id, first_name, last_name')
-          .in('id', uniqueUserIds);
 
-        const { data: profilesData } = await supabase
-          .from('profiles')
-          .select('id, avatar_url')
-          .in('id', uniqueUserIds);
+    if (error) {
+      console.error(error);
+      setCommentsLoading(false);
+      return;
+    }
 
-        const usersMap: Record<string, CommentUser> = {};
-        (usersData ?? []).forEach((u) => {
-          const profile = profilesData?.find((p) => p.id === u.id);
-          usersMap[u.id] = {
-            user_id: u.id,
-            first_name: u.first_name,
-            last_name: u.last_name,
-            avatar_url: profile?.avatar_url ?? null,
-          };
-        });
-        setCommentUsers(usersMap);
-      }
+    setComments(data ?? []);
+
+    const uniqueUserIds = [...new Set((data ?? []).map((c) => c.user_id))];
+
+    if (uniqueUserIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('id, first_name, last_name')
+        .in('id', uniqueUserIds);
+
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('id, avatar_url')
+        .in('id', uniqueUserIds);
+
+      const usersMap: Record<string, CommentUser> = {};
+
+      (usersData ?? []).forEach((u) => {
+        const profile = profilesData?.find((p) => p.id === u.id);
+
+        usersMap[u.id] = {
+          user_id: u.id,
+          first_name: u.first_name,
+          last_name: u.last_name,
+          avatar_url: profile?.avatar_url ?? null,
+        };
+      });
+
+      setCommentUsers(usersMap);
+    } else {
+      setCommentUsers({});
     }
     setCommentsLoading(false);
   }, [panel.id]);
 
-  const fetchResources = useCallback(async () => {
-    setResourcesLoading(true);
-    const { data, error } = await supabase
-      .from('panel_resources')
-      .select('id, created_at, panel_id, type, title, url')
-      .eq('panel_id', panel.id)
-      .order('created_at', { ascending: true });
-    if (error) console.error(error);
-    else setResources((data ?? []) as PanelResource[]);
-    setResourcesLoading(false);
-  }, [panel.id]);
-
+  // -- SCREEN EFFECTS -- //
   useEffect(() => {
     fetchComments();
-    fetchResources();
-  }, [fetchComments, fetchResources]);
+  }, [fetchComments]);
 
   // -- COMMENT DELETION -- //
-
   const deleteComment = async (commentId: number) => {
     const { error } = await supabase
       .from('panel_comments')
@@ -291,69 +248,42 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
                 <Text style={styles.tagText}>{panel.tag}</Text>
               </View>
             ) : null}
+
+            {/* Panel abstract */}
+            {panel.abstract ? (
+              <View style={styles.abstractSection}>
+                <ThemedText style={styles.abstractHeader}>
+                  Panel Abstract
+                </ThemedText>
+                <ThemedText style={styles.abstractText}>
+                  {panel.abstract}
+                </ThemedText>
+              </View>
+            ) : null}
           </View>
 
-          {/* Resources Section */}
-          <ThemedText style={styles.sectionHeader}>
-            Session Materials
-          </ThemedText>
-          {resourcesLoading ? (
-            <ActivityIndicator size="small" color={Colors.awac.navy} />
-          ) : resources.length === 0 ? (
-            <ThemedText style={styles.emptyText}>No materials yet</ThemedText>
+          {/* Session materials */}
+          <ThemedText style={styles.sectionHeader}>Session Materials</ThemedText>
+
+          {panel.materials_link ? (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => openUrl(panel.materials_link)}
+            >
+              <ThemedView style={styles.resourceCard}>
+                <ThemedText style={styles.resourceTitle}>
+                  {panel.materials_title?.trim() || 'Open Session Materials'}
+                </ThemedText>
+
+                <ThemedText style={styles.resourceLink} numberOfLines={1}>
+                  {panel.materials_link}
+                </ThemedText>
+              </ThemedView>
+            </TouchableOpacity>
           ) : (
-            resources.map((r) => {
-              const url = r.url;
-              const title = r.title?.trim() || url;
-              const isPdf = r.type?.toLowerCase() === 'pdf' || isPdfUrl(url);
-              const ytId =
-                r.type?.toLowerCase() === 'youtube' ? getYouTubeId(url) : null;
-
-              if (isPdf) {
-                return (
-                  <ThemedView key={r.id} style={styles.resourceCard}>
-                    <ThemedText style={styles.resourceTitle}>
-                      📄 {title}
-                    </ThemedText>
-                    <TouchableOpacity
-                      onPress={() => downloadPdf(url)}
-                      style={styles.resourceButton}
-                    >
-                      <Text style={styles.resourceButtonText}>
-                        Download PDF
-                      </Text>
-                    </TouchableOpacity>
-                  </ThemedView>
-                );
-              }
-
-              if (ytId) {
-                const thumb = `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`;
-                return (
-                  <TouchableOpacity
-                    key={r.id}
-                    activeOpacity={0.85}
-                    onPress={() => openUrl(url)}
-                  >
-                    <ThemedView style={[styles.resourceCard, { gap: 8 }]}>
-                      <ThemedText style={styles.resourceTitle}>
-                        ▶️ {title}
-                      </ThemedText>
-                      <Image
-                        source={{ uri: thumb }}
-                        style={{ width: '100%', height: 180, borderRadius: 8 }}
-                        resizeMode="cover"
-                      />
-                      <ThemedText style={{ color: Colors.awac.navy }}>
-                        Open YouTube
-                      </ThemedText>
-                    </ThemedView>
-                  </TouchableOpacity>
-                );
-              }
-
-              return null;
-            })
+            <ThemedText style={styles.emptyText}>
+              No session materials yet
+            </ThemedText>
           )}
 
           {/* Comments Section */}
@@ -442,11 +372,11 @@ const styles = StyleSheet.create({
     color: Colors.awac.navy,
   },
   panelCard: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 12,
     borderWidth: 2,
     borderColor: Colors.awac.navy,
-    padding: 15,
+    borderRadius: 14,
+    padding: 18,
+    backgroundColor: Colors.lightestBlue,
     gap: 12,
   },
   dateTag: {
@@ -474,35 +404,60 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   tagPill: {
-    backgroundColor: Colors.umaine.lightBlue,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: Colors.awac.navy,
+    borderRadius: 999,
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
+    paddingVertical: 6,
+    backgroundColor: Colors.awac.beige,
   },
+
   tagText: {
-    fontSize: 12,
+    color: Colors.awac.navy,
     fontWeight: '600',
+  },
+
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: '700',
     color: Colors.awac.navy,
   },
-  sectionHeader: {
+
+  abstractSection: {
+    marginTop: 6,
+    gap: 6,
+  },
+
+  abstractHeader: {
     fontWeight: '700',
-    fontSize: 16,
+    color: Colors.awac.navy,
+  },
+
+  abstractText: {
+    lineHeight: 22,
+  },
+
+  resourceCard: {
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.awac.navy,
+    borderRadius: 10,
+    backgroundColor: Colors.lightestBlue,
+    gap: 6,
+  },
+
+  resourceTitle: {
+    fontWeight: '700',
+    color: Colors.awac.navy,
+  },
+
+  resourceLink: {
+    fontSize: 12,
+    color: '#666',
   },
   emptyText: {
     color: '#888',
-  },
-  resourceCard: {
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.awac.navy,
-    backgroundColor: Colors.lightestBlue,
-    marginTop: 8,
-  },
-  resourceTitle: {
-    fontWeight: '600',
-    marginBottom: 6,
   },
   resourceButton: {
     backgroundColor: Colors.awac.navy,
