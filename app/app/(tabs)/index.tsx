@@ -21,10 +21,10 @@ import PanelDetail, { Panel } from '@/components/panelDetails';
 // Response from supabase when selecting user_agenda
 interface UserAgendaResponse {
   id: number;
-  event_id: number;
+  panel_id: number;
   user_id: string;
   created_at: string;
-  conference_events: Panel;
+  conference_panels: Panel;
 }
 
 // -- COMPONENTS -- //
@@ -32,9 +32,9 @@ interface UserAgendaResponse {
 // Strips date from fetched session row
 const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
 
-// Displays current user's favorited conference events, events fetcjed from user_agenda
+// Displays current user's favorited conference panels, panels fetched from user_agenda
 export default function MyAgendaScreen() {
-  const [myEvents, setMyEvents] = useState<Panel[]>([]);
+  const [myPanels, setMyPanels] = useState<Panel[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [userID, setUserID] = useState<string | undefined>();
   const [selectedPanel, setSelectedPanel] = useState<Panel | null>(null);
@@ -60,7 +60,7 @@ export default function MyAgendaScreen() {
 
   // -- DATA FETCHING -- //
 
-  // Fetches agenda of authenticated user's agenda, joins user_agenda and events tables and sorts results by session
+  // Fetches agenda of authenticated user's agenda, joins user_agenda and panels tables and sorts results by session
   const fetchAgenda = async () => {
     try {
       const {
@@ -78,7 +78,7 @@ export default function MyAgendaScreen() {
         .select(
           `
           id,
-          conference_events (
+          conference_panels (
             id,
             title,
             location,
@@ -98,14 +98,14 @@ export default function MyAgendaScreen() {
       const typedData = data as unknown as UserAgendaResponse[];
 
       // Sort by session label
-      const events: Panel[] =
+      const panels: Panel[] =
         typedData?.map((item) => ({
-          ...item.conference_events,
+          ...item.conference_panels,
         })) || [];
 
-      events.sort((a, b) => a.session.localeCompare(b.session)); // sort panels when added
+      panels.sort((a, b) => a.session.localeCompare(b.session)); // sort panels when added
 
-      setMyEvents(events);
+      setMyPanels(panels);
     } catch (error) {
       console.error('Error fetching my agenda:', error);
       Alert.alert('Error', 'Failed to load your agenda');
@@ -123,8 +123,8 @@ export default function MyAgendaScreen() {
 
   // -- DELETION -- //
 
-  // Deletes specific event from a user's agenda locally and in Supabase
-  const removeFromAgenda = async (eventId: number) => {
+  // Deletes specific panel from a user's agenda locally and in Supabase
+  const removeFromAgenda = async (panelId: number) => {
     try {
       const {
         data: { user },
@@ -139,23 +139,23 @@ export default function MyAgendaScreen() {
         .from('user_agenda')
         .delete()
         .eq('user_id', user.id)
-        .eq('event_id', eventId);
+        .eq('panel_id', panelId);
 
       if (error) throw error;
 
-      // Re-sort events by session after deltion
-      setMyEvents((prev) =>
+      // Re-sort panels by session after deltion
+      setMyPanels((prev) =>
         prev
-          .filter((e) => e.id !== eventId)
+          .filter((e) => e.id !== panelId)
           .sort((a, b) => a.session.localeCompare(b.session)),
       );
 
-      if (selectedPanel?.id === eventId) setSelectedPanel(null);
+      if (selectedPanel?.id === panelId) setSelectedPanel(null);
 
-      Alert.alert('Success', 'Event removed from your agenda');
+      Alert.alert('Success', 'Panel removed from your agenda');
     } catch (error) {
-      console.error('Error removing event:', error);
-      Alert.alert('Error', 'Failed to remove event');
+      console.error('Error removing panel:', error);
+      Alert.alert('Error', 'Failed to remove panel');
     }
   };
 
@@ -188,14 +188,14 @@ export default function MyAgendaScreen() {
     );
   }
 
-  // Shows button to go to Sessions if user has no favorited events
-  if (myEvents.length === 0) {
+  // Shows button to go to Sessions if user has no favorited panels
+  if (myPanels.length === 0) {
     return (
       <View
         style={[styles.scrollContainer, styles.centerContent, styles.padding]}
       >
         <ThemedText style={styles.emptyText}>
-          {`You haven't added any events to your agenda yet.`}
+          {`You haven't added any panels to your agenda yet.`}
         </ThemedText>
         <TouchableOpacity
           style={styles.browseButton}
@@ -209,7 +209,7 @@ export default function MyAgendaScreen() {
 
   // -- UI -- //
 
-  // Renders card for each event, each with a remove button
+  // Renders card for each panel, each with a remove button
   return (
     <ScrollView style={styles.scrollContainer}>
       {/* Header row with a shortcut to browse more panels */}
@@ -222,21 +222,21 @@ export default function MyAgendaScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* List of event cards*/}
-      <View style={styles.eventsContainer}>
-        {myEvents.map((event) => (
+      {/* List of panel cards*/}
+      <View style={styles.panelsContainer}>
+        {myPanels.map((panel) => (
           <TouchableOpacity
-            key={event.id}
+            key={panel.id}
             activeOpacity={0.85}
-            onPress={() => setSelectedPanel(event)}
+            onPress={() => setSelectedPanel(panel)}
           >
-            <View style={styles.eventCard}>
+            <View style={styles.panelCard}>
               {/* Remove button in top-right corner of each card */}
               <TouchableOpacity
                 style={styles.removeButton}
                 onPress={(e) => {
                   e.stopPropagation?.();
-                  removeFromAgenda(event.id);
+                  removeFromAgenda(panel.id);
                 }}
               >
                 <Text style={styles.removeButtonText}>✕</Text>
@@ -244,11 +244,11 @@ export default function MyAgendaScreen() {
 
               {/* Date label */}
               <View style={styles.dateTag}>
-                <Text style={styles.dateText}>{event.date}</Text>
+                <Text style={styles.dateText}>{panel.date}</Text>
               </View>
 
               <ThemedText style={{ fontSize: 19 }} type="title">
-                {event.title}
+                {panel.title}
               </ThemedText>
 
               {/* Session time */}
@@ -258,7 +258,7 @@ export default function MyAgendaScreen() {
                   name="clock.fill"
                   color={Colors.awac.navy}
                 />
-                <ThemedText>{stripDate(event.session)}</ThemedText>
+                <ThemedText>{stripDate(panel.session)}</ThemedText>
               </View>
 
               {/* Location */}
@@ -268,7 +268,7 @@ export default function MyAgendaScreen() {
                   name="mappin.circle.fill"
                   color={Colors.awac.navy}
                 />
-                <ThemedText>{event.location}</ThemedText>
+                <ThemedText>{panel.location}</ThemedText>
               </View>
 
               {/* Speaker */}
@@ -278,7 +278,7 @@ export default function MyAgendaScreen() {
                   name="person.fill"
                   color={Colors.awac.navy}
                 />
-                <ThemedText>{event.speaker}</ThemedText>
+                <ThemedText>{panel.speaker}</ThemedText>
               </View>
             </View>
           </TouchableOpacity>
@@ -320,12 +320,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  eventsContainer: {
+  panelsContainer: {
     padding: 20,
     paddingTop: 0,
     gap: 20,
   },
-  eventCard: {
+  panelCard: {
     backgroundColor: Colors.lightestBlue,
     borderRadius: 12,
     borderWidth: 2,

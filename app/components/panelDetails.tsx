@@ -35,7 +35,7 @@ export type Panel = {
 type PanelResource = {
   id: number;
   created_at: string;
-  event_id: number;
+  panel_id: number;
   type: string | null;
   title: string | null;
   url: string;
@@ -134,7 +134,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     const { data, error } = await supabase
       .from('panel_comments')
       .select('comment_id, user_id, comment_content, created_at')
-      .eq('event_id', panel.id)
+      .eq('panel_id', panel.id)
       .order('created_at', { ascending: true });
     if (error) console.error(error);
     else {
@@ -172,8 +172,8 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     setResourcesLoading(true);
     const { data, error } = await supabase
       .from('panel_resources')
-      .select('id, created_at, event_id, type, title, url')
-      .eq('event_id', panel.id)
+      .select('id, created_at, panel_id, type, title, url')
+      .eq('panel_id', panel.id)
       .order('created_at', { ascending: true });
     if (error) console.error(error);
     else setResources((data ?? []) as PanelResource[]);
@@ -212,7 +212,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     setSubmitting(true);
     const { error } = await supabase.from('panel_comments').insert({
       user_id: userID,
-      event_id: panel.id,
+      panel_id: panel.id,
       comment_content: newComment.trim(),
     });
 

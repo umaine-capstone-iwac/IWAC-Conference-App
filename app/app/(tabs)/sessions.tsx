@@ -32,7 +32,7 @@ type SessionSlot = {
   panels: Panel[];
 };
 
-type ConferenceEventRow = {
+type ConferencePanelRow = {
   id: number;
   title: string;
   location: string;
@@ -66,10 +66,10 @@ export default function SessionsScreen() {
   // Fetch the logged in user's ID
   const [userID, setUserID] = useState<string | undefined>();
 
-  // Grouped sessions built from conference_events
+  // Grouped sessions built from conference_panels
   const [sessions, setSessions] = useState<SessionSlot[]>([]);
 
-  // ID's of events saved in user_agenda
+  // ID's of panels saved in user_agenda
   const [savedPanels, setSavedPanels] = useState<number[]>([]);
 
   // UI state
@@ -92,23 +92,23 @@ export default function SessionsScreen() {
 
   // -- DATA FETCHING -- //
 
-  // Fetch events from conference_events
+  // Fetch panels from conference_panels
   const fetchSessions = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Pull all events ordered by date + session
+      // Pull all panels ordered by date + session
       const { data, error } = await supabase
-        .from('conference_events')
+        .from('conference_panels')
         .select('id,title,location,speaker,date,session,tag')
         .order('date', { ascending: true })
         .order('session', { ascending: true });
 
       if (error) throw error;
 
-      const rows = (data ?? []) as ConferenceEventRow[];
+      const rows = (data ?? []) as ConferencePanelRow[];
 
-      // Group events by session
+      // Group panels by session
       const grouped = new Map<
         string,
         { date: string; session: string; panels: Panel[] }
@@ -122,7 +122,7 @@ export default function SessionsScreen() {
           grouped.set(key, { date: r.date, session: r.session, panels: [] });
         }
 
-        // Push event into its session
+        // Push panel into its session
         grouped.get(key)!.panels.push({
           id: r.id,
           title: r.title,
@@ -154,7 +154,7 @@ export default function SessionsScreen() {
     }
   }, []);
 
-  // Fetch saved events for current user
+  // Fetch saved panels for current user
   const fetchSavedPanels = useCallback(async () => {
     if (!userID) {
       setSavedPanels([]);
@@ -163,7 +163,7 @@ export default function SessionsScreen() {
 
     const { data, error } = await supabase
       .from('user_agenda')
-      .select('event_id')
+      .select('panel_id')
       .eq('user_id', userID);
 
     if (error) {
@@ -171,7 +171,7 @@ export default function SessionsScreen() {
       return;
     }
 
-    setSavedPanels((data ?? []).map((r) => r.event_id));
+    setSavedPanels((data ?? []).map((r) => r.panel_id));
   }, [userID]);
 
   // -- SCREEN EFFECTS -- //
@@ -191,23 +191,23 @@ export default function SessionsScreen() {
 
   // -- ACTIONS -- //
 
-  // Add event to user_agenda
-  const addToAgenda = async (eventId: number) => {
+  // Add panel to user_agenda
+  const addToAgenda = async (panelId: number) => {
     const { error } = await supabase
       .from('user_agenda')
-      .insert({ user_id: userID, event_id: eventId });
+      .insert({ user_id: userID, panel_id: panelId });
     if (error) throw error;
   };
 
-  // Remove event from user_agenda
-  const removeFromAgenda = async (eventId: number) => {
+  // Remove panel from user_agenda
+  const removeFromAgenda = async (panelId: number) => {
     if (!userID) return;
 
     const { error } = await supabase
       .from('user_agenda')
       .delete()
       .eq('user_id', userID)
-      .eq('event_id', eventId);
+      .eq('panel_id', panelId);
 
     if (error) throw error;
   };
@@ -239,7 +239,7 @@ export default function SessionsScreen() {
 
       Alert.alert(
         'Error',
-        isSaved ? 'Failed to remove event' : 'Failed to save event',
+        isSaved ? 'Failed to remove panel' : 'Failed to save panel',
       );
     }
   };
@@ -329,7 +329,7 @@ export default function SessionsScreen() {
       >
         <View style={styles.container}>
           <Input
-            text="Search events..."
+            text="Search panels..."
             value={search}
             onChangeText={setSearch}
           />
