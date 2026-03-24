@@ -72,7 +72,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   );
 
   // -- HELPERS -- //
-  
+
   // Open session materials link
   const openUrl = async (url: string) => {
     try {
@@ -263,7 +263,9 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           </View>
 
           {/* Session materials */}
-          <ThemedText style={styles.sectionHeader}>Session Materials</ThemedText>
+          <ThemedText style={styles.sectionHeader}>
+            Session Materials
+          </ThemedText>
 
           {panel.materials_link ? (
             <TouchableOpacity

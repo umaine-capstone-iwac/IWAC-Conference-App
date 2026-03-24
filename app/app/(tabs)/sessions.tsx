@@ -103,7 +103,9 @@ export default function SessionsScreen() {
       // Pull all panels ordered by date + session
       const { data, error } = await supabase
         .from('conference_panels')
-        .select('id,title,location,speaker,date,session,tag,abstract,materials_title,materials_link',)
+        .select(
+          'id,title,location,speaker,date,session,tag,abstract,materials_title,materials_link',
+        )
         .order('date', { ascending: true })
         .order('session', { ascending: true });
 
@@ -413,7 +415,9 @@ export default function SessionsScreen() {
                               : 'heart-outline'
                           }
                           size={32}
-                          color={savedPanels.includes(panel.id) ? 'red' : '#888'}
+                          color={
+                            savedPanels.includes(panel.id) ? 'red' : '#888'
+                          }
                         />
                       </Pressable>
                     </View>
