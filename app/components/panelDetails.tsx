@@ -8,7 +8,6 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -270,7 +269,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           {panel.materials_link ? (
             <TouchableOpacity
               activeOpacity={0.85}
-              onPress={() => openUrl(panel.materials_link)}
+              onPress={() => openUrl(panel.materials_link!)}
             >
               <ThemedView style={styles.resourceCard}>
                 <ThemedText style={styles.resourceTitle}>

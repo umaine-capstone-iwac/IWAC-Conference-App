@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  Text,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -317,148 +316,140 @@ export default function SessionsScreen() {
   // Panel detail view — shared component
   if (selectedPanel) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-        <PanelDetail
-          panel={selectedPanel}
-          userID={userID}
-          onBack={() => setSelectedPanel(null)}
-        />
-      </SafeAreaView>
+      <PanelDetail
+        panel={selectedPanel}
+        userID={userID}
+        onBack={() => setSelectedPanel(null)}
+      />
     );
   }
 
   // -- UI -- //
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
-      <ScrollView
-        style={styles.scrollContainer}
-        keyboardShouldPersistTaps="always"
-      >
-        <View style={styles.container}>
-          <Input
-            text="Search panels..."
-            value={search}
-            onChangeText={setSearch}
+    <ScrollView
+      style={styles.scrollContainer}
+      keyboardShouldPersistTaps="always"
+    >
+      <View style={styles.container}>
+        <Input
+          text="Search panels..."
+          value={search}
+          onChangeText={setSearch}
+        />
+
+        {/* Dropdown for sessions */}
+        <ThemedView style={styles.dropdownWrap}>
+          <ThemedText style={styles.dropdownLabel}>Session</ThemedText>
+          <Dropdown
+            style={styles.dropdown}
+            data={sessionOptions}
+            labelField="label"
+            valueField="value"
+            value={sessionLabel ?? 'ALL'}
+            placeholder="Select session"
+            onChange={(item) =>
+              router.setParams({
+                session: item.value === 'ALL' ? undefined : item.value,
+              })
+            }
           />
+        </ThemedView>
 
-          {/* Dropdown for sessions */}
-          <ThemedView style={styles.dropdownWrap}>
-            <ThemedText style={styles.dropdownLabel}>Session</ThemedText>
-            <Dropdown
-              style={styles.dropdown}
-              data={sessionOptions}
-              labelField="label"
-              valueField="value"
-              value={sessionLabel ?? 'ALL'}
-              placeholder="Select session"
-              onChange={(item) =>
-                router.setParams({
-                  session: item.value === 'ALL' ? undefined : item.value,
-                })
-              }
-            />
-          </ThemedView>
+        {/* Dropdown for topics */}
+        <ThemedView style={styles.dropdownWrap}>
+          <ThemedText style={styles.dropdownLabel}>Topic</ThemedText>
+          <Dropdown
+            style={styles.dropdown}
+            data={topicOptions}
+            labelField="label"
+            valueField="value"
+            value={tagFilter ?? 'ALL'}
+            placeholder="Select topic"
+            onChange={(item) =>
+              router.setParams({
+                topic: item.value === 'ALL' ? undefined : item.value,
+              })
+            }
+          />
+        </ThemedView>
 
-          {/* Dropdown for topics */}
-          <ThemedView style={styles.dropdownWrap}>
-            <ThemedText style={styles.dropdownLabel}>Topic</ThemedText>
-            <Dropdown
-              style={styles.dropdown}
-              data={topicOptions}
-              labelField="label"
-              valueField="value"
-              value={tagFilter ?? 'ALL'}
-              placeholder="Select topic"
-              onChange={(item) =>
-                router.setParams({
-                  topic: item.value === 'ALL' ? undefined : item.value,
-                })
-              }
-            />
-          </ThemedView>
+        {/* Render each session group + panels */}
+        {filteredSessions.map((slot) => (
+          <View key={slot.id}>
+            <ThemedText style={{ fontWeight: '700' }}>{slot.label}</ThemedText>
 
-          {/* Render each session group + panels */}
-          {filteredSessions.map((slot) => (
-            <View key={slot.id}>
-              <ThemedText style={{ fontWeight: '700' }}>
-                {slot.label}
-              </ThemedText>
+            {/* Panel cards */}
+            {slot.panels.map((panel) => (
+              <TouchableOpacity
+                key={panel.id}
+                activeOpacity={0.85}
+                onPress={() => setSelectedPanel(panel)}
+              >
+                <ThemedView style={styles.sessionCardDetails}>
+                  <View style={styles.cardHeader}>
+                    {/* Panel title */}
+                    <ThemedText style={styles.panelTitle} type="title">
+                      {panel.title}
+                    </ThemedText>
 
-              {/* Panel cards */}
-              {slot.panels.map((panel) => (
-                <TouchableOpacity
-                  key={panel.id}
-                  activeOpacity={0.85}
-                  onPress={() => setSelectedPanel(panel)}
-                >
-                  <ThemedView style={styles.sessionCardDetails}>
-                    <View style={styles.cardHeader}>
-                      {/* Panel title */}
-                      <ThemedText style={styles.panelTitle} type="title">
-                        {panel.title}
-                      </ThemedText>
-
-                      {/* Heart button + save to agenda */}
-                      <Pressable
-                        style={styles.heartButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          toggleSavePanel(panel.id);
-                        }}
-                        hitSlop={12}
-                      >
-                        <Ionicons
-                          name={
-                            savedPanels.includes(panel.id)
-                              ? 'heart'
-                              : 'heart-outline'
-                          }
-                          size={32}
-                          color={
-                            savedPanels.includes(panel.id) ? 'red' : '#888'
-                          }
-                        />
-                      </Pressable>
-                    </View>
-
-                    {/* Session time row */}
-                    <View style={styles.detailRow}>
-                      <IconSymbol
-                        size={18}
-                        name="clock.fill"
-                        color={Colors.awac.navy}
+                    {/* Heart button + save to agenda */}
+                    <Pressable
+                      style={styles.heartButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        toggleSavePanel(panel.id);
+                      }}
+                      hitSlop={12}
+                    >
+                      <Ionicons
+                        name={
+                          savedPanels.includes(panel.id)
+                            ? 'heart'
+                            : 'heart-outline'
+                        }
+                        size={32}
+                        color={savedPanels.includes(panel.id) ? 'red' : '#888'}
                       />
-                      <ThemedText>{stripDate(panel.session)}</ThemedText>
-                    </View>
+                    </Pressable>
+                  </View>
 
-                    {/* Location row */}
-                    <View style={styles.detailRow}>
-                      <IconSymbol
-                        size={18}
-                        name="mappin.circle.fill"
-                        color={Colors.awac.navy}
-                      />
-                      <ThemedText>{panel.location}</ThemedText>
-                    </View>
+                  {/* Session time row */}
+                  <View style={styles.detailRow}>
+                    <IconSymbol
+                      size={18}
+                      name="clock.fill"
+                      color={Colors.awac.navy}
+                    />
+                    <ThemedText>{stripDate(panel.session)}</ThemedText>
+                  </View>
 
-                    {/* Speaker row */}
-                    <View style={styles.detailRow}>
-                      <IconSymbol
-                        size={18}
-                        name="person.fill"
-                        color={Colors.awac.navy}
-                      />
-                      <ThemedText>{panel.speaker}</ThemedText>
-                    </View>
-                  </ThemedView>
-                </TouchableOpacity>
-              ))}
-            </View>
-          ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+                  {/* Location row */}
+                  <View style={styles.detailRow}>
+                    <IconSymbol
+                      size={18}
+                      name="mappin.circle.fill"
+                      color={Colors.awac.navy}
+                    />
+                    <ThemedText>{panel.location}</ThemedText>
+                  </View>
+
+                  {/* Speaker row */}
+                  <View style={styles.detailRow}>
+                    <IconSymbol
+                      size={18}
+                      name="person.fill"
+                      color={Colors.awac.navy}
+                    />
+                    <ThemedText>{panel.speaker}</ThemedText>
+                  </View>
+                </ThemedView>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ))}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -480,12 +471,12 @@ const styles = StyleSheet.create({
   dropdownLabel: {
     fontWeight: '700',
     paddingHorizontal: 12,
-    paddingTop: 10,
+    paddingTop: 5,
     color: Colors.awac.navy,
   },
   dropdown: {
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 5,
   },
   sessionCardDetails: {
     padding: 15,
