@@ -41,6 +41,8 @@ export function Input({ text, style, secureTextEntry, ...rest }: InputProps) {
         autoCapitalize="sentences"
         // Hide text entry if isVisible set to false
         secureTextEntry={isVisible}
+        // Have done key, unless multiline 
+        returnKeyType={rest.multiline ? 'default' : 'done'}
         // Forward remaining TextInput props
         {...rest}
       />

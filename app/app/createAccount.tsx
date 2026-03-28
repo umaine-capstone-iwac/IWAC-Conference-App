@@ -4,6 +4,8 @@ import {
   View,
   Text,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themedText';
@@ -118,6 +120,10 @@ export default function CreateAccount() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
       <ScrollView>
         {/* Create account header */}
         <ThemedText type="subtitle" style={styles.subtitle}>
@@ -218,6 +224,7 @@ export default function CreateAccount() {
           }}
         />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

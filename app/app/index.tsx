@@ -1,11 +1,8 @@
 import {
   StyleSheet,
-  ScrollView,
   View,
   Text,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Input } from '@/components/input';
 import { ThemedText } from '@/components/themedText';
@@ -123,10 +120,6 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
         <View style={{ flex: 1, justifyContent: 'center' }}>
           {/* Login header */}
           <ThemedText type="subtitle" style={styles.subtitle}>
@@ -191,7 +184,7 @@ export default function LoginScreen() {
             onClose={() => setForgotModalVisible(false)}
           />
         </View>
-      </KeyboardAvoidingView>
+      {/* </KeyboardAvoidingView> */}
     </SafeAreaView>
   );
 }
