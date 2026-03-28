@@ -12,6 +12,7 @@ import { supabase } from '@/lib/supabase';
 import { Input } from '@/components/input';
 import { ThemedText } from '@/components/themedText';
 import { Colors } from '@/constants/theme';
+import AlertModal from '@/app/modals/alert';
 
 export default function ResetPasswordScreen(): React.JSX.Element {
   // -- PARAMS -- //
@@ -21,10 +22,18 @@ export default function ResetPasswordScreen(): React.JSX.Element {
 
   // -- STATE -- //
 
+  // Supabase session readiness state
+  const [sessionReady, setSessionReady] = useState(false);
+
+  // User input state
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [sessionReady, setSessionReady] = useState(false);
+
+  // Error text state
   const [errorText, setErrorText] = useState('');
+
+  // Alert visibility state
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
 
   // -- SESSION INITIALIZATION -- //
 
@@ -87,6 +96,13 @@ export default function ResetPasswordScreen(): React.JSX.Element {
       return;
     }
 
+    // Verify password length
+    if (password.length < 6 || confirmPassword.length < 6) {
+      setErrorText('Password must be at least 6 characters');
+      return;
+    }
+
+    // Attempt to update the user's password
     const { error } = await supabase.auth.updateUser({ password });
 
     // If failure, show error
@@ -98,7 +114,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
 
     // On success, sign out and return to login
     await supabase.auth.signOut();
-    router.replace('/');
+    setAlertModalVisible(true);
   };
 
   // -- UI -- //
@@ -133,7 +149,6 @@ export default function ResetPasswordScreen(): React.JSX.Element {
             text="password"
             onChangeText={setPassword}
             autoCapitalize="none"
-            style={styles.input}
             secureTextEntry
           />
         </View>
@@ -146,7 +161,6 @@ export default function ResetPasswordScreen(): React.JSX.Element {
             text="password"
             onChangeText={setConfirmPassword}
             autoCapitalize="none"
-            style={styles.input}
             secureTextEntry
           />
         </View>
@@ -157,9 +171,19 @@ export default function ResetPasswordScreen(): React.JSX.Element {
           </View>
         </TouchableOpacity>
 
-        {errorText && (
-          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
-        )}
+        <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+
+        {/* Alert modal, if visible */}
+        <AlertModal
+          visible={alertModalVisible}
+          title="Password Updated"
+          message="You may now log in with your updated password."
+          onClose={() => {
+            setAlertModalVisible(false);
+            // Reroute to Login on Alert close
+            router.replace('/');
+          }}
+        />
       </View>
     </KeyboardAvoidingView>
   );
@@ -190,12 +214,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
-  input: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-  },
   submitButton: {
     backgroundColor: Colors.awac.orange,
     paddingHorizontal: 15,
@@ -211,12 +229,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: 'red',
-    paddingVertical: 15,
+    paddingVertical: 10,
     paddingHorizontal: 40,
     alignSelf: 'center',
     justifyContent: 'center',
     fontSize: 16,
-    minHeight: 50,
+    minHeight: 40,
   },
   verifyingText: {
     alignSelf: 'center',

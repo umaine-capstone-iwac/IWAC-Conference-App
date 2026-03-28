@@ -237,36 +237,21 @@ export default function ProfileSettingsModal() {
             <ThemedText type="title" style={styles.label}>
               First name
             </ThemedText>
-            <Input
-              value={firstName}
-              onChangeText={setFirstName}
-              style={styles.input}
-              text={''}
-            />
+            <Input value={firstName} onChangeText={setFirstName} text={''} />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Last name
             </ThemedText>
-            <Input
-              value={lastName}
-              onChangeText={setLastName}
-              style={styles.input}
-              text={''}
-            />
+            <Input value={lastName} onChangeText={setLastName} text={''} />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Institutional Affiliation
             </ThemedText>
-            <Input
-              value={profession}
-              onChangeText={setProfession}
-              style={styles.input}
-              text={''}
-            />
+            <Input value={profession} onChangeText={setProfession} text={''} />
           </View>
 
           <View style={styles.inputGroup}>
@@ -277,7 +262,7 @@ export default function ProfileSettingsModal() {
               value={aboutMe}
               onChangeText={setAboutMe}
               multiline
-              style={[styles.input, { height: 120 }]}
+              style={{ height: 120 }}
               text={''}
             />
           </View>
@@ -290,7 +275,7 @@ export default function ProfileSettingsModal() {
               value={interests}
               onChangeText={setInterests}
               multiline
-              style={[styles.input, { height: 120 }]}
+              style={{ height: 120 }}
               text={''}
             />
           </View>
@@ -303,7 +288,7 @@ export default function ProfileSettingsModal() {
               value={mySessions}
               onChangeText={setMySessions}
               multiline
-              style={[styles.input, { height: 140 }]}
+              style={{ height: 140 }}
               text={''}
             />
           </View>
@@ -361,12 +346,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-  },
-  input: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
   },
   button: {
     backgroundColor: Colors.awac.orange,

@@ -85,7 +85,7 @@ export default function ForgotPasswordModal({
     setLoading(true);
 
     // Check that the email is registered for the conference
-    const result = await checkRegistrant(forgotEmail);
+    const result = await checkRegistrant(forgotEmail.toLowerCase());
 
     // Return if not registered
     if (!result.valid) {
@@ -135,7 +135,6 @@ export default function ForgotPasswordModal({
             text="email@address.com"
             onChangeText={setForgotEmail}
             autoCapitalize="none"
-            style={styles.input}
           />
 
           {/* Inline error or success message, if any */}
@@ -208,12 +207,6 @@ const styles = StyleSheet.create({
     color: '#555',
     textAlign: 'center',
     marginBottom: 16,
-  },
-  input: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
   },
   message: {
     marginTop: 12,

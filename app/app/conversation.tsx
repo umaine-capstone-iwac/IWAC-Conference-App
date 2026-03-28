@@ -354,7 +354,6 @@ export default function ConversationScreen() {
             text="Type a message..."
             multiline
             numberOfLines={4}
-            style={styles.messageInput}
             value={newMessage}
             onChangeText={setNewMessage}
             autoCapitalize="sentences"
@@ -419,9 +418,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'flex-end',
     width: '100%',
-  },
-  messageInput: {
-    fontSize: 18,
   },
   sendButton: {
     backgroundColor: Colors.awac.orange,

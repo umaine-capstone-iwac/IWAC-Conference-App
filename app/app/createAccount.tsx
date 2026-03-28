@@ -27,7 +27,7 @@ export default function CreateAccount() {
   // Error text state
   const [errorText, setErrorText] = useState('');
 
-  // Forgot password modal visibility state
+  // Alert modal visibility state
   const [alertModalVisible, setAlertModalVisible] = useState(false);
 
   // -- AUTHENTICATION HELPERS -- //
@@ -66,7 +66,7 @@ export default function CreateAccount() {
     }
 
     // Verify password length
-    if (password.length < 6) {
+    if (password.length < 6 || passCheck.length < 6) {
       setErrorText('Password must be at least 6 characters');
       return;
     }
@@ -133,7 +133,6 @@ export default function CreateAccount() {
             text="First Name"
             onChangeText={setFName}
             autoCapitalize="none"
-            style={styles.input}
           />
         </View>
 
@@ -146,7 +145,6 @@ export default function CreateAccount() {
             text="Last Name"
             onChangeText={setLName}
             autoCapitalize="none"
-            style={styles.input}
           />
         </View>
 
@@ -159,7 +157,6 @@ export default function CreateAccount() {
             text="email@address.com"
             onChangeText={setEmail}
             autoCapitalize="none"
-            style={styles.input}
           />
         </View>
 
@@ -172,7 +169,6 @@ export default function CreateAccount() {
             text="password"
             onChangeText={setPassword}
             autoCapitalize="none"
-            style={styles.input}
             secureTextEntry
           />
         </View>
@@ -186,7 +182,6 @@ export default function CreateAccount() {
             text="password"
             onChangeText={setPassCheck}
             autoCapitalize="none"
-            style={styles.input}
             secureTextEntry
           />
         </View>
@@ -247,12 +242,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-  },
-  input: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
   },
   createButton: {
     backgroundColor: Colors.awac.orange,

@@ -1,5 +1,6 @@
 import {
   StyleSheet,
+  ScrollView,
   View,
   Text,
   TouchableOpacity,
@@ -12,6 +13,7 @@ import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ForgotPasswordModal from '@/app/modals/forgotPassword';
 
 export default function LoginScreen() {
@@ -120,77 +122,77 @@ export default function LoginScreen() {
   // -- UI -- //
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.content}>
-        {/* Login header */}
-        <ThemedText type="subtitle" style={styles.subtitle}>
-          Login
-        </ThemedText>
-
-        {/* Username input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Email
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={{ flex: 1, justifyContent: 'center' }}>
+          {/* Login header */}
+          <ThemedText type="subtitle" style={styles.subtitle}>
+            Login
           </ThemedText>
-          <Input
-            text="email@address.com"
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            style={styles.input}
+
+          {/* Username input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Email
+            </ThemedText>
+            <Input
+              text="email@address.com"
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Password input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Password
+            </ThemedText>
+            <Input
+              text="password"
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              secureTextEntry
+            />
+          </View>
+
+          {/* Login Button*/}
+          <TouchableOpacity onPress={handleLogin}>
+            <View style={styles.loginButton}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Error text, if any */}
+          {errorText && (
+            <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+          )}
+
+          {/* Link to create account screen */}
+          <TouchableOpacity onPress={() => router.replace('/createAccount')}>
+            <View style={styles.linkButton}>
+              <Text>New to the IWAC App?</Text>
+              <Text style={styles.linkButtonText}>Create Account</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Opens forgot password modal */}
+          <TouchableOpacity onPress={() => setForgotModalVisible(true)}>
+            <View style={styles.linkButton}>
+              <Text style={styles.linkButtonText}>Forgot Password?</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Forgot password modal */}
+          <ForgotPasswordModal
+            visible={forgotModalVisible}
+            onClose={() => setForgotModalVisible(false)}
           />
         </View>
-
-        {/* Password input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Password
-          </ThemedText>
-          <Input
-            text="password"
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            style={styles.input}
-            secureTextEntry
-          />
-        </View>
-
-        {/* Login Button*/}
-        <TouchableOpacity onPress={handleLogin}>
-          <View style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Login</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Error text, if any */}
-        {errorText && (
-          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
-        )}
-
-        {/* Link to create account screen */}
-        <TouchableOpacity onPress={() => router.replace('/createAccount')}>
-          <View style={styles.linkButton}>
-            <Text>New to the IWAC App?</Text>
-            <Text style={styles.linkButtonText}>Create Account</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Opens forgot password modal */}
-        <TouchableOpacity onPress={() => setForgotModalVisible(true)}>
-          <View style={styles.linkButton}>
-            <Text style={styles.linkButtonText}>Forgot Password?</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* Forgot password modal */}
-      <ForgotPasswordModal
-        visible={forgotModalVisible}
-        onClose={() => setForgotModalVisible(false)}
-      />
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -201,13 +203,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.awac.beige,
   },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-  },
   title: {
     fontSize: 28,
-    marginBottom: 10,
   },
   subtitle: {
     fontSize: 24,
@@ -222,12 +219,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 5,
-  },
-  input: {
-    backgroundColor: Colors.lightestBlue,
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
   },
   loginButton: {
     backgroundColor: Colors.awac.orange,

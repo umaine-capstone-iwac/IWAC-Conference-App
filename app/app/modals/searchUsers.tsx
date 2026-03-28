@@ -94,11 +94,7 @@ export default function SearchUsersScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Input
-        text="Search users..."
-        style={styles.searchBar}
-        onChangeText={setSearch}
-      />
+      <Input text="Search users..." onChangeText={setSearch} />
 
       <FlatList
         data={filteredUsers}
@@ -144,9 +140,5 @@ const styles = StyleSheet.create({
   },
   userText: {
     fontSize: 18,
-  },
-  searchBar: {
-    maxHeight: 50,
-    fontSize: 16,
   },
 });

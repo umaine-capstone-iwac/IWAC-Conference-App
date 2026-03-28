@@ -266,6 +266,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.awac.orange,
     backgroundColor: '#FFF5E9',
   },
+  searchBarContainer: {
+    gap: 15,
+    flexDirection: 'row',
+  },
   searchIcon: {
     width: 50,
     backgroundColor: Colors.lightestBlue,
@@ -276,13 +280,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchBarContainer: {
-    flexDirection: 'row',
-    gap: 15,
-  },
   searchBar: {
-    height: 50,
-    fontSize: 16,
     flex: 1,
   },
 });

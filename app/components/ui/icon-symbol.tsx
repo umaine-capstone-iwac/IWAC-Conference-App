@@ -28,6 +28,8 @@ const MAPPING = {
   'person.fill': 'person',
   'bell.fill': 'notifications',
   'magnifyingglass.circle.fill': 'search',
+  eye: 'visibility',
+  'eye.slash': 'visibility-off',
 } as IconMapping;
 
 /**
