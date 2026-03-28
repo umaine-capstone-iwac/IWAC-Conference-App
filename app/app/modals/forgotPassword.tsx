@@ -12,6 +12,8 @@ import { Colors } from '@/constants/theme';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+// -- PROPS -- //
+
 interface ForgotPasswordModalProps {
   visible: boolean;
   onClose: () => void;
@@ -60,7 +62,8 @@ export default function ForgotPasswordModal({
     if (!count || count === 0)
       return {
         valid: false,
-        message: 'Email not registered for the IWAC conference',
+        message:
+          'Email not registered for the IWAC conference. Contact the organizer.',
       };
 
     return { valid: true, message: '' };
@@ -100,7 +103,7 @@ export default function ForgotPasswordModal({
     // Show success message
     setIsError(false);
     setMessage(
-      `A password reset link has been sent to ${forgotEmail}. Please check your inbox.`,
+      `If an IWAC account exists for ${forgotEmail}, a reset link has been set. \n\nPlease check your inbox and spam.`,
     );
     setLoading(false);
     setEmailSent(true);
