@@ -124,106 +124,106 @@ export default function CreateAccount() {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-      <ScrollView>
-        {/* Create account header */}
-        <ThemedText type="subtitle" style={styles.subtitle}>
-          Create Account
-        </ThemedText>
-
-        {/* First name input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            First Name
+        <ScrollView>
+          {/* Create account header */}
+          <ThemedText type="subtitle" style={styles.subtitle}>
+            Create Account
           </ThemedText>
-          <Input
-            text="First Name"
-            onChangeText={setFName}
-            autoCapitalize="none"
-          />
-        </View>
 
-        {/* Last name input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Last Name
-          </ThemedText>
-          <Input
-            text="Last Name"
-            onChangeText={setLName}
-            autoCapitalize="none"
-          />
-        </View>
-
-        {/* Email input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Email
-          </ThemedText>
-          <Input
-            text="email@address.com"
-            onChangeText={setEmail}
-            autoCapitalize="none"
-          />
-        </View>
-
-        {/* Password input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Password
-          </ThemedText>
-          <Input
-            text="password"
-            onChangeText={setPassword}
-            autoCapitalize="none"
-            secureTextEntry
-          />
-        </View>
-
-        {/* Confirm password input */}
-        <View style={styles.inputGroup}>
-          <ThemedText type="title" style={styles.label}>
-            Confirm Password
-          </ThemedText>
-          <Input
-            text="password"
-            onChangeText={setPassCheck}
-            autoCapitalize="none"
-            secureTextEntry
-          />
-        </View>
-
-        {/* Create account button */}
-        <TouchableOpacity onPress={handleCreateAccount}>
-          <View style={styles.createButton}>
-            <Text style={styles.createButtonText}>Create Account</Text>
+          {/* First name input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              First Name
+            </ThemedText>
+            <Input
+              text="First Name"
+              onChangeText={setFName}
+              autoCapitalize="none"
+            />
           </View>
-        </TouchableOpacity>
 
-        {/* Error text, if any */}
-        {errorText && (
-          <ThemedText style={styles.errorText}>{errorText}</ThemedText>
-        )}
-
-        {/* Link to Login */}
-        <TouchableOpacity onPress={() => router.replace('/')}>
-          <View style={styles.linkButton}>
-            <Text>Already have an account?</Text>
-            <Text style={styles.linkButtonText}>Go to Login</Text>
+          {/* Last name input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Last Name
+            </ThemedText>
+            <Input
+              text="Last Name"
+              onChangeText={setLName}
+              autoCapitalize="none"
+            />
           </View>
-        </TouchableOpacity>
 
-        {/* Alert modal, if visible */}
-        <AlertModal
-          visible={alertModalVisible}
-          title="Email Sent"
-          message="Check your inbox and spam for a verification link.\n\nOnce verified, return to the app and log in."
-          onClose={() => {
-            setAlertModalVisible(false);
-            // Reroute to Login on Alert close
-            router.replace('/');
-          }}
-        />
-      </ScrollView>
+          {/* Email input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Email
+            </ThemedText>
+            <Input
+              text="email@address.com"
+              onChangeText={setEmail}
+              autoCapitalize="none"
+            />
+          </View>
+
+          {/* Password input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Password
+            </ThemedText>
+            <Input
+              text="password"
+              onChangeText={setPassword}
+              autoCapitalize="none"
+              secureTextEntry
+            />
+          </View>
+
+          {/* Confirm password input */}
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Confirm Password
+            </ThemedText>
+            <Input
+              text="password"
+              onChangeText={setPassCheck}
+              autoCapitalize="none"
+              secureTextEntry
+            />
+          </View>
+
+          {/* Create account button */}
+          <TouchableOpacity onPress={handleCreateAccount}>
+            <View style={styles.createButton}>
+              <Text style={styles.createButtonText}>Create Account</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Error text, if any */}
+          {errorText && (
+            <ThemedText style={styles.errorText}>{errorText}</ThemedText>
+          )}
+
+          {/* Link to Login */}
+          <TouchableOpacity onPress={() => router.replace('/')}>
+            <View style={styles.linkButton}>
+              <Text>Already have an account?</Text>
+              <Text style={styles.linkButtonText}>Go to Login</Text>
+            </View>
+          </TouchableOpacity>
+
+          {/* Alert modal, if visible */}
+          <AlertModal
+            visible={alertModalVisible}
+            title="Email Sent"
+            message="Check your inbox and spam for a verification link.\n\nOnce verified, return to the app and log in."
+            onClose={() => {
+              setAlertModalVisible(false);
+              // Reroute to Login on Alert close
+              router.replace('/');
+            }}
+          />
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
