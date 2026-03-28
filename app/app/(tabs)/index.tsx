@@ -14,7 +14,7 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
-import PanelDetail, { Panel } from '@/components/panelDetails';
+import PanelDetail, { Panel } from '@/app/panelDetails';
 
 // -- TYPES -- //
 

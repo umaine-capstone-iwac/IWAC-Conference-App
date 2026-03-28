@@ -18,7 +18,7 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 import { Dropdown } from 'react-native-element-dropdown';
-import PanelDetail, { Panel } from '@/components/panelDetails';
+import PanelDetail, { Panel } from '@/app/panelDetails';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 
 // -- TYPES -- //

@@ -76,15 +76,6 @@ export default function RootLayout() {
             headerBackButtonDisplayMode: 'minimal',
           }}
         />
-        <Stack.Screen
-          name="forgotPassword"
-          options={{
-            title: 'Forgot Password',
-            headerStyle: styles.header,
-            headerTitleStyle: styles.headerTitle,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
