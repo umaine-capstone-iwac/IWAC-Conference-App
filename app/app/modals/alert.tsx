@@ -33,12 +33,15 @@ export default function AlertModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
+          {/* Alert title */}
           <ThemedText type="subtitle" style={styles.modalTitle}>
             {title}
           </ThemedText>
 
+          {/* Alert message */}
           <Text style={styles.modalBody}>{formattedText}</Text>
 
+          {/* Dismiss button */}
           <TouchableOpacity onPress={onClose}>
             <Text style={styles.dismissText}>Dismiss</Text>
           </TouchableOpacity>
@@ -75,20 +78,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   modalBody: {
-    fontSize: 16,
+    fontSize: 17,
     color: '#555',
     textAlign: 'center',
     marginBottom: 16,
   },
-  message: {
-    marginTop: 12,
-    fontSize: 16,
-    textAlign: 'center',
-  },
   dismissText: {
     alignSelf: 'center',
     color: 'mediumblue',
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     paddingVertical: 6,
   },

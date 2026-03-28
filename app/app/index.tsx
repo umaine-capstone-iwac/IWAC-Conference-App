@@ -125,10 +125,12 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.content}>
+        {/* Login header */}
         <ThemedText type="subtitle" style={styles.subtitle}>
           Login
         </ThemedText>
 
+        {/* Username input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Email
@@ -141,6 +143,7 @@ export default function LoginScreen() {
           />
         </View>
 
+        {/* Password input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Password
@@ -154,16 +157,19 @@ export default function LoginScreen() {
           />
         </View>
 
+        {/* Login Button*/}
         <TouchableOpacity onPress={handleLogin}>
           <View style={styles.loginButton}>
             <Text style={styles.loginButtonText}>Login</Text>
           </View>
         </TouchableOpacity>
 
+        {/* Error text, if any */}
         {errorText && (
           <ThemedText style={styles.errorText}>{errorText}</ThemedText>
         )}
 
+        {/* Link to create account screen */}
         <TouchableOpacity onPress={() => router.replace('/createAccount')}>
           <View style={styles.linkButton}>
             <Text>New to the IWAC App?</Text>
@@ -233,7 +239,7 @@ const styles = StyleSheet.create({
   },
   loginButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   linkButton: {
@@ -252,6 +258,7 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 5,
     paddingBottom: 15,
+    paddingHorizontal: 15,
     alignSelf: 'center',
     fontSize: 16,
   },

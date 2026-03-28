@@ -15,8 +15,6 @@ export default function RootLayout() {
     const handleDeepLink = (url: string | null) => {
       if (!url) return;
 
-      console.log('Root layout URL:', url);
-
       if (url.includes('resetPassword') || url.includes('type=recovery')) {
         router.push({
           pathname: '/resetPassword',
@@ -64,16 +62,6 @@ export default function RootLayout() {
           name="profileSettings"
           options={{
             title: 'Profile Settings',
-            headerStyle: styles.header,
-            headerTitleStyle: styles.headerTitle,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        />
-        <Stack.Screen
-          name="modals/notificationSettings"
-          options={{
-            presentation: 'modal',
-            title: 'Manage Notifications',
             headerStyle: styles.header,
             headerTitleStyle: styles.headerTitle,
             headerBackButtonDisplayMode: 'minimal',

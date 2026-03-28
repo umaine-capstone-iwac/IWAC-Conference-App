@@ -12,6 +12,7 @@ import { Colors } from '@/constants/theme';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import AlertModal from '@/app/modals/alert';
 
 export default function CreateAccount() {
   // -- STATE -- //
@@ -26,6 +27,9 @@ export default function CreateAccount() {
   // Error text state
   const [errorText, setErrorText] = useState('');
 
+  // Forgot password modal visibility state
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
+
   // -- AUTHENTICATION HELPERS -- //
 
   // Check if an email is registered for the conference
@@ -38,7 +42,11 @@ export default function CreateAccount() {
     if (error)
       return { valid: false, message: 'Error checking registrants list' };
     if (!count || count === 0)
-      return { valid: false, message: 'Email not in registrants list' };
+      return {
+        valid: false,
+        message:
+          'This email is not registered for the IWAC conference. Please contact the admin.',
+      };
 
     return { valid: true, message: '' };
   };
@@ -77,7 +85,7 @@ export default function CreateAccount() {
     }
 
     // Attempt to create account with provided credentials
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -89,19 +97,21 @@ export default function CreateAccount() {
     // If failure, show error
     if (error) {
       console.error('Auth error:', error.message);
-      if (error.message === 'User already registered') {
-        setErrorText('An account already exists with this email.');
-      } else {
-        setErrorText('Error creating account, please try again');
-      }
+      setErrorText('Error creating account, please try again');
       return;
     }
 
-    alert(
-      'Check your email to verify your account. Once verified, return to the app and log in.',
-    );
+    // If user already exists, show error.
+    if (
+      data.user &&
+      data.user.identities &&
+      data.user.identities.length === 0
+    ) {
+      setErrorText('An IWAC App account already exists with this email.');
+      return;
+    }
 
-    router.replace('/');
+    setAlertModalVisible(true);
   };
 
   // -- UI -- //
@@ -109,10 +119,12 @@ export default function CreateAccount() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
+        {/* Create account header */}
         <ThemedText type="subtitle" style={styles.subtitle}>
           Create Account
         </ThemedText>
 
+        {/* First name input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             First Name
@@ -125,6 +137,7 @@ export default function CreateAccount() {
           />
         </View>
 
+        {/* Last name input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Last Name
@@ -137,6 +150,7 @@ export default function CreateAccount() {
           />
         </View>
 
+        {/* Email input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Email
@@ -149,6 +163,7 @@ export default function CreateAccount() {
           />
         </View>
 
+        {/* Password input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Password
@@ -162,6 +177,7 @@ export default function CreateAccount() {
           />
         </View>
 
+        {/* Confirm password input */}
         <View style={styles.inputGroup}>
           <ThemedText type="title" style={styles.label}>
             Confirm Password
@@ -175,22 +191,37 @@ export default function CreateAccount() {
           />
         </View>
 
+        {/* Create account button */}
         <TouchableOpacity onPress={handleCreateAccount}>
           <View style={styles.createButton}>
             <Text style={styles.createButtonText}>Create Account</Text>
           </View>
         </TouchableOpacity>
 
+        {/* Error text, if any */}
         {errorText && (
           <ThemedText style={styles.errorText}>{errorText}</ThemedText>
         )}
 
+        {/* Link to Login */}
         <TouchableOpacity onPress={() => router.replace('/')}>
           <View style={styles.linkButton}>
             <Text>Already have an account?</Text>
             <Text style={styles.linkButtonText}>Go to Login</Text>
           </View>
         </TouchableOpacity>
+
+        {/* Alert modal, if visible */}
+        <AlertModal
+          visible={alertModalVisible}
+          title="Email Sent"
+          message="Check your inbox and spam for a verification link.\n\nOnce verified, return to the app and log in."
+          onClose={() => {
+            setAlertModalVisible(false);
+            // Reroute to Login on Alert close
+            router.replace('/');
+          }}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -233,7 +264,7 @@ const styles = StyleSheet.create({
   },
   createButtonText: {
     color: 'white',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   linkButton: {
@@ -248,14 +279,15 @@ const styles = StyleSheet.create({
   linkButtonText: {
     marginTop: 10,
     color: 'mediumblue',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
   },
   errorText: {
     color: 'red',
     marginTop: 5,
-    paddingBottom: 15,
-    alignSelf: 'center',
+    paddingBottom: 5,
+    marginHorizontal: 10,
+    textAlign: 'center',
     fontSize: 16,
   },
 });

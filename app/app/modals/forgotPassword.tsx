@@ -103,7 +103,7 @@ export default function ForgotPasswordModal({
     // Show success message
     setIsError(false);
     setMessage(
-      `If an IWAC account exists for ${forgotEmail}, a reset link has been set. \n\nPlease check your inbox and spam.`,
+      `If an IWAC App account exists for ${forgotEmail}, a reset link has been set. \n\nPlease check your inbox and spam.`,
     );
     setLoading(false);
     setEmailSent(true);
@@ -120,14 +120,17 @@ export default function ForgotPasswordModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
+          {/* Forgot Password title */}
           <ThemedText type="subtitle" style={styles.modalTitle}>
             Reset Password
           </ThemedText>
 
+          {/* Forgot Password message */}
           <Text style={styles.modalBody}>
             Enter the email address your IWAC account is registered with.
           </Text>
 
+          {/* Email input */}
           <Input
             text="email@address.com"
             onChangeText={setForgotEmail}
@@ -135,7 +138,7 @@ export default function ForgotPasswordModal({
             style={styles.input}
           />
 
-          {/* Inline error or success message */}
+          {/* Inline error or success message, if any */}
           {message ? (
             <Text
               style={[
@@ -147,6 +150,7 @@ export default function ForgotPasswordModal({
             </Text>
           ) : null}
 
+          {/* 'Send Reset Link' button or activity indicator */}
           {loading ? (
             // Show spinner while sending
             <ActivityIndicator
@@ -163,6 +167,7 @@ export default function ForgotPasswordModal({
           ) : // Else, show nothing
           null}
 
+          {/* Dismiss button */}
           <TouchableOpacity onPress={handleClose}>
             <Text style={styles.dismissText}>Dismiss</Text>
           </TouchableOpacity>
