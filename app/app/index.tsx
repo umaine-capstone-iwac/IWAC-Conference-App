@@ -15,6 +15,9 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Stops user from attempting multiple login calls
+  const [isLoading, setIsLoading] = useState(false);
+
   // Error text state
   const [errorText, setErrorText] = useState('');
 
@@ -42,9 +45,13 @@ export default function LoginScreen() {
 
   // Attempt to log in user on button press
   const handleLogin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+
     // Verify both fields are entered
     if (!email || !password) {
       setErrorText('Email and password required');
+      setIsLoading(false);
       return;
     }
 
@@ -54,6 +61,7 @@ export default function LoginScreen() {
     // Return if not registered
     if (!result.valid) {
       setErrorText(result.message);
+      setIsLoading(false);
       return;
     }
 
@@ -69,6 +77,7 @@ export default function LoginScreen() {
       setErrorText(
         'Incorrect password, or no account found.\nPlease verify password or create an account.',
       );
+      setIsLoading(false);
       return;
     }
 
@@ -76,6 +85,7 @@ export default function LoginScreen() {
 
     if (!user) {
       setErrorText('Unable to retrieve user.');
+      setIsLoading(false);
       return;
     }
 
@@ -147,9 +157,9 @@ export default function LoginScreen() {
         </View>
 
         {/* Login Button*/}
-        <TouchableOpacity onPress={handleLogin}>
-          <View style={styles.loginButton}>
-            <Text style={styles.loginButtonText}>Login</Text>
+        <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
+          <View style={[styles.loginButton, { opacity: isLoading ? 0.5 : 1},]}>
+            <Text style={styles.loginButtonText}>{isLoading ? 'Logging In...' : 'Login'}</Text>
           </View>
         </TouchableOpacity>
 

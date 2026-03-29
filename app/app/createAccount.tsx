@@ -26,6 +26,9 @@ export default function CreateAccount() {
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
 
+  // Stops user from attempting multiple create account calls
+  const [isLoading, setIsLoading] = useState(false);
+
   // Error text state
   const [errorText, setErrorText] = useState('');
 
@@ -56,26 +59,33 @@ export default function CreateAccount() {
   // -- CREATE ACCOUNT -- //
 
   const handleCreateAccount = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     setErrorText('');
 
     // Verify all fields are entered
     if (!email || !password || !passCheck) {
       setErrorText('Email and password required');
+      setIsLoading(false);
       return;
     } else if (!fName || !lName) {
       setErrorText('First and last name required');
+      setIsLoading(false);
       return;
     }
 
     // Verify password length
     if (password.length < 6 || passCheck.length < 6) {
       setErrorText('Password must be at least 6 characters');
+      setIsLoading(false);
       return;
     }
 
     // Verify passwords match
     if (passCheck !== password) {
       setErrorText('Passwords do not match');
+      setIsLoading(false);
       return;
     }
 
@@ -83,6 +93,7 @@ export default function CreateAccount() {
     const result = await checkRegistrant(email);
     if (!result.valid) {
       setErrorText(result.message);
+      setIsLoading(false);
       return;
     }
 
@@ -100,6 +111,7 @@ export default function CreateAccount() {
     if (error) {
       console.error('Auth error:', error.message);
       setErrorText('Error creating account, please try again');
+      setIsLoading(false);
       return;
     }
 
@@ -110,6 +122,7 @@ export default function CreateAccount() {
       data.user.identities.length === 0
     ) {
       setErrorText('An IWAC App account already exists with this email.');
+      setIsLoading(false);
       return;
     }
 
@@ -123,7 +136,7 @@ export default function CreateAccount() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+        >
         <ScrollView>
           {/* Create account header */}
           <ThemedText type="subtitle" style={styles.subtitle}>
@@ -138,8 +151,7 @@ export default function CreateAccount() {
             <Input
               text="First Name"
               onChangeText={setFName}
-              autoCapitalize="none"
-            />
+              autoCapitalize="none"/>
           </View>
 
           {/* Last name input */}
@@ -150,8 +162,7 @@ export default function CreateAccount() {
             <Input
               text="Last Name"
               onChangeText={setLName}
-              autoCapitalize="none"
-            />
+              autoCapitalize="none"/>
           </View>
 
           {/* Email input */}
@@ -162,8 +173,7 @@ export default function CreateAccount() {
             <Input
               text="email@address.com"
               onChangeText={setEmail}
-              autoCapitalize="none"
-            />
+              autoCapitalize="none"/>
           </View>
 
           {/* Password input */}
@@ -175,8 +185,7 @@ export default function CreateAccount() {
               text="password"
               onChangeText={setPassword}
               autoCapitalize="none"
-              secureTextEntry
-            />
+              secureTextEntry/>
           </View>
 
           {/* Confirm password input */}
@@ -188,14 +197,14 @@ export default function CreateAccount() {
               text="password"
               onChangeText={setPassCheck}
               autoCapitalize="none"
-              secureTextEntry
-            />
+              secureTextEntry/>
           </View>
 
           {/* Create account button */}
-          <TouchableOpacity onPress={handleCreateAccount}>
-            <View style={styles.createButton}>
-              <Text style={styles.createButtonText}>Create Account</Text>
+          <TouchableOpacity onPress={handleCreateAccount} disabled={isLoading}>
+            <View style={[styles.createButton, { opacity: isLoading ? 0.5 : 1 },]}>
+              <Text style={styles.createButtonText}> {isLoading ? 'Creating Account...' : 'Create Account'}
+              </Text>
             </View>
           </TouchableOpacity>
 
