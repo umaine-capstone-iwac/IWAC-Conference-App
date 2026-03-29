@@ -315,13 +315,15 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
                           {new Date(c.created_at).toLocaleString()}
                         </ThemedText>
                       </View>
-                      <TouchableOpacity
-                        onPress={() => deleteComment(c.comment_id)}
-                        style={styles.deleteButton}
-                        hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                      >
-                        <Text style={styles.deleteButtonText}>x</Text>
-                      </TouchableOpacity>
+                      {c.user_id === userID && (
+                        <TouchableOpacity
+                          onPress={() => deleteComment(c.comment_id)}
+                          style={styles.deleteButton}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <Text style={styles.deleteButtonText}>x</Text>
+                        </TouchableOpacity>
+                      )}
                     </View>
                     <ThemedText style={{ marginTop: 6 }}>
                       {c.comment_content}
