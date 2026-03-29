@@ -85,7 +85,10 @@ export default function MyAgendaScreen() {
             speaker,
             date,
             session,
-            tag
+            tag,
+            abstract,
+            materials_link,
+            materials_title
           )
         `,
         )
