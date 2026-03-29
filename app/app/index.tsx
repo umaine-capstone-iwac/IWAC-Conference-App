@@ -158,8 +158,10 @@ export default function LoginScreen() {
 
         {/* Login Button*/}
         <TouchableOpacity onPress={handleLogin} disabled={isLoading}>
-          <View style={[styles.loginButton, { opacity: isLoading ? 0.5 : 1},]}>
-            <Text style={styles.loginButtonText}>{isLoading ? 'Logging In...' : 'Login'}</Text>
+          <View style={[styles.loginButton, { opacity: isLoading ? 0.5 : 1 }]}>
+            <Text style={styles.loginButtonText}>
+              {isLoading ? 'Logging In...' : 'Login'}
+            </Text>
           </View>
         </TouchableOpacity>
 

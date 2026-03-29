@@ -136,7 +136,7 @@ export default function CreateAccount() {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+      >
         <ScrollView>
           {/* Create account header */}
           <ThemedText type="subtitle" style={styles.subtitle}>
@@ -151,7 +151,8 @@ export default function CreateAccount() {
             <Input
               text="First Name"
               onChangeText={setFName}
-              autoCapitalize="none"/>
+              autoCapitalize="none"
+            />
           </View>
 
           {/* Last name input */}
@@ -162,7 +163,8 @@ export default function CreateAccount() {
             <Input
               text="Last Name"
               onChangeText={setLName}
-              autoCapitalize="none"/>
+              autoCapitalize="none"
+            />
           </View>
 
           {/* Email input */}
@@ -173,7 +175,8 @@ export default function CreateAccount() {
             <Input
               text="email@address.com"
               onChangeText={setEmail}
-              autoCapitalize="none"/>
+              autoCapitalize="none"
+            />
           </View>
 
           {/* Password input */}
@@ -185,7 +188,8 @@ export default function CreateAccount() {
               text="password"
               onChangeText={setPassword}
               autoCapitalize="none"
-              secureTextEntry/>
+              secureTextEntry
+            />
           </View>
 
           {/* Confirm password input */}
@@ -197,13 +201,18 @@ export default function CreateAccount() {
               text="password"
               onChangeText={setPassCheck}
               autoCapitalize="none"
-              secureTextEntry/>
+              secureTextEntry
+            />
           </View>
 
           {/* Create account button */}
           <TouchableOpacity onPress={handleCreateAccount} disabled={isLoading}>
-            <View style={[styles.createButton, { opacity: isLoading ? 0.5 : 1 },]}>
-              <Text style={styles.createButtonText}> {isLoading ? 'Creating Account...' : 'Create Account'}
+            <View
+              style={[styles.createButton, { opacity: isLoading ? 0.5 : 1 }]}
+            >
+              <Text style={styles.createButtonText}>
+                {' '}
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </Text>
             </View>
           </TouchableOpacity>
