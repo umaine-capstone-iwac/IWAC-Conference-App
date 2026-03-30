@@ -240,52 +240,52 @@ export default function ProfileSettingsModal() {
             <ThemedText type="title" style={styles.label}>
               First name
             </ThemedText>
-            <Input 
-              value={firstName} 
+            <Input
+              value={firstName}
               onChangeText={setFirstName}
-              multiline 
+              multiline
               numberOfLines={5}
               text={''}
-              />
+            />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Last name
             </ThemedText>
-            <Input 
-              value={lastName} 
-              onChangeText={setLastName} 
-              multiline 
-              numberOfLines={5} 
-              text={''} 
-              />
+            <Input
+              value={lastName}
+              onChangeText={setLastName}
+              multiline
+              numberOfLines={5}
+              text={''}
+            />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Institutional Affiliation
             </ThemedText>
-            <Input 
-              value={profession} 
-              onChangeText={setProfession} 
-              multiline 
-              numberOfLines={5} 
-              text={''} 
-              />
+            <Input
+              value={profession}
+              onChangeText={setProfession}
+              multiline
+              numberOfLines={5}
+              text={''}
+            />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Contact Info
             </ThemedText>
-            <Input 
-              value={contact_info} 
-              onChangeText={setContact} 
+            <Input
+              value={contact_info}
+              onChangeText={setContact}
               multiline
               numberOfLines={5}
-              text={''} 
-              />
+              text={''}
+            />
           </View>
 
           <View style={styles.inputGroup}>

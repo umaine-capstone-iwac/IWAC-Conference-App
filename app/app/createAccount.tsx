@@ -223,7 +223,7 @@ export default function CreateAccount() {
           )}
 
           {/* Link to Login */}
-          <TouchableOpacity onPress={() => router.replace('/')}>
+          <TouchableOpacity onPress={() => router.replace('/login')}>
             <View style={styles.linkButton}>
               <Text>Already have an account?</Text>
               <Text style={styles.linkButtonText}>Go to Login</Text>
@@ -238,7 +238,7 @@ export default function CreateAccount() {
             onClose={() => {
               setAlertModalVisible(false);
               // Reroute to Login on Alert close
-              router.replace('/');
+              router.replace('/login');
             }}
           />
         </ScrollView>

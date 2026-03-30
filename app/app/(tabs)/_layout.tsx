@@ -7,7 +7,8 @@ import { Colors } from '@/constants/theme';
 // Main tab layout for the app
 export default function TabLayout() {
   return (
-    <Tabs initialRouteName="agenda"
+    <Tabs
+      initialRouteName="agenda"
       screenOptions={{
         tabBarActiveTintColor: Colors.awac.beige,
         tabBarInactiveTintColor: Colors.umaine.darkBlue,

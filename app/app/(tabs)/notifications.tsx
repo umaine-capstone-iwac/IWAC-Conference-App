@@ -122,7 +122,6 @@ export default function NotificationsScreen() {
   return (
     //loads the notifications from supabase
     <View style={styles.container}>
-
       {notifications.map((notification) => (
         <Pressable
           key={notification.id}
