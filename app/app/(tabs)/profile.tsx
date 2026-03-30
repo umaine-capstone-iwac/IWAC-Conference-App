@@ -6,6 +6,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import LogoutModal from '@/app/modals/logout';
 
 // -- INTERFACES -- //
 
@@ -30,6 +32,9 @@ export default function ProfileScreen() {
   const viewedUserID = otherUserID ? String(otherUserID) : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
+
+  // Forgot password modal visibility state
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
   // -- DATA LOADING -- //
 
@@ -120,11 +125,22 @@ export default function ProfileScreen() {
             </View>
           ) : null}
           {isOwnProfile && (
-            <Pressable onPress={() => router.push('/profileSettings')}>
-              <View style={styles.editButton}>
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </View>
-            </Pressable>
+            <View style={styles.buttonsContainer}>
+              <Pressable onPress={() => router.push('/profileSettings')}>
+                <View style={styles.editButton}>
+                  <Text style={styles.editButtonText}>Edit Profile</Text>
+                </View>
+              </Pressable>
+              <Pressable onPress={() => setLogoutModalVisible(true)}>
+                <View style={styles.editButton}>
+                  <IconSymbol
+                    size={18}
+                    name={'iphone.and.arrow.right.outward'}
+                    color={Colors.awac.beige}
+                  />
+                </View>
+              </Pressable>
+            </View>
           )}
 
           {!isOwnProfile && viewedUserID && (
@@ -172,6 +188,11 @@ export default function ProfileScreen() {
           </View>
         ) : null}
       </ThemedView>
+      {/* Logout modal */}
+      <LogoutModal
+        visible={logoutModalVisible}
+        onClose={() => setLogoutModalVisible(false)}
+      />
     </ScrollView>
   );
 }
@@ -211,5 +232,10 @@ const styles = StyleSheet.create({
     color: Colors.awac.beige,
     fontSize: 14,
     fontWeight: '600',
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
   },
 });
