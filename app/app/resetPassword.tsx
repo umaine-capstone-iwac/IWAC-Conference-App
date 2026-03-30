@@ -181,7 +181,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
           onClose={() => {
             setAlertModalVisible(false);
             // Reroute to Login on Alert close
-            router.replace('/');
+            router.replace('/login');
           }}
         />
       </View>
