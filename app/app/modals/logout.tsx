@@ -19,10 +19,7 @@ interface LogoutModalProps {
   onClose: () => void;
 }
 
-export default function LogoutModal({
-  visible,
-  onClose,
-}: LogoutModalProps) {
+export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
   // -- STATE -- //
 
   // Message state (error or success)
@@ -49,13 +46,12 @@ export default function LogoutModal({
 
     const { error } = await supabase.auth.signOut();
     if (error) {
-        console.error('Logout failed:', error.message);
-        setMessage("Logout failed. Please try again later.")
+      console.error('Logout failed:', error.message);
+      setMessage('Logout failed. Please try again later.');
     } else {
-        console.log('User signed out successfully');
-        router.replace('/login');
+      console.log('User signed out successfully');
+      router.replace('/login');
     }
-
 
     setLoading(false);
   };
@@ -82,9 +78,7 @@ export default function LogoutModal({
           </Text>
 
           {/* Inline error or success message, if any */}
-          {message ? (
-            <Text style={styles.message}> {message} </Text>
-          ) : null}
+          {message ? <Text style={styles.message}> {message} </Text> : null}
 
           {/* 'Yes' and 'No buttons or activity indicator */}
           {loading ? (
@@ -95,17 +89,17 @@ export default function LogoutModal({
             />
           ) : (
             // Show buttons if not loading
-            <View style = {styles.buttonsContainer}>
-                <TouchableOpacity onPress={handleLogout}>
+            <View style={styles.buttonsContainer}>
+              <TouchableOpacity onPress={handleLogout}>
                 <View style={styles.submitButton}>
-                    <Text style={styles.submitButtonText}>Confirm</Text>
+                  <Text style={styles.submitButtonText}>Confirm</Text>
                 </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleClose}>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleClose}>
                 <View style={styles.cancelButton}>
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
                 </View>
-                </TouchableOpacity>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -177,7 +171,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     marginBottom: 8,
     borderWidth: 2,
-    borderColor: Colors.awac.orange
+    borderColor: Colors.awac.orange,
   },
   cancelButtonText: {
     color: Colors.awac.orange,
@@ -195,6 +189,6 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 20
-  }
+    gap: 20,
+  },
 });
