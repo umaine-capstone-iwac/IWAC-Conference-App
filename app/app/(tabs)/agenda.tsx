@@ -53,15 +53,10 @@ export default function MyAgendaScreen() {
     loadUser();
   }, []);
 
-  // Fetch agenda on intial mount
-  useEffect(() => {
-    fetchAgenda();
-  }, []);
-
   // -- DATA FETCHING -- //
 
   // Fetches agenda of authenticated user's agenda, joins user_agenda and panels tables and sorts results by session
-  const fetchAgenda = async () => {
+  const fetchAgenda = useCallback(async () => {
     try {
       const {
         data: { user },
@@ -115,7 +110,7 @@ export default function MyAgendaScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Re-fetch every time this tab/screen becomes active
   useFocusEffect(

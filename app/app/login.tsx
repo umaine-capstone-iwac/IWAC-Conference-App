@@ -116,9 +116,6 @@ export default function LoginScreen() {
     } catch (err) {
       console.error('User setup error:', err);
     }
-
-    // Enter the app
-    router.replace('/agenda');
   };
 
   // -- UI -- //

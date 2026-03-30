@@ -8,9 +8,8 @@ import {
 } from 'react-native';
 import { ThemedText } from '@/components/themedText';
 import { Colors } from '@/constants/theme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
 
 // -- PROPS -- //
 
@@ -28,29 +27,40 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
   // Loading state
   const [loading, setLoading] = useState(false);
 
-  // Email sent state
-  const [loggedOut, setLoggedOut] = useState(false);
+  // -- INITIALIZATION -- //
+
+  // Clear message and loading on modal open
+  useEffect(() => {
+    if (visible) {
+      setMessage('');
+      setLoading(false);
+    }
+  }, [visible]);
 
   // -- HELPERS -- //
 
-  // Call passed onClose function
+  // Call passed onClose function on 'No'
   const handleClose = () => {
     onClose();
   };
 
-  // -- PASSWORD RESET -- //
+  // -- LOGOUT -- //
 
-  // Send a password reset email to the provided address
+  // Attempt to log the current user out on 'Yes'
   const handleLogout = async () => {
-    setMessage('');
+    if (loading) return;
+
+    setLoading(true);
+    setMessage('Logging out...');
 
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Logout failed:', error.message);
       setMessage('Logout failed. Please try again later.');
+      setLoading(false);
     } else {
       console.log('User signed out successfully');
-      router.replace('/login');
+      onClose();
     }
 
     setLoading(false);
@@ -90,7 +100,7 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
           ) : (
             // Show buttons if not loading
             <View style={styles.buttonsContainer}>
-              <TouchableOpacity onPress={handleLogout}>
+              <TouchableOpacity onPress={handleLogout} disabled={loading}>
                 <View style={styles.submitButton}>
                   <Text style={styles.submitButtonText}>Confirm</Text>
                 </View>
@@ -144,7 +154,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     textAlign: 'center',
-    color: 'red',
   },
   submitButton: {
     backgroundColor: Colors.awac.orange,

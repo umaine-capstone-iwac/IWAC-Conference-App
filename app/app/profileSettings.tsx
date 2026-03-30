@@ -138,7 +138,7 @@ export default function ProfileSettingsModal() {
       const blob = await response.blob();
 
       // Upload the blob to Supabase storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('avatars')
         .upload(fileName, blob as never);
       if (error) throw error;
