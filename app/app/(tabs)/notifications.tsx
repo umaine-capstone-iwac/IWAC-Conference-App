@@ -122,12 +122,6 @@ export default function NotificationsScreen() {
   return (
     //loads the notifications from supabase
     <View style={styles.container}>
-      {/* Heather wanted manage notifications to just go to native settings */}
-      <Pressable onPress={openSettings}>
-        <View style={styles.button}>
-          <Text style={styles.buttonText}>Manage Notifications</Text>
-        </View>
-      </Pressable>
 
       {notifications.map((notification) => (
         <Pressable

@@ -28,6 +28,7 @@ export default function ProfileSettingsModal() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [profession, setProfession] = useState('');
+  const [contact_info, setContact] = useState('');
   const [aboutMe, setAboutMe] = useState('');
   const [interests, setInterests] = useState('');
   const [mySessions, setMySessions] = useState('');
@@ -62,7 +63,7 @@ export default function ProfileSettingsModal() {
           supabase
             .from('profiles')
             .select(
-              'id, profession, about_me, interests, my_sessions, avatar_url',
+              'id, profession, contact_info, about_me, interests, my_sessions, avatar_url',
             )
             .eq('id', id)
             .single(),
@@ -85,6 +86,7 @@ export default function ProfileSettingsModal() {
         // Set the rest of the profile details from the profiles table
         if (profileRows) {
           setProfession(profileRows.profession ?? '');
+          setContact(profileRows.contact_info ?? '');
           setAboutMe(profileRows.about_me ?? '');
           setInterests(profileRows.interests ?? '');
           setMySessions(profileRows.my_sessions ?? '');
@@ -185,6 +187,7 @@ export default function ProfileSettingsModal() {
       const payload = {
         id: userID,
         profession: profession,
+        contact_info: contact_info,
         about_me: aboutMe,
         interests: interests,
         my_sessions: mySessions,
@@ -228,7 +231,7 @@ export default function ProfileSettingsModal() {
 
           <TouchableOpacity onPress={pickImage}>
             <View style={styles.avatarContainer}>
-              <ProfilePicture size={75} avatarUrl={avatarUri} userId={userID} />
+              <ProfilePicture size={75} avatarUrl={avatarUri} />
               <Text style={styles.avatarText}>Change Picture</Text>
             </View>
           </TouchableOpacity>
@@ -237,21 +240,52 @@ export default function ProfileSettingsModal() {
             <ThemedText type="title" style={styles.label}>
               First name
             </ThemedText>
-            <Input value={firstName} onChangeText={setFirstName} text={''} />
+            <Input 
+              value={firstName} 
+              onChangeText={setFirstName}
+              multiline 
+              numberOfLines={5}
+              text={''}
+              />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Last name
             </ThemedText>
-            <Input value={lastName} onChangeText={setLastName} text={''} />
+            <Input 
+              value={lastName} 
+              onChangeText={setLastName} 
+              multiline 
+              numberOfLines={5} 
+              text={''} 
+              />
           </View>
 
           <View style={styles.inputGroup}>
             <ThemedText type="title" style={styles.label}>
               Institutional Affiliation
             </ThemedText>
-            <Input value={profession} onChangeText={setProfession} text={''} />
+            <Input 
+              value={profession} 
+              onChangeText={setProfession} 
+              multiline 
+              numberOfLines={5} 
+              text={''} 
+              />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <ThemedText type="title" style={styles.label}>
+              Contact Info
+            </ThemedText>
+            <Input 
+              value={contact_info} 
+              onChangeText={setContact} 
+              multiline
+              numberOfLines={5}
+              text={''} 
+              />
           </View>
 
           <View style={styles.inputGroup}>
@@ -262,7 +296,7 @@ export default function ProfileSettingsModal() {
               value={aboutMe}
               onChangeText={setAboutMe}
               multiline
-              style={{ height: 120 }}
+              numberOfLines={5}
               text={''}
             />
           </View>
@@ -275,7 +309,7 @@ export default function ProfileSettingsModal() {
               value={interests}
               onChangeText={setInterests}
               multiline
-              style={{ height: 120 }}
+              numberOfLines={5}
               text={''}
             />
           </View>
@@ -288,7 +322,7 @@ export default function ProfileSettingsModal() {
               value={mySessions}
               onChangeText={setMySessions}
               multiline
-              style={{ height: 140 }}
+              numberOfLines={5}
               text={''}
             />
           </View>

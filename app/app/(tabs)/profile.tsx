@@ -15,6 +15,7 @@ interface ProfileDetails {
   first_name: string;
   last_name: string;
   profession: string;
+  contact_info: string;
   about_me: string;
   interests: string;
   my_sessions: string;
@@ -52,7 +53,7 @@ export default function ProfileScreen() {
         supabase
           .from('profiles')
           .select(
-            'id, profession, about_me, interests, my_sessions, avatar_url',
+            'id, profession, contact_info, about_me, interests, my_sessions, avatar_url',
           )
           .eq('id', viewedUserID) // Filter to get only the logged in user's profile data
           .single(), //expecting a single profile row for the user ID
@@ -77,6 +78,7 @@ export default function ProfileScreen() {
         first_name: userRow?.first_name ?? '',
         last_name: userRow?.last_name ?? '',
         profession: profileRow.profession ?? '',
+        contact_info: profileRow.contact_info ?? '',
         about_me: profileRow.about_me ?? '',
         interests: profileRow.interests ?? '',
         my_sessions: profileRow.my_sessions ?? '',
@@ -140,7 +142,15 @@ export default function ProfileScreen() {
       </ThemedView>
       <ThemedView style={styles.sectionContainer}>
         {profile ? (
-          <View key={profile.id}>
+          <View key={`${profile.id}-contact_info`}>
+            <ThemedText type="subtitle">Contact Info</ThemedText>
+            <ThemedText>{profile.contact_info}</ThemedText>
+          </View>
+        ) : null}
+      </ThemedView>
+      <ThemedView style={styles.sectionContainer}>
+        {profile ? (
+          <View key={`${profile.id}-about_me`}>
             <ThemedText type="subtitle">About Me</ThemedText>
             <ThemedText>{profile.about_me}</ThemedText>
           </View>
