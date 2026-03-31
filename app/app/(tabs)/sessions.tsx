@@ -38,7 +38,7 @@ type ConferencePanelRow = {
   speaker: string;
   date: string;
   session: string;
-  tag: string;
+  tag: string[] | string | null;
   abstract: string | null;
   materials_title: string | null;
   materials_link: string | null;
@@ -46,6 +46,24 @@ type ConferencePanelRow = {
 
 // Strips date from fetched session row
 const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
+
+const normalizeTags = (tag: string[] | string | null | undefined) => {
+  if (Array.isArray(tag)) return tag;
+
+  if (!tag) return [];
+
+  const trimmed = tag.trim();
+
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    return trimmed
+      .slice(1, -1)
+      .split(',')
+      .map((t) => t.trim().replace(/^"(.*)"$/, '$1'))
+      .filter(Boolean);
+  }
+
+  return [trimmed];
+};
 
 export default function SessionsScreen() {
   // -- ROUTING -- //
@@ -132,7 +150,7 @@ export default function SessionsScreen() {
           title: r.title,
           date: r.date,
           session: r.session,
-          tag: r.tag,
+          tag: normalizeTags(r.tag),
           location: r.location,
           speaker: r.speaker,
           abstract: r.abstract,
@@ -264,7 +282,11 @@ export default function SessionsScreen() {
 
   const topicOptions = useMemo(() => {
     const set = new Set<string>();
-    sessions.forEach((s) => s.panels.forEach((p) => p.tag && set.add(p.tag)));
+    sessions.forEach((s) =>
+      s.panels.forEach((p) =>
+        normalizeTags(p.tag).forEach((tag) => set.add(tag)),
+      ),
+    );
     return [
       { label: 'All Topics', value: 'ALL' },
       ...Array.from(set).map((t) => ({ label: t, value: t })),
@@ -283,16 +305,18 @@ export default function SessionsScreen() {
     return visible
       .map((slot) => {
         const panels = slot.panels.filter((p) => {
+          const tags = normalizeTags(p.tag);
+
           const matchesSearch =
             !q ||
             p.title.toLowerCase().includes(q) ||
             p.speaker.toLowerCase().includes(q) ||
             p.location.toLowerCase().includes(q) ||
-            p.tag.toLowerCase().includes(q) ||
+            tags.some((tag) => tag.toLowerCase().includes(q)) ||
             p.session.toLowerCase().includes(q);
 
           const matchesTag =
-            tagFilter && tagFilter !== 'ALL' ? p.tag === tagFilter : true;
+            tagFilter && tagFilter !== 'ALL' ? tags.includes(tagFilter) : true;
 
           return matchesSearch && matchesTag;
         });
@@ -338,7 +362,6 @@ export default function SessionsScreen() {
           onChangeText={setSearch}
         />
 
-        {/* Dropdown for sessions */}
         <ThemedView style={styles.dropdownWrap}>
           <ThemedText style={styles.dropdownLabel}>Session</ThemedText>
           <Dropdown
@@ -356,7 +379,6 @@ export default function SessionsScreen() {
           />
         </ThemedView>
 
-        {/* Dropdown for topics */}
         <ThemedView style={styles.dropdownWrap}>
           <ThemedText style={styles.dropdownLabel}>Topic</ThemedText>
           <Dropdown
@@ -374,26 +396,24 @@ export default function SessionsScreen() {
           />
         </ThemedView>
 
-        {/* Render each session group + panels */}
         {filteredSessions.map((slot) => (
           <View key={slot.id}>
             <ThemedText style={{ fontWeight: '700' }}>{slot.label}</ThemedText>
 
-            {/* Panel cards */}
             {slot.panels.map((panel) => (
               <TouchableOpacity
                 key={panel.id}
                 activeOpacity={0.85}
-                onPress={() => setSelectedPanel(panel)}
+                onPress={() =>
+                  setSelectedPanel({ ...panel, tag: normalizeTags(panel.tag) })
+                }
               >
                 <ThemedView style={styles.sessionCardDetails}>
                   <View style={styles.cardHeader}>
-                    {/* Panel title */}
                     <ThemedText style={styles.panelTitle} type="title">
                       {panel.title}
                     </ThemedText>
 
-                    {/* Heart button + save to agenda */}
                     <Pressable
                       style={styles.heartButton}
                       onPress={(e) => {
@@ -414,7 +434,6 @@ export default function SessionsScreen() {
                     </Pressable>
                   </View>
 
-                  {/* Session time row */}
                   <View style={styles.detailRow}>
                     <IconSymbol
                       size={18}
@@ -424,7 +443,6 @@ export default function SessionsScreen() {
                     <ThemedText>{stripDate(panel.session)}</ThemedText>
                   </View>
 
-                  {/* Location row */}
                   <View style={styles.detailRow}>
                     <IconSymbol
                       size={18}
@@ -434,7 +452,6 @@ export default function SessionsScreen() {
                     <ThemedText>{panel.location}</ThemedText>
                   </View>
 
-                  {/* Speaker row */}
                   <View style={styles.detailRow}>
                     <IconSymbol
                       size={18}
@@ -501,9 +518,11 @@ const styles = StyleSheet.create({
   panelTitle: {
     fontSize: 19,
     flex: 1,
+    paddingRight: 8,
   },
   heartButton: {
     paddingTop: 2,
+    flexShrink: 0,
   },
   detailRow: {
     flexDirection: 'row',

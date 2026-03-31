@@ -28,7 +28,7 @@ export type Panel = {
   speaker: string;
   date: string;
   session: string;
-  tag: string;
+  tag: string[] | string | null;
   abstract: string | null;
   materials_title: string | null;
   materials_link: string | null;
@@ -59,6 +59,24 @@ type Props = {
 // Strips date from fetched session row
 const stripDate = (session: string) => session.replace(/^\S+\s*/, '');
 
+const normalizeTags = (tag: string[] | string | null | undefined) => {
+  if (Array.isArray(tag)) return tag;
+
+  if (!tag) return [];
+
+  const trimmed = tag.trim();
+
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    return trimmed
+      .slice(1, -1)
+      .split(',')
+      .map((t) => t.trim().replace(/^"(.*)"$/, '$1'))
+      .filter(Boolean);
+  }
+
+  return [trimmed];
+};
+
 export default function PanelDetail({ panel, userID, onBack }: Props) {
   const scrollRef = useRef<ScrollView>(null);
 
@@ -69,6 +87,8 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const [commentUsers, setCommentUsers] = useState<Record<string, CommentUser>>(
     {},
   );
+
+  const tags = normalizeTags(panel.tag);
 
   // -- HELPERS -- //
 
@@ -242,9 +262,13 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
               <ThemedText style={styles.detailText}>{panel.speaker}</ThemedText>
             </View>
 
-            {panel.tag ? (
-              <View style={styles.tagPill}>
-                <Text style={styles.tagText}>{panel.tag}</Text>
+            {tags.length ? (
+              <View style={styles.tagsWrap}>
+                {tags.map((tag) => (
+                  <View key={tag} style={styles.tagPill}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
               </View>
             ) : null}
 
@@ -405,6 +429,11 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 15,
+  },
+  tagsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
   },
   tagPill: {
     alignSelf: 'flex-start',
