@@ -39,10 +39,57 @@ export default function NotificationsScreen() {
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
+  const [userID, setUserID] = useState<string>();
 
+  // Fetch user ID on mount
+  useEffect(() => {
+    const loadUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      const id = data.session?.user.id;
+      setUserID(id);
+      console.log('User ID loaded:', id);
+    };
+    loadUser();
+  }, []);
+
+  // Fetch initial notifications
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  // Set up real-time subscription to refresh when new notifications are added
+  useEffect(() => {
+    if (!userID) {
+      console.log('No userID, skipping real-time setup');
+      return;
+    }
+
+    console.log('Setting up real-time listener for userID:', userID);
+
+    const channel = supabase
+      .channel(`user_notifications:user_id=eq.${userID}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_notifications',
+        },
+        (payload) => {
+          console.log('INSERT event detected:', payload);
+          // Refresh notifications when a new one is added
+          fetchNotifications();
+        },
+      )
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+      });
+
+    return () => {
+      console.log('Cleaning up real-time subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [userID]);
 
   // -- DATA FETCHING -- //
   const fetchNotifications = async () => {
