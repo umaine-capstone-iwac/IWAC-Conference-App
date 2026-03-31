@@ -97,7 +97,7 @@ export default function ForgotPasswordModal({
 
     // If registered, send reset password email
     await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: 'iwacapp://resetpassword',
+      redirectTo: 'iwacapp://resetPassword',
     });
 
     // Show success message
