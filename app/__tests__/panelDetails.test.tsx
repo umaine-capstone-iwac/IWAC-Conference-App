@@ -47,6 +47,9 @@ const mockPanel = {
   date: 'Day 1',
   session: 'Monday 9:00–10:00 AM',
   tag: 'Technology',
+  abstract: null,
+  materials_title: null,
+  materials_link: null,
 };
 
 // Builds a chainable Supabase query mock that resolves to { data, error }
