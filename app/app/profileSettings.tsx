@@ -163,11 +163,8 @@ export default function ProfileSettingsModal() {
     const trimmedFirst = firstName.trim();
     const trimmedLast = lastName.trim();
 
-    if (trimmedFirst=== "" || !trimmedLast) {
-      Alert.alert(
-        'Invalid Name',
-        'First name and last name cannot be empty.'
-      );
+    if (trimmedFirst === '' || !trimmedLast) {
+      Alert.alert('Invalid Name', 'First name and last name cannot be empty.');
       return;
     }
     if (!userID) {
