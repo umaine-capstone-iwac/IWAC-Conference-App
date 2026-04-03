@@ -160,6 +160,13 @@ export default function ProfileSettingsModal() {
 
   // Function to save all profile changes to Supabase
   const saveChanges = async () => {
+    const trimmedFirst = firstName.trim();
+    const trimmedLast = lastName.trim();
+
+    if (trimmedFirst === '' || !trimmedLast) {
+      Alert.alert('Invalid Name', 'First name and last name cannot be empty.');
+      return;
+    }
     if (!userID) {
       Alert.alert('Not signed in');
       return;
@@ -179,7 +186,7 @@ export default function ProfileSettingsModal() {
       // Update names in the users table
       const { error: userError } = await supabase
         .from('users')
-        .update({ first_name: firstName, last_name: lastName })
+        .update({ first_name: trimmedFirst, last_name: trimmedLast })
         .eq('id', userID);
       if (userError) throw userError;
 
