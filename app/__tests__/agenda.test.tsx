@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-require-imports */
+
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import MyAgendaScreen from '@/app/(tabs)/agenda';
