@@ -213,7 +213,7 @@ function setupSupabase({
   userId?: string | null;
 } = {}) {
   // Mock auth session
-  mockSupabase.auth.getSession.mockResolvedValue({
+  (mockSupabase.auth.getSession as jest.Mock).mockResolvedValue({
     data: {
       session: userId ? { user: { id: userId } } : null,
     },
