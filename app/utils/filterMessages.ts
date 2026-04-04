@@ -13,21 +13,22 @@ export function filterMessages<
   // Normalize search input for case-insensitive matching
   const query = search.trim().toLowerCase();
 
-  // Filter text for matches to first name, last name, or full name
-  const filtered = users.filter((user) => {
-    const first = user.first_name?.toLowerCase() ?? '';
-    const last = user.last_name?.toLowerCase() ?? '';
-    const fullName = `${first} ${last}`.trim();
+  const filtered = !query
+    ? // If no search, just sort
+      users
+    : // Otherwise, first filter text for matches to first name, last name, or full name
+      users.filter((user) => {
+        const first = user.first_name?.toLowerCase() ?? '';
+        const last = user.last_name?.toLowerCase() ?? '';
+        const fullName = `${first} ${last}`.trim();
 
-    return (
-      first.includes(query) || last.includes(query) || fullName.includes(query)
-    );
-  });
+        return fullName.includes(query);
+      });
 
   // Sort descending so most recent conversations appear first
   return [...filtered].sort((a, b) => {
-    const aTime = a.timestamp ?? '';
-    const bTime = b.timestamp ?? '';
-    return bTime.localeCompare(aTime);
+    const aTime = a.timestamp ? Date.parse(a.timestamp) : 0;
+    const bTime = b.timestamp ? Date.parse(b.timestamp) : 0;
+    return bTime - aTime;
   });
 }
