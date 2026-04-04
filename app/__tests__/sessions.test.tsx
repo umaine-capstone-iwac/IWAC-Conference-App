@@ -1,7 +1,21 @@
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
+import {
+  Text,
+  View,
+  TextInput,
+  Pressable,
+  type TextProps,
+  type ViewProps,
+} from 'react-native';
 import SessionsScreen from '../app/(tabs)/sessions';
 import { supabase } from '@/lib/supabase';
+
+const mockReact = React;
+const mockText = Text;
+const mockView = View;
+const mockTextInput = TextInput;
+const mockPressable = Pressable;
 
 // Stores mock query params
 let mockParams: Record<string, string | undefined> = {};
@@ -18,18 +32,14 @@ jest.mock('expo-router', () => ({
 }));
 
 // Mock navigation focus effect
-jest.mock('@react-navigation/native', () => {
-  const React = require('react');
-
-  return {
-    useFocusEffect: (callback: () => void | (() => void)) => {
-      React.useEffect(() => {
-        const cleanup = callback();
-        return typeof cleanup === 'function' ? cleanup : undefined;
-      }, [callback]);
-    },
-  };
-});
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (callback: () => void | (() => void)) => {
+    mockReact.useEffect(() => {
+      const cleanup = callback();
+      return typeof cleanup === 'function' ? cleanup : undefined;
+    }, [callback]);
+  },
+}));
 
 // Mock SafeAreaView wrapper
 jest.mock('react-native-safe-area-context', () => ({
@@ -39,98 +49,80 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 // Replace themed components with basic react components
-jest.mock('@/components/themedText', () => {
-  const React = require('react');
-  const { Text } = require('react-native');
+jest.mock('@/components/themedText', () => ({
+  ThemedText: ({ children, ...props }: TextProps) =>
+    mockReact.createElement(mockText, props, children),
+}));
 
-  return {
-    ThemedText: ({ children, ...props }: any) =>
-      React.createElement(Text, props, children),
-  };
-});
-
-jest.mock('@/components/themedView', () => {
-  const React = require('react');
-  const { View } = require('react-native');
-
-  return {
-    ThemedView: ({ children, ...props }: any) =>
-      React.createElement(View, props, children),
-  };
-});
+jest.mock('@/components/themedView', () => ({
+  ThemedView: ({ children, ...props }: ViewProps) =>
+    mockReact.createElement(mockView, props, children),
+}));
 
 // Mock search input
-jest.mock('@/components/input', () => {
-  const React = require('react');
-  const { TextInput } = require('react-native');
-
-  return {
-    Input: ({ text, value, onChangeText }: any) =>
-      React.createElement(TextInput, {
-        testID: 'search-input',
-        placeholder: text,
-        value,
-        onChangeText,
-      }),
-  };
-});
+jest.mock('@/components/input', () => ({
+  Input: ({
+    text,
+    value,
+    onChangeText,
+  }: {
+    text: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+  }) =>
+    mockReact.createElement(mockTextInput, {
+      testID: 'search-input',
+      placeholder: text,
+      value,
+      onChangeText,
+    }),
+}));
 
 // Mock icons
-jest.mock('@/components/ui/icon-symbol', () => {
-  const React = require('react');
-  const { View } = require('react-native');
+jest.mock('@/components/ui/icon-symbol', () => ({
+  IconSymbol: () => mockReact.createElement(mockView),
+}));
 
-  return {
-    IconSymbol: () => React.createElement(View),
-  };
-});
-
-jest.mock('@expo/vector-icons', () => {
-  const React = require('react');
-  const { Text } = require('react-native');
-
-  return {
-    Ionicons: ({ name }: any) => React.createElement(Text, null, name),
-  };
-});
+jest.mock('@expo/vector-icons', () => ({
+  Ionicons: ({ name }: { name: string }) =>
+    mockReact.createElement(mockText, null, name),
+}));
 
 // Mock dropdown component
-jest.mock('react-native-element-dropdown', () => {
-  const React = require('react');
-  const { View, Text, Pressable } = require('react-native');
-
-  return {
-    Dropdown: ({ data, placeholder, onChange }: any) =>
-      React.createElement(
-        View,
-        null,
-        React.createElement(Text, null, placeholder),
-        ...data.map((item: any) =>
-          React.createElement(
-            Pressable,
-            {
-              key: `${placeholder}-${item.value}`,
-              testID: `dropdown-${placeholder}-${item.value}`,
-              onPress: () => onChange(item),
-            },
-            React.createElement(Text, null, item.label),
-          ),
+jest.mock('react-native-element-dropdown', () => ({
+  Dropdown: ({
+    data,
+    placeholder,
+    onChange,
+  }: {
+    data: { label: string; value: string }[];
+    placeholder: string;
+    onChange: (item: { label: string; value: string }) => void;
+  }) =>
+    mockReact.createElement(
+      mockView,
+      null,
+      mockReact.createElement(mockText, null, placeholder),
+      ...data.map((item) =>
+        mockReact.createElement(
+          mockPressable,
+          {
+            key: `${placeholder}-${item.value}`,
+            testID: `dropdown-${placeholder}-${item.value}`,
+            onPress: () => onChange(item),
+          },
+          mockReact.createElement(mockText, null, item.label),
         ),
       ),
-  };
-});
+    ),
+}));
 
 // Mock panel detail screen (shown when panel is clicked)
-jest.mock('@/app/panelDetails', () => {
-  const React = require('react');
-  const { Text } = require('react-native');
-
-  return {
-    __esModule: true,
-    default: ({ panel }: any) =>
-      React.createElement(Text, null, `Panel Detail: ${panel.title}`),
-  };
-});
+jest.mock('@/app/panelDetails', () => ({
+  __esModule: true,
+  default: ({ panel }: { panel: { title: string } }) =>
+    mockReact.createElement(mockText, null, `Panel Detail: ${panel.title}`),
+}));
 
 // Mock theme constants
 jest.mock('@/constants/theme', () => ({
@@ -174,7 +166,7 @@ const panelRows = [
 ];
 
 // Mock query for conference_panels table
-function buildConferencePanelsQuery(rows: any[]) {
+function buildConferencePanelsQuery(rows: typeof panelRows) {
   const query = {
     select: jest.fn().mockReturnThis(),
     order: jest.fn(),
@@ -215,7 +207,11 @@ function setupSupabase({
   panels = panelRows,
   savedIds = [],
   userId = 'user-1',
-}: any = {}) {
+}: {
+  panels?: typeof panelRows;
+  savedIds?: number[];
+  userId?: string | null;
+} = {}) {
   // Mock auth session
   mockSupabase.auth.getSession.mockResolvedValue({
     data: {
