@@ -18,18 +18,18 @@ jest.mock('@/lib/supabase', () => ({
 
 // Mock ThemedText and ThemedView (if used)
 jest.mock('@/components/themedText', () => {
-  const { Text } = require('react-native');
+  const { Text } = jest.requireActual('react-native');
   return {
-    ThemedText: ({ children, ...props }: any) => (
+    ThemedText: ({ children, ...props }: Record<string, unknown>) => (
       <Text {...props}>{children}</Text>
     ),
   };
 });
 
 jest.mock('@/components/themedView', () => {
-  const { View } = require('react-native');
+  const { View } = jest.requireActual('react-native');
   return {
-    ThemedView: ({ children, ...props }: any) => (
+    ThemedView: ({ children, ...props }: Record<string, unknown>) => (
       <View {...props}>{children}</View>
     ),
   };
@@ -38,13 +38,12 @@ jest.mock('@/components/themedView', () => {
 // Mock React Native modules
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
   openURL: jest.fn(),
-  openSettings: jest.fn()
+  openSettings: jest.fn(),
 }));
 
 // Mock Alert
-jest.spyOn(require('react-native'), 'Alert').mockImplementation(() => ({
-  alert: jest.fn()
-}));
+const { Alert } = jest.requireActual('react-native');
+jest.spyOn(Alert, 'alert').mockImplementation(jest.fn());
 
 describe('NotificationsScreen', () => {
   const mockUser = { id: 'user-abc' };
@@ -54,12 +53,15 @@ describe('NotificationsScreen', () => {
   ];
 
   // Helper to mock Supabase chain
-  const makeChain = (data: any, error: any = null) => {
-    const chain: any = {};
+  const makeChain = (data: unknown, error: string | null = null) => {
+    const chain = {} as Record<string, jest.Mock>;
     ['select', 'order', 'returns', 'update', 'eq'].forEach((m) => {
       chain[m] = jest.fn(() => chain);
     });
-    chain.then = jest.fn((resolve: any) => resolve({ data, error }));
+    chain.then = jest.fn(
+      (resolve: (value: { data: unknown; error: string | null }) => void) =>
+        resolve({ data, error }),
+    );
     return chain;
   };
 
@@ -90,7 +92,9 @@ describe('NotificationsScreen', () => {
   test('shows empty state when no notifications', async () => {
     (supabase.from as jest.Mock).mockImplementation(() => makeChain([]));
     const { getByText } = render(<NotificationsScreen />);
-    await waitFor(() => expect(getByText('No notifications available.')).toBeTruthy());
+    await waitFor(() =>
+      expect(getByText('No notifications available.')).toBeTruthy(),
+    );
     expect(getByText('Manage Notifications')).toBeTruthy();
   });
 });
