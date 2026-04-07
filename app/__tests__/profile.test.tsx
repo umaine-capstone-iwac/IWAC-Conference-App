@@ -17,6 +17,14 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn() },
 }));
 
+jest.mock('@react-navigation/native', () => ({
+  useFocusEffect: (callback: () => void | (() => void)) => {
+    // Call the callback immediately in tests
+    const cb = callback as () => void | (() => void);
+    cb();
+  },
+}));
+
 // Mock ThemedText and ThemedView
 jest.mock('@/components/themedText', () => {
   const { Text } = jest.requireActual('react-native');
