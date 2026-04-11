@@ -112,7 +112,7 @@ describe('ProfileScreen', () => {
     expect(getByText('About me text')).toBeTruthy();
     expect(getByText('Interests')).toBeTruthy();
     expect(getByText('AI, ML')).toBeTruthy();
-    expect(getByText('My sessions')).toBeTruthy();
+    expect(getByText('My Sessions')).toBeTruthy();
     expect(getByText('Session 1')).toBeTruthy();
   });
 });
