@@ -3,6 +3,7 @@ import { ProfilePicture } from '@/components/profilePicture';
 import { ThemedText } from '@/components/themedText';
 import { ThemedView } from '@/components/themedView';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
@@ -97,6 +98,15 @@ export default function ProfileScreen() {
   }, [viewedUserID]);
 
   // -- SCREEN LIFECYCLE -- //
+
+  // Fetch profile data when the screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (viewedUserID) {
+        fetchProfileData();
+      }
+    }, [viewedUserID, fetchProfileData]),
+  );
 
   // Fetch profile data when the screen loads or when the viewed user ID changes
   useEffect(() => {
