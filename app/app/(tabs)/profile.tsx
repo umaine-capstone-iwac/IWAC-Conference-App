@@ -159,7 +159,7 @@ export default function ProfileScreen() {
       <ThemedView style={styles.sectionContainer}>
         {profile ? (
           <View key={`${profile.id}-contact_info`}>
-            <ThemedText type="subtitle">Contact Info</ThemedText>
+            <ThemedText type="subtitle">Contact Information</ThemedText>
             <ThemedText>{profile.contact_info}</ThemedText>
           </View>
         ) : null}
@@ -183,7 +183,7 @@ export default function ProfileScreen() {
       <ThemedView style={styles.sectionContainer}>
         {profile ? (
           <View key={`${profile.id}-sessions`}>
-            <ThemedText type="subtitle">My sessions</ThemedText>
+            <ThemedText type="subtitle">My Sessions</ThemedText>
             <ThemedText>{profile.my_sessions}</ThemedText>
           </View>
         ) : null}
