@@ -151,7 +151,7 @@ export default function ProfileSettingsModal() {
       return publicUrl;
     } catch (err) {
       console.error('Error uploading avatar:', err);
-      Alert.alert('Error', 'Failed to upload avatar.');
+      Alert.alert('Error', 'Failed to upload avatar');
       return null;
     } finally {
       setUploading(false);
