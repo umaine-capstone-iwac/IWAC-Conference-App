@@ -95,7 +95,7 @@ export default function ProfileSettingsModal() {
         }
       } catch (err) {
         console.error('Error loading profile for edit:', err);
-        Alert.alert('Error', 'Could not load profile data.');
+        Alert.alert('Error', 'Could not load profile data');
       } finally {
         setLoading(false);
       }
@@ -121,7 +121,7 @@ export default function ProfileSettingsModal() {
       }
     } catch (err) {
       console.error('Error picking image:', err);
-      Alert.alert('Error', 'Failed to pick image.');
+      Alert.alert('Error', 'Failed to pick image');
     }
   };
 
@@ -208,7 +208,7 @@ export default function ProfileSettingsModal() {
       router.back();
     } catch (err) {
       console.error('Error saving profile:', err);
-      Alert.alert('Error', 'Failed to save profile.');
+      Alert.alert('Error', 'Failed to save profile changes');
     } finally {
       setSaving(false);
     }
