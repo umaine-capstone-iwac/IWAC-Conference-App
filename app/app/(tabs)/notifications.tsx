@@ -114,7 +114,7 @@ export default function NotificationsScreen() {
       setNotifications(formattedNotifications);
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Could not fetch notifications.');
+      Alert.alert('Error', 'Could not fetch notifications');
     } finally {
       setLoading(false);
     }
@@ -163,6 +163,7 @@ export default function NotificationsScreen() {
       );
     } catch (error) {
       console.error('Update failed:', error);
+      Alert.alert('Error', 'Failed to mark notification as read');
     }
   };
   // -- UI -- //
