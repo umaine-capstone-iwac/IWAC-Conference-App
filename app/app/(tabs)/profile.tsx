@@ -72,6 +72,12 @@ export default function ProfileScreen() {
           .single(),
       ]);
 
+      // Profile rows missing = deleted user, force sign out
+      if (pErr?.code === 'PGRST116' || uErr?.code === 'PGRST116') {
+        await supabase.auth.signOut();
+        return;
+      }
+
       if (pErr || uErr) {
         console.error('Error fetching profile data:', pErr ?? uErr);
         setProfileData(null);

@@ -37,13 +37,12 @@ export default function RootLayout() {
     if (loading) return;
 
     // Only redirect if we are on main app or auth stack
-    const authPages = ['login', 'createAccount'];
-    const appPages = ['(tabs)', 'agenda'];
+    const authPages = ['login', 'createAccount', 'resetPassword'];
 
     const currentPage = segments[0] || '';
 
-    // If not logged in, protect app pages
-    if (!session && appPages.includes(currentPage)) {
+    // If not logged in and not on auth page, send to login
+    if (!session && !authPages.includes(currentPage)) {
       router.replace('/login');
     }
 
