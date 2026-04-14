@@ -145,7 +145,7 @@ export default function ProfileScreen() {
                 <View style={styles.editButton}>
                   <IconSymbol
                     size={18}
-                    name={'iphone.and.arrow.right.outward'}
+                    name={'rectangle.portrait.and.arrow.right'}
                     color={Colors.awac.beige}
                   />
                 </View>

@@ -30,7 +30,7 @@ const MAPPING = {
   'magnifyingglass.circle.fill': 'search',
   eye: 'visibility',
   'eye.slash': 'visibility-off',
-  'iphone.and.arrow.right.outward': 'logout',
+  'rectangle.portrait.and.arrow.right': 'logout',
 } as IconMapping;
 
 /**
