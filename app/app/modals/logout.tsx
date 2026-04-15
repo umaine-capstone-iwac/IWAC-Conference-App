@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themedText';
 import { Colors } from '@/constants/theme';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { router } from 'expo-router';
 
 // -- PROPS -- //
 
@@ -61,6 +62,7 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
     } else {
       console.log('User signed out successfully');
       onClose();
+      router.replace('/login');
     }
 
     setLoading(false);

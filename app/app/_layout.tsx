@@ -1,82 +1,36 @@
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { StyleSheet } from 'react-native';
 import { Colors } from '@/constants/theme';
 import * as Linking from 'expo-linking';
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { Session } from '@supabase/supabase-js';
+import { useEffect } from 'react';
 
 export default function RootLayout() {
-  const router = useRouter();
-  const segments = useSegments();
-
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // -- AUTH LISTENER -- //
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      },
-    );
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  // -- ROUTE PROTECTION  -- //
-  useEffect(() => {
-    if (loading) return;
-
-    // Only redirect if we are on main app or auth stack
-    const authPages = ['login', 'createAccount', 'resetPassword'];
-
-    const currentPage = segments[0] || '';
-
-    // If not logged in and not on auth page, send to login
-    if (!session && !authPages.includes(currentPage)) {
-      router.replace('/login');
-    }
-
-    // If logged in, protect auth pages
-    if (session && authPages.includes(currentPage)) {
-      router.replace('/(tabs)/agenda');
-    }
-  }, [session, loading, segments, router]);
-
   // -- DEEP LINKING -- //
   useEffect(() => {
-    const handleDeepLink = (url: string | null) => {
+    const handleUrl = (url: string | null) => {
       if (!url) return;
 
-      if (url.includes('resetPassword') || url.includes('type=recovery')) {
-        router.push({
+      if (url.startsWith('iwacapp://resetPassword')) {
+        router.replace({
           pathname: '/resetPassword',
           params: { url: encodeURIComponent(url) },
         });
       }
     };
 
-    Linking.getInitialURL().then(handleDeepLink);
+    Linking.getInitialURL().then(handleUrl);
 
-    const subscription = Linking.addEventListener('url', ({ url }) => {
-      handleDeepLink(url);
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      handleUrl(url);
     });
 
-    return () => subscription.remove();
-  }, [router]);
+    return () => sub.remove();
+  }, []);
 
-  if (loading) return null;
-
-  // -- SCREEN STACK -- //
+  // -- UI -- //
 
   return (
     <ThemeProvider value={DefaultTheme}>
@@ -86,11 +40,11 @@ export default function RootLayout() {
           headerTitleStyle: styles.headerTitle,
         }}
       >
-        {/* Auth Screens */}
+        {/* AUTH */}
         <Stack.Screen name="login" options={{ headerShown: false }} />
         <Stack.Screen name="createAccount" options={{ headerShown: false }} />
 
-        {/* Reset Password */}
+        {/* RESET PASSWORD */}
         <Stack.Screen
           name="resetPassword"
           options={{
@@ -99,10 +53,10 @@ export default function RootLayout() {
           }}
         />
 
-        {/* App Root */}
+        {/* APP ROOT */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        {/* Inner onversation Screen */}
+        {/* APP INNER SCREENS */}
         <Stack.Screen
           name="conversation"
           options={{
@@ -111,7 +65,6 @@ export default function RootLayout() {
           }}
         />
 
-        {/* Inner Profile Settings Screen */}
         <Stack.Screen
           name="profileSettings"
           options={{
@@ -120,7 +73,7 @@ export default function RootLayout() {
           }}
         />
 
-        {/* Search Users Modal */}
+        {/* MODAL */}
         <Stack.Screen
           name="modals/searchUsers"
           options={{

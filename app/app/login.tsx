@@ -47,74 +47,79 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     if (isLoading) return;
     setIsLoading(true);
+    setErrorText('');
 
-    // Verify both fields are entered
-    if (!email || !password) {
-      setErrorText('Email and password required');
-      setIsLoading(false);
-      return;
-    }
-
-    // Check that user is registered
-    const result = await checkRegistrant(email);
-
-    // Return if not registered
-    if (!result.valid) {
-      setErrorText(result.message);
-      setIsLoading(false);
-      return;
-    }
-
-    // Attempt to sign in with provided credentials
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    // If failure, show error
-    if (error) {
-      console.error('Auth error:', error.message);
-      setErrorText(
-        'Incorrect password, or no account found.\nPlease verify password or create an account.',
-      );
-      setIsLoading(false);
-      return;
-    }
-
-    const user = data.user;
-
-    if (!user) {
-      setErrorText('Unable to retrieve user.');
-      setIsLoading(false);
-      return;
-    }
-
-    // Attempt to sign in user, and initialize tables if first login
     try {
-      // Check if user row already exists
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      // If user row doesn't exist, create it
-      if (!existingUser) {
-        // Add user row to 'users'
-        await supabase.from('users').insert({
-          id: user.id,
-          first_name: user.user_metadata.first_name,
-          last_name: user.user_metadata.last_name,
-          admin: false,
-        });
-
-        // Add user row to 'profiles'
-        await supabase.from('profiles').insert({
-          id: user.id,
-        });
+      // Verify both fields are entered
+      if (!email || !password) {
+        setErrorText('Email and password required');
+        setIsLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error('User setup error:', err);
+
+      // Check that user is registered
+      const result = await checkRegistrant(email);
+
+      // Return if not registered
+      if (!result.valid) {
+        setErrorText(result.message);
+        return;
+      }
+
+      // Attempt to sign in with provided credentials
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      // If failure, show error
+      if (error) {
+        console.error('Auth error:', error.message);
+        setErrorText(
+          'Incorrect password, or no account found.\nPlease verify password or create an account.',
+        );
+        return;
+      }
+
+      const user = data.user;
+
+      if (!user) {
+        setErrorText('Unable to retrieve user.');
+        return;
+      }
+
+      // Attempt to sign in user, and initialize tables if first login
+      try {
+        // Check if user row already exists
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        // If user row doesn't exist, create it
+        if (!existingUser) {
+          // Add user row to 'users'
+          await supabase.from('users').insert({
+            id: user.id,
+            first_name: user.user_metadata.first_name,
+            last_name: user.user_metadata.last_name,
+            admin: false,
+          });
+
+          // Add user row to 'profiles'
+          await supabase.from('profiles').insert({
+            id: user.id,
+          });
+        }
+      } catch (err) {
+        console.error('User setup error:', err);
+      }
+
+      //If success, move into app
+      router.replace('/(tabs)/agenda');
+    } finally {
+      setIsLoading(false);
     }
   };
 

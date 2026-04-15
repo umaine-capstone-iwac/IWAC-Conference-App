@@ -66,6 +66,7 @@ export default function MyAgendaScreen() {
         Alert.alert('Error', 'Please log in to view your agenda');
         await supabase.auth.signOut();
         setLoading(false);
+        router.push('/login');
         return;
       }
 
@@ -132,6 +133,7 @@ export default function MyAgendaScreen() {
       if (!user) {
         Alert.alert('Error', 'Please log in to view your agenda');
         await supabase.auth.signOut();
+        router.push('/login');
         return;
       }
 

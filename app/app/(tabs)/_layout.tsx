@@ -1,8 +1,11 @@
 import { Tabs, router } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { HapticTab } from '@/components/hapticTab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+
+const { width, height } = Dimensions.get('window');
+const isTablet = Math.min(width, height) >= 768;
 
 // Main tab layout for the app
 export default function TabLayout() {
@@ -58,7 +61,7 @@ export default function TabLayout() {
             <IconSymbol size={30} name="person.fill" color={color} />
           ),
         }}
-        // force navigation to plain /profile (no params) when tab pressed
+        //force navigation to plain /profile (no params) when tab pressed
         listeners={{
           tabPress: () => {
             router.push('/(tabs)/profile');
@@ -87,7 +90,9 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     backgroundColor: Colors.umaine.lightBlue,
-    height: 75,
+    height: isTablet ? 90 : 75,
     paddingTop: 15,
+    // borderTopWidth: 5,
+    // borderTopColor: 'red',
   },
 });

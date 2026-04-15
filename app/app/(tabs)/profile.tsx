@@ -75,6 +75,7 @@ export default function ProfileScreen() {
       // Profile rows missing = deleted user, force sign out
       if (pErr?.code === 'PGRST116' || uErr?.code === 'PGRST116') {
         await supabase.auth.signOut();
+        router.push('/login');
         return;
       }
 

@@ -78,7 +78,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
     initializeSession();
   }, [url]);
 
-  // -- DATA UPLOADING -- //
+  // -- UPDATE PASSWORD -- //
 
   // Update the user's password in Supabase
   const handleResetPassword = async (): Promise<void> => {
