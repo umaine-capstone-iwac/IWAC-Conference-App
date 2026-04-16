@@ -10,6 +10,8 @@ import {
 import { ThemedText } from '@/components/themedText';
 import { Input } from '@/components/input';
 import { ProfilePicture } from '@/components/profilePicture';
+import ActionModal from '@/app/modals/action';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -39,9 +41,16 @@ export default function ConversationScreen() {
       content: string;
       timestamp: string;
       fromUser: boolean;
-      isRead: boolean | null;
+      isRead: boolean;
+      reported: boolean;
     }[]
   >([]);
+
+  // Reporting state
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(
+    null,
+  );
 
   // Input state
   const [newMessage, setNewMessage] = useState<string>('');
@@ -121,6 +130,26 @@ export default function ConversationScreen() {
       return;
     }
 
+    const messageIds = (data ?? []).map((m) => m.id);
+
+    let reportedSet = new Set<number>();
+
+    // Gather which messages have been reported
+    if (messageIds.length > 0) {
+      const { data: reports, error: reportError } = await supabase
+        .from('reports')
+        .select('target_id')
+        .eq('reporter_user_id', userID)
+        .eq('target_type', 'message')
+        .in('target_id', messageIds);
+
+      if (reportError) {
+        console.error('Error loading reports:', reportError);
+      } else {
+        reportedSet = new Set(reports.map((r) => r.target_id));
+      }
+    }
+
     // Store all messages in processedMessages
     const processedMessages = data.map((msg) => ({
       id: msg.id,
@@ -128,6 +157,7 @@ export default function ConversationScreen() {
       timestamp: msg.timestamp,
       fromUser: msg.user_id === userID,
       isRead: msg.is_read,
+      reported: reportedSet.has(msg.id),
     }));
 
     setMessages(processedMessages);
@@ -167,11 +197,47 @@ export default function ConversationScreen() {
         timestamp: data.timestamp,
         fromUser: true,
         isRead: data.is_read,
+        reported: false,
       },
     ]);
 
     setNewMessage(''); // Clear input field
     scrollToBottom(true); // Animated scroll to the newly sent message
+  };
+
+  // Report or unreport a message
+  const toggleReportMessage = async () => {
+    if (!userID || !selectedMessageId) return;
+
+    const message = messages.find((m) => m.id === selectedMessageId);
+    if (!message) return;
+
+    if (message.reported) {
+      // Unreport
+      await supabase
+        .from('reports')
+        .delete()
+        .eq('reporter_user_id', userID)
+        .eq('target_type', 'message')
+        .eq('target_id', selectedMessageId);
+    } else {
+      // Report
+      await supabase.from('reports').insert({
+        reporter_user_id: userID,
+        target_type: 'message',
+        target_id: selectedMessageId,
+      });
+    }
+
+    // Update flag icon of targetted message
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === selectedMessageId ? { ...m, reported: !m.reported } : m,
+      ),
+    );
+
+    setReportModalVisible(false);
+    setSelectedMessageId(null);
   };
 
   // Mark messages from otherUser as read
@@ -259,6 +325,7 @@ export default function ConversationScreen() {
                 timestamp: msg.timestamp,
                 fromUser: msg.user_id === userID,
                 isRead: msg.is_read,
+                reported: msg.reported,
               },
             ];
           });
@@ -294,13 +361,13 @@ export default function ConversationScreen() {
   // Construct the other user's profile piture once for efficiency
   const otherUserProfilePic = otherUser ? (
     <ProfilePicture
-      size={35}
+      size={40}
       avatarUrl={otherUser.avatar_url}
       userId={otherUser.id}
     />
   ) : null;
 
-  // Conversation screen UI
+  // -- UI -- //
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -314,19 +381,16 @@ export default function ConversationScreen() {
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View
-            style={[
-              styles.messageRow,
-              item.fromUser ? styles.rowRight : styles.rowLeft,
-            ]}
+            style={{
+              flexDirection: 'column',
+              alignItems: item.fromUser ? 'flex-end' : 'flex-start',
+            }}
           >
-            {!item.fromUser && otherUserProfilePic}
+            <View style={styles.messageRow}>
+              {/* Profile picture (incoming only) */}
+              {!item.fromUser && otherUserProfilePic}
 
-            <View
-              style={{
-                flexDirection: 'column',
-                alignItems: item.fromUser ? 'flex-end' : 'flex-start',
-              }}
-            >
+              {/* Message bubble + flag (incoming only)) */}
               <View
                 style={[
                   styles.messageBubble,
@@ -336,10 +400,29 @@ export default function ConversationScreen() {
                 <Text style={{ fontSize: 18 }}>{item.content}</Text>
               </View>
 
-              <Text style={styles.timestamp}>
-                {new Date(item.timestamp).toLocaleString()}
-              </Text>
+              {/* Flag icon, if from other user) */}
+              {!item.fromUser && (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedMessageId(item.id);
+                    setReportModalVisible(true);
+                  }}
+                >
+                  <IconSymbol
+                    size={18}
+                    name={item.reported ? 'flag.fill' : 'flag'}
+                    color={
+                      item.reported ? Colors.awac.orange : Colors.awac.navy
+                    }
+                  />
+                </TouchableOpacity>
+              )}
             </View>
+
+            {/* Timestamp */}
+            <Text style={styles.timestamp}>
+              {new Date(item.timestamp).toLocaleString()}
+            </Text>
           </View>
         )}
         contentContainerStyle={styles.chatContainer}
@@ -363,6 +446,39 @@ export default function ConversationScreen() {
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <ThemedText style={{ color: 'white' }}>Send</ThemedText>
         </TouchableOpacity>
+        <ActionModal
+          visible={reportModalVisible}
+          title={
+            selectedMessageId &&
+            messages.find((m) => m.id === selectedMessageId)?.reported
+              ? 'Remove Report'
+              : 'Report Message'
+          }
+          caption={
+            selectedMessageId &&
+            messages.find((m) => m.id === selectedMessageId)?.reported
+              ? 'Do you want to remove your report?'
+              : 'Are you sure you want to report this message?'
+          }
+          confirmText={
+            selectedMessageId &&
+            messages.find((m) => m.id === selectedMessageId)?.reported
+              ? 'Unreport'
+              : 'Report'
+          }
+          onClose={() => {
+            setReportModalVisible(false);
+            setSelectedMessageId(null);
+          }}
+          onConfirm={async () => {
+            if (!selectedMessageId) return;
+
+            await toggleReportMessage();
+
+            setReportModalVisible(false);
+            setSelectedMessageId(null);
+          }}
+        />
       </SafeAreaView>
     </KeyboardAvoidingView>
   );
@@ -384,7 +500,8 @@ const styles = StyleSheet.create({
   messageRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '85%',
+    maxWidth: '80%',
+    gap: 8,
   },
   rowLeft: {
     justifyContent: 'flex-start',
@@ -430,6 +547,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'grey',
     marginTop: 4,
+    marginLeft: 54,
     paddingHorizontal: 4,
   },
 });
