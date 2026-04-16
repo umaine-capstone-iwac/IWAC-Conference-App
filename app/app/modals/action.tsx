@@ -9,17 +9,26 @@ import {
 import { ThemedText } from '@/components/themedText';
 import { Colors } from '@/constants/theme';
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { router } from 'expo-router';
 
 // -- PROPS -- //
 
-interface LogoutModalProps {
+interface ConfirmModalProps {
   visible: boolean;
+  title: string;
+  caption: string;
+  confirmText: string;
+  onConfirm: () => Promise<void> | void;
   onClose: () => void;
 }
 
-export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
+export default function ConfirmModal({
+  visible,
+  title,
+  caption,
+  confirmText,
+  onConfirm,
+  onClose,
+}: ConfirmModalProps) {
   // -- STATE -- //
 
   // Message state (error or success)
@@ -40,32 +49,31 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
 
   // -- HELPERS -- //
 
-  // Call passed onClose function on 'No'
+  // Call passed onClose function on 'Cancel'
   const handleClose = () => {
     onClose();
   };
 
-  // -- LOGOUT -- //
-
-  // Attempt to log the current user out on 'Yes'
-  const handleLogout = async () => {
+  // Run passed confirm function on 'Confirm'
+  const handleConfirm = async () => {
     if (loading) return;
 
     setLoading(true);
-    setMessage('Logging out...');
+    setMessage('');
 
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Logout failed:', error.message);
-      setMessage('Logout failed. Please try again later.');
+    try {
+      await onConfirm();
+    } catch (error: unknown) {
+      console.error('Confirm action failed:', error);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : 'Something went wrong. Please try again.',
+      );
+    } finally {
       setLoading(false);
-    } else {
-      console.log('User signed out successfully');
-      onClose();
-      router.replace('/login');
     }
-
-    setLoading(false);
   };
 
   // -- UI -- //
@@ -79,20 +87,18 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          {/* Logout title */}
+          {/* Modal title */}
           <ThemedText type="subtitle" style={styles.modalTitle}>
-            Logout
+            {title}
           </ThemedText>
 
-          {/* Logout message */}
-          <Text style={styles.modalBody}>
-            Are you sure you would like to logout?
-          </Text>
+          {/* Modal message */}
+          <Text style={styles.modalBody}>{caption}</Text>
 
           {/* Inline error or success message, if any */}
           {message ? <Text style={styles.message}> {message} </Text> : null}
 
-          {/* 'Yes' and 'No buttons or activity indicator */}
+          {/* Buttons or activity indicator */}
           {loading ? (
             // Show spinner while processing request
             <ActivityIndicator
@@ -102,11 +108,12 @@ export default function LogoutModal({ visible, onClose }: LogoutModalProps) {
           ) : (
             // Show buttons if not loading
             <View style={styles.buttonsContainer}>
-              <TouchableOpacity onPress={handleLogout} disabled={loading}>
+              <TouchableOpacity onPress={handleConfirm} disabled={loading}>
                 <View style={styles.submitButton}>
-                  <Text style={styles.submitButtonText}>Confirm</Text>
+                  <Text style={styles.submitButtonText}>{confirmText}</Text>
                 </View>
               </TouchableOpacity>
+
               <TouchableOpacity onPress={handleClose}>
                 <View style={styles.cancelButton}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
@@ -188,14 +195,6 @@ const styles = StyleSheet.create({
     color: Colors.awac.orange,
     fontSize: 14,
     fontWeight: '600',
-  },
-  dismissText: {
-    alignSelf: 'center',
-    marginTop: 8,
-    color: 'mediumblue',
-    fontSize: 15,
-    fontWeight: '600',
-    paddingVertical: 6,
   },
   buttonsContainer: {
     flexDirection: 'row',

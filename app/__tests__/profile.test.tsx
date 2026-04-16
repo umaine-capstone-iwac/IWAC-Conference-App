@@ -52,7 +52,7 @@ jest.mock('@/components/ui/icon-symbol', () => ({
   IconSymbol: () => null,
 }));
 
-jest.mock('@/app/modals/logout', () => () => null);
+jest.mock('@/app/modals/action', () => () => null);
 
 describe('ProfileScreen', () => {
   const mockUser = { id: 'user-abc' };

@@ -8,7 +8,7 @@ import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { useState, useEffect, useCallback } from 'react';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import LogoutModal from '@/app/modals/logout';
+import ActionModal from '@/app/modals/action';
 
 // -- INTERFACES -- //
 
@@ -206,9 +206,24 @@ export default function ProfileScreen() {
         ) : null}
       </ThemedView>
       {/* Logout modal */}
-      <LogoutModal
+      <ActionModal
         visible={logoutModalVisible}
+        title="Logout"
+        caption="Are you sure you would like to logout?"
+        confirmText="Logout"
         onClose={() => setLogoutModalVisible(false)}
+        onConfirm={async () => {
+          const { error } = await supabase.auth.signOut();
+
+          if (error) {
+            console.error('Logout failed:', error.message);
+            throw error; // lets modal show error state
+          }
+
+          console.log('User signed out successfully');
+          setLogoutModalVisible(false);
+          router.replace('/login');
+        }}
       />
     </ScrollView>
   );
