@@ -18,6 +18,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { ProfilePicture } from '@/components/profilePicture';
+import ActionModal from '@/app/modals/action';
 
 // -- TYPES -- //
 
@@ -87,6 +88,13 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   const [commentUsers, setCommentUsers] = useState<Record<string, CommentUser>>(
     {},
   );
+  const [reportedComments, setReportedComments] = useState<Set<number>>(
+    new Set(),
+  );
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [selectedCommentId, setSelectedCommentId] = useState<number | null>(
+    null,
+  );
 
   const tags = normalizeTags(panel.tag);
 
@@ -108,6 +116,8 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   };
 
   // -- DATA FETCHING -- //
+
+  // Fetch comments under panel
   const fetchComments = useCallback(async () => {
     setCommentsLoading(true);
     const { data, error } = await supabase
@@ -157,10 +167,38 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     setCommentsLoading(false);
   }, [panel.id]);
 
+  // Fetch comments that the current user has reported
+  const fetchReports = useCallback(async () => {
+    if (!userID) return;
+
+    const commentIds = comments.map((c) => c.comment_id);
+
+    if (commentIds.length === 0) return;
+
+    const { data, error } = await supabase
+      .from('reports')
+      .select('target_id')
+      .eq('reporter_user_id', userID)
+      .eq('target_type', 'comment')
+      .in('target_id', commentIds);
+
+    if (error) {
+      console.error('Error fetching reports:', error);
+      return;
+    }
+
+    const reportedSet = new Set((data ?? []).map((r) => r.target_id));
+    setReportedComments(reportedSet);
+  }, [userID, comments]);
+
   // -- SCREEN EFFECTS -- //
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
+
+  useEffect(() => {
+    fetchReports();
+  }, [comments, userID]);
 
   // -- COMMENT DELETION -- //
   const deleteComment = async (commentId: number) => {
@@ -201,6 +239,50 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
       scrollRef.current?.scrollToEnd({ animated: true });
     }
     setSubmitting(false);
+  };
+
+  // -- COMMENT REPORTING -- //
+
+  const toggleReportComment = async (commentId: number) => {
+    if (!userID) return;
+
+    const isReported = reportedComments.has(commentId);
+
+    if (isReported) {
+      // Unreport
+      const { error } = await supabase
+        .from('reports')
+        .delete()
+        .eq('reporter_user_id', userID)
+        .eq('target_type', 'comment')
+        .eq('target_id', commentId);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setReportedComments((prev) => {
+        const copy = new Set(prev);
+        copy.delete(commentId);
+        return copy;
+      });
+    } else {
+      // Report
+      const { error } = await supabase.from('reports').insert({
+        reporter_user_id: userID,
+        target_type: 'comment',
+        target_id: commentId,
+        reason: null,
+      });
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setReportedComments((prev) => new Set(prev).add(commentId));
+    }
   };
 
   // -- UI -- //
@@ -339,13 +421,36 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
                           {new Date(c.created_at).toLocaleString()}
                         </ThemedText>
                       </View>
-                      {c.user_id === userID && (
+                      {/* Delete or Flag button */}
+                      {c.user_id === userID ? (
                         <TouchableOpacity
                           onPress={() => deleteComment(c.comment_id)}
                           style={styles.deleteButton}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         >
                           <Text style={styles.deleteButtonText}>x</Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={() => {
+                            setSelectedCommentId(c.comment_id);
+                            setReportModalVisible(true);
+                          }}
+                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        >
+                          <IconSymbol
+                            size={20}
+                            name={
+                              reportedComments.has(c.comment_id)
+                                ? 'flag.fill'
+                                : 'flag'
+                            }
+                            color={
+                              reportedComments.has(c.comment_id)
+                                ? Colors.awac.orange
+                                : Colors.awac.navy
+                            }
+                          />
                         </TouchableOpacity>
                       )}
                     </View>
@@ -379,6 +484,34 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           </View>
         </View>
       </ScrollView>
+      <ActionModal
+        visible={reportModalVisible}
+        title={
+          selectedCommentId && reportedComments.has(selectedCommentId)
+            ? 'Remove Report'
+            : 'Report Comment'
+        }
+        caption={
+          selectedCommentId && reportedComments.has(selectedCommentId)
+            ? 'Do you want to remove your report?'
+            : 'Are you sure you want to report this comment?'
+        }
+        confirmText={
+          selectedCommentId && reportedComments.has(selectedCommentId)
+            ? 'Unreport'
+            : 'Report'
+        }
+        onClose={() => {
+          setReportModalVisible(false);
+          setSelectedCommentId(null);
+        }}
+        onConfirm={async () => {
+          if (!selectedCommentId) return;
+          await toggleReportComment(selectedCommentId);
+          setReportModalVisible(false);
+          setSelectedCommentId(null);
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -524,7 +657,7 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
   deleteButtonText: {
-    fontSize: 12,
+    fontSize: 20,
     color: '#888',
     fontWeight: '600',
   },

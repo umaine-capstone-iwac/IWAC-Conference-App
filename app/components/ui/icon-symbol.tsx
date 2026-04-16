@@ -31,6 +31,8 @@ const MAPPING = {
   eye: 'visibility',
   'eye.slash': 'visibility-off',
   'rectangle.portrait.and.arrow.right': 'logout',
+  flag: 'flag',
+  'flag.fill': 'outlined-flag',
 } as IconMapping;
 
 /**
