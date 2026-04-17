@@ -61,10 +61,14 @@ export default function TabLayout() {
             <IconSymbol size={30} name="person.fill" color={color} />
           ),
         }}
-        //force navigation to plain /profile (no params) when tab pressed
+        // Force navigation to plain /profile (no params) when tab pressed
         listeners={{
-          tabPress: () => {
-            router.push('/(tabs)/profile');
+          tabPress: (e) => {
+            e.preventDefault(); 
+            router.replace({
+              pathname: '/(tabs)/profile',
+              params: {}, 
+            });
           },
         }}
       />

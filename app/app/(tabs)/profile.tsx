@@ -30,7 +30,9 @@ export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
   const { otherUserID } = useLocalSearchParams();
-  const viewedUserID = otherUserID ? String(otherUserID) : userID;
+  const viewedUserID = otherUserID && String(otherUserID) !== userID
+    ? String(otherUserID)
+    : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
 
