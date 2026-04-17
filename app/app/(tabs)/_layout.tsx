@@ -64,10 +64,10 @@ export default function TabLayout() {
         // Force navigation to plain /profile (no params) when tab pressed
         listeners={{
           tabPress: (e) => {
-            e.preventDefault(); 
+            e.preventDefault();
             router.replace({
               pathname: '/(tabs)/profile',
-              params: {}, 
+              params: {},
             });
           },
         }}

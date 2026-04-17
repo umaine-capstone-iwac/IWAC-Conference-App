@@ -33,6 +33,7 @@ const MAPPING = {
   'rectangle.portrait.and.arrow.right': 'logout',
   flag: 'flag',
   'flag.fill': 'outlined-flag',
+  nosign: 'block',
 } as IconMapping;
 
 /**

@@ -52,6 +52,16 @@ export default function ConversationScreen() {
     null,
   );
 
+  // Block state
+  const [blockStatus, setBlockStatus] = useState<{
+    iBlocked: boolean;
+    theyBlockedMe: boolean;
+  }>({
+    iBlocked: false,
+    theyBlockedMe: false,
+  });
+  const isBlockedEitherWay = blockStatus.iBlocked || blockStatus.theyBlockedMe;
+
   // Input state
   const [newMessage, setNewMessage] = useState<string>('');
 
@@ -165,6 +175,43 @@ export default function ConversationScreen() {
     scrollToBottom(false);
   }, [userID, otherUser]);
 
+  // Load block status
+  const loadBlockStatus = useCallback(async () => {
+    if (!userID || !otherUser?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('blocks')
+        .select('blocker_user_id, blocked_user_id')
+        .or(
+          `and(blocker_user_id.eq.${userID},blocked_user_id.eq.${otherUser.id}),` +
+            `and(blocker_user_id.eq.${otherUser.id},blocked_user_id.eq.${userID})`,
+        );
+
+      if (error) {
+        console.error('Error loading block status:', error);
+        return;
+      }
+
+      const iBlocked = data?.some(
+        (b) =>
+          b.blocker_user_id === userID && b.blocked_user_id === otherUser.id,
+      );
+
+      const theyBlockedMe = data?.some(
+        (b) =>
+          b.blocker_user_id === otherUser.id && b.blocked_user_id === userID,
+      );
+
+      setBlockStatus({
+        iBlocked: !!iBlocked,
+        theyBlockedMe: !!theyBlockedMe,
+      });
+    } catch (err) {
+      console.error('Unexpected error loading block status:', err);
+    }
+  }, [userID, otherUser?.id]);
+
   // -- DATA UPLOADING -- //
 
   // Send a new message
@@ -269,6 +316,11 @@ export default function ConversationScreen() {
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  // Load the block status
+  useEffect(() => {
+    loadBlockStatus();
+  }, [loadBlockStatus]);
 
   // Set the screen title to the other user's name
   useEffect(() => {
@@ -432,20 +484,33 @@ export default function ConversationScreen() {
       />
 
       <SafeAreaView edges={['bottom']} style={styles.inputContainer}>
-        <View style={{ flex: 1 }}>
-          <Input
-            text="Type a message..."
-            multiline
-            numberOfLines={4}
-            value={newMessage}
-            onChangeText={setNewMessage}
-            autoCapitalize="sentences"
-          />
-        </View>
+        {isBlockedEitherWay ? (
+          <View style={styles.blockedContainer}>
+            <ThemedText style={styles.blockedText}>
+              {blockStatus.iBlocked
+                ? 'You blocked this user.'
+                : 'You cannot message this user.'}
+            </ThemedText>
+          </View>
+        ) : (
+          <>
+            <View style={{ flex: 1 }}>
+              <Input
+                text="Type a message..."
+                multiline
+                numberOfLines={4}
+                value={newMessage}
+                onChangeText={setNewMessage}
+                autoCapitalize="sentences"
+              />
+            </View>
+            <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
+              <ThemedText style={{ color: 'white' }}>Send</ThemedText>
+            </TouchableOpacity>
+          </>
+        )}
 
-        <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
-          <ThemedText style={{ color: 'white' }}>Send</ThemedText>
-        </TouchableOpacity>
+        {/* Report Modal */}
         <ActionModal
           visible={reportModalVisible}
           title={
@@ -549,5 +614,22 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginLeft: 54,
     paddingHorizontal: 4,
+  },
+  blockedContainer: {
+    flex: 1,
+    padding: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: Colors.awac.navy,
+    borderRadius: 10,
+    backgroundColor: Colors.lightestBlue,
+  },
+
+  blockedText: {
+    fontSize: 20,
+    color: Colors.awac.navy,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

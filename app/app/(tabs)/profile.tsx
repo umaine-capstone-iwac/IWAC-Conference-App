@@ -30,14 +30,19 @@ export default function ProfileScreen() {
   const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
   const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
   const { otherUserID } = useLocalSearchParams();
-  const viewedUserID = otherUserID && String(otherUserID) !== userID
-    ? String(otherUserID)
-    : userID;
+  const viewedUserID =
+    otherUserID && String(otherUserID) !== userID
+      ? String(otherUserID)
+      : userID;
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
 
   // Forgot password modal visibility state
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+
+  // Blocked state
+  const [blockModalVisible, setBlockModalVisible] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
   // -- DATA LOADING -- //
 
@@ -52,6 +57,18 @@ export default function ProfileScreen() {
   // Fetch profile data for the user you wish to view
   const fetchProfileData = useCallback(async () => {
     if (!viewedUserID) return; //Don't load if we don't have a user ID to fetch for
+
+    // Check if current user has blocked this profile
+    if (userID && viewedUserID && userID !== viewedUserID) {
+      const { data } = await supabase
+        .from('blocks')
+        .select('id')
+        .eq('blocker_user_id', userID)
+        .eq('blocked_user_id', viewedUserID)
+        .maybeSingle();
+
+      setIsBlocked(!!data);
+    }
 
     try {
       const [
@@ -105,6 +122,28 @@ export default function ProfileScreen() {
       console.error('Unexpected error fetching profile data:', err);
     }
   }, [viewedUserID]);
+
+  // -- DATA MODIFYING -- //
+  const toggleBlockUser = async () => {
+    if (!userID || !viewedUserID) return;
+
+    if (isBlocked) {
+      await supabase
+        .from('blocks')
+        .delete()
+        .eq('blocker_user_id', userID)
+        .eq('blocked_user_id', viewedUserID);
+
+      setIsBlocked(false);
+    } else {
+      await supabase.from('blocks').insert({
+        blocker_user_id: userID,
+        blocked_user_id: viewedUserID,
+      });
+
+      setIsBlocked(true);
+    }
+  };
 
   // -- SCREEN LIFECYCLE -- //
 
@@ -163,15 +202,37 @@ export default function ProfileScreen() {
           )}
 
           {!isOwnProfile && viewedUserID && (
-            <Pressable
-              onPress={() =>
-                router.push(`/conversation?otherUserID=${viewedUserID}`)
-              }
-            >
-              <View style={styles.editButton}>
-                <Text style={styles.editButtonText}>Message User</Text>
-              </View>
-            </Pressable>
+            <View style={styles.buttonsContainer}>
+              {/* Message button */}
+              <Pressable
+                onPress={() =>
+                  router.push(`/conversation?otherUserID=${viewedUserID}`)
+                }
+              >
+                <View style={styles.editButton}>
+                  <IconSymbol
+                    size={26}
+                    name="message.fill"
+                    color={Colors.awac.beige}
+                  />
+                </View>
+              </Pressable>
+
+              {/* Block / Unblock button */}
+              <Pressable onPress={() => setBlockModalVisible(true)}>
+                <View style={styles.editButton}>
+                  {isBlocked ? (
+                    <Text style={styles.editButtonText}>Unblock</Text>
+                  ) : (
+                    <IconSymbol
+                      size={26}
+                      name="nosign"
+                      color={Colors.awac.beige}
+                    />
+                  )}
+                </View>
+              </Pressable>
+            </View>
           )}
         </View>
       </ThemedView>
@@ -227,6 +288,21 @@ export default function ProfileScreen() {
           router.replace('/login');
         }}
       />
+      <ActionModal
+        visible={blockModalVisible}
+        title={isBlocked ? 'Unblock User' : 'Block User'}
+        caption={
+          isBlocked
+            ? 'Do you want to unblock this user? You will be able to message each other again.'
+            : 'Are you sure you want to block this user? You will not be able to message each other.'
+        }
+        confirmText={isBlocked ? 'Unblock' : 'Block'}
+        onClose={() => setBlockModalVisible(false)}
+        onConfirm={async () => {
+          await toggleBlockUser();
+          setBlockModalVisible(false);
+        }}
+      />
     </ScrollView>
   );
 }
@@ -241,9 +317,9 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightestBlue,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    padding: 15,
     justifyContent: 'space-around',
-    marginBottom: 10,
+    marginBottom: 20,
   },
   sectionContainer: {
     gap: 8,
@@ -256,11 +332,10 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: Colors.umaine.darkBlue,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 8,
-    alignSelf: 'flex-end',
-    marginBottom: 20,
+    height: 40,
+    justifyContent: 'center',
   },
   editButtonText: {
     color: Colors.awac.beige,
