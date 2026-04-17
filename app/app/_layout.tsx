@@ -14,9 +14,11 @@ export default function RootLayout() {
       if (!url) return;
 
       if (url.startsWith('iwacapp://resetPassword')) {
-        router.replace({
-          pathname: '/resetPassword',
-          params: { url: encodeURIComponent(url) },
+        requestAnimationFrame(() => {
+          router.replace({
+            pathname: '/resetPassword',
+            params: { url: encodeURIComponent(url) },
+          });
         });
       }
     };

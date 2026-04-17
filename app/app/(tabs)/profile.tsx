@@ -335,12 +335,16 @@ export default function ProfileScreen() {
 
           if (error) {
             console.error('Logout failed:', error.message);
-            throw error; // lets modal show error state
+            throw error; // Lets modal show error state
           }
 
           console.log('User signed out successfully');
           setLogoutModalVisible(false);
-          router.replace('/login');
+
+          // Logout on success
+          requestAnimationFrame(() => {
+            router.replace('/login');
+          });
         }}
       />
       {/* Block modal  */}

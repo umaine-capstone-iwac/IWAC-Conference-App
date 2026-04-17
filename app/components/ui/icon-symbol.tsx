@@ -32,7 +32,7 @@ const MAPPING = {
   'eye.slash': 'visibility-off',
   'rectangle.portrait.and.arrow.right': 'logout',
   'flag.fill': 'flag',
-  'flag': 'outlined-flag',
+  flag: 'outlined-flag',
   nosign: 'block',
 } as IconMapping;
 

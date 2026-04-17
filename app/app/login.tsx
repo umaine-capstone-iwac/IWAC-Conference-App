@@ -117,7 +117,9 @@ export default function LoginScreen() {
       }
 
       //If success, move into app
-      router.replace('/(tabs)/agenda');
+      requestAnimationFrame(() => {
+        router.replace('/(tabs)/agenda');
+      });
     } finally {
       setIsLoading(false);
     }
