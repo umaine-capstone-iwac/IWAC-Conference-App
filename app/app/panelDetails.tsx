@@ -494,7 +494,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
         caption={
           selectedCommentId && reportedComments.has(selectedCommentId)
             ? 'Do you want to remove your report?'
-            : 'Are you sure you want to report this comment?'
+            : 'Are you sure you want to report this comment to an admin?'
         }
         confirmText={
           selectedCommentId && reportedComments.has(selectedCommentId)

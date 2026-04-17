@@ -523,7 +523,7 @@ export default function ConversationScreen() {
             selectedMessageId &&
             messages.find((m) => m.id === selectedMessageId)?.reported
               ? 'Do you want to remove your report?'
-              : 'Are you sure you want to report this message?'
+              : 'Are you sure you want to report this message to an admin?'
           }
           confirmText={
             selectedMessageId &&

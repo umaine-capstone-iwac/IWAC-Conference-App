@@ -40,6 +40,10 @@ export default function ProfileScreen() {
   // Forgot password modal visibility state
   const [logoutModalVisible, setLogoutModalVisible] = useState(false);
 
+  // Report state
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [isReported, setIsReported] = useState(false);
+
   // Blocked state
   const [blockModalVisible, setBlockModalVisible] = useState(false);
   const [isBlocked, setIsBlocked] = useState(false);
@@ -68,6 +72,19 @@ export default function ProfileScreen() {
         .maybeSingle();
 
       setIsBlocked(!!data);
+    }
+
+    // Check if current user has reported this profile
+    if (userID && viewedUserID && userID !== viewedUserID) {
+      const { data } = await supabase
+        .from('reports')
+        .select('id')
+        .eq('reporter_user_id', userID)
+        .eq('target_type', 'profile')
+        .eq('target_id', viewedUserID)
+        .maybeSingle();
+
+      setIsReported(!!data);
     }
 
     try {
@@ -124,6 +141,8 @@ export default function ProfileScreen() {
   }, [viewedUserID]);
 
   // -- DATA MODIFYING -- //
+
+  // Block or unblock the user
   const toggleBlockUser = async () => {
     if (!userID || !viewedUserID) return;
 
@@ -142,6 +161,30 @@ export default function ProfileScreen() {
       });
 
       setIsBlocked(true);
+    }
+  };
+
+  // Report or unreport the user's profile
+  const toggleReportUser = async () => {
+    if (!userID || !viewedUserID) return;
+
+    if (isReported) {
+      await supabase
+        .from('reports')
+        .delete()
+        .eq('reporter_user_id', userID)
+        .eq('target_type', 'profile')
+        .eq('target_id', viewedUserID);
+
+      setIsReported(false);
+    } else {
+      await supabase.from('reports').insert({
+        reporter_user_id: userID,
+        target_type: 'profile',
+        target_id: viewedUserID,
+      });
+
+      setIsReported(true);
     }
   };
 
@@ -218,6 +261,17 @@ export default function ProfileScreen() {
                 </View>
               </Pressable>
 
+              {/* Report button */}
+              <Pressable onPress={() => setReportModalVisible(true)}>
+                <View style={styles.editButton}>
+                  <IconSymbol
+                    size={22}
+                    name={isReported ? 'flag.fill' : 'flag'}
+                    color={Colors.awac.beige}
+                  />
+                </View>
+              </Pressable>
+
               {/* Block / Unblock button */}
               <Pressable onPress={() => setBlockModalVisible(true)}>
                 <View style={styles.editButton}>
@@ -268,6 +322,7 @@ export default function ProfileScreen() {
           </View>
         ) : null}
       </ThemedView>
+
       {/* Logout modal */}
       <ActionModal
         visible={logoutModalVisible}
@@ -288,6 +343,7 @@ export default function ProfileScreen() {
           router.replace('/login');
         }}
       />
+      {/* Block modal  */}
       <ActionModal
         visible={blockModalVisible}
         title={isBlocked ? 'Unblock User' : 'Block User'}
@@ -301,6 +357,23 @@ export default function ProfileScreen() {
         onConfirm={async () => {
           await toggleBlockUser();
           setBlockModalVisible(false);
+        }}
+      />
+
+      {/* Report modal */}
+      <ActionModal
+        visible={reportModalVisible}
+        title={isReported ? 'Remove Report' : 'Report User'}
+        caption={
+          isReported
+            ? "Do you want to remove your report for this user's profile?"
+            : "Are you sure you want to report this user's profile to an admin?"
+        }
+        confirmText={isReported ? 'Unreport' : 'Report'}
+        onClose={() => setReportModalVisible(false)}
+        onConfirm={async () => {
+          await toggleReportUser();
+          setReportModalVisible(false);
         }}
       />
     </ScrollView>
