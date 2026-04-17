@@ -13,7 +13,11 @@
       "bundleIdentifier": "org.wacassociation.iwac"
     },
     "android": {
-      "icon": "./assets/images/icon.png",
+      "icon": "./assets/images/icon-android.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon-android-foreground.png",
+        "backgroundColor": "#f3ebdc"
+      },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
