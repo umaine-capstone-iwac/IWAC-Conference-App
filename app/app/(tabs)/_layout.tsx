@@ -1,21 +1,31 @@
 import { Tabs, router } from 'expo-router';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, StyleSheet, Platform } from 'react-native';
 import { HapticTab } from '@/components/hapticTab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
 const isTablet = Math.min(width, height) >= 768;
 
-// Main tab layout for the app
+// Main tab layout for the authenticated portion of app
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       initialRouteName="agenda"
       screenOptions={{
         tabBarActiveTintColor: Colors.awac.beige,
         tabBarInactiveTintColor: Colors.umaine.darkBlue,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          // Protect android bottom bar
+          Platform.OS === 'android' && {
+            height: (isTablet ? 90 : 75) + insets.bottom,
+            paddingBottom: insets.bottom,
+          },
+        ],
         tabBarButton: HapticTab,
         tabBarShowLabel: false,
         headerStyle: styles.header,
@@ -96,7 +106,5 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.umaine.lightBlue,
     height: isTablet ? 90 : 75,
     paddingTop: 15,
-    // borderTopWidth: 5,
-    // borderTopColor: 'red',
   },
 });
