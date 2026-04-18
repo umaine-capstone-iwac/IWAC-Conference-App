@@ -17,6 +17,7 @@ import { supabase } from '@/lib/supabase';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { ProfilePicture } from '@/components/profilePicture';
+import ActionModal from '@/app/modals/action';
 
 export default function ProfileSettingsModal() {
   // State for loading and saving status
@@ -37,6 +38,10 @@ export default function ProfileSettingsModal() {
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
+
+  // Delete account state
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // -- DATA LOADING -- //
 
@@ -214,6 +219,42 @@ export default function ProfileSettingsModal() {
     }
   };
 
+  // Delete user account
+  const deleteAccount = async () => {
+    if (!userID) return;
+    setDeleting(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('No session token');
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (!response.ok) {
+        const body = await response.json();
+        throw new Error(body.error ?? 'Deletion failed');
+      }
+
+      await supabase.auth.signOut();
+      router.replace('/login');
+    } catch (err) {
+      console.error('Delete account failed:', err);
+      Alert.alert('Error', 'Failed to delete account');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   // -- RENDERING -- //
   if (loading) {
     return (
@@ -344,8 +385,23 @@ export default function ProfileSettingsModal() {
               </Text>
             </View>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => setDeleteModalVisible(true)}>
+            <View style={styles.deleteButton}>
+              <Text style={styles.deleteButtonText}>Delete Account</Text>
+            </View>
+          </TouchableOpacity>
         </ScrollView>
       </View>
+      <ActionModal
+        visible={deleteModalVisible}
+        title="Delete Account"
+        caption="This action is permanent. Your account and data will be permanently deleted."
+        confirmText="Delete"
+        onClose={() => setDeleteModalVisible(false)}
+        onConfirm={async () => {
+          await deleteAccount();
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -397,6 +453,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  deleteButton: {
+    backgroundColor: '#b00020',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignSelf: 'center',
+    marginBottom: 30,
+    marginTop: 10,
+  },
+
+  deleteButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: '600',

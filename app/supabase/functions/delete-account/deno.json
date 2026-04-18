@@ -1,0 +1,17 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2"
+  },
+  "lint": {
+    "rules": {
+      "include": ["recommended"]
+    },
+    "exclude": ["**/*.json"]
+  },
+  "compilerOptions": {
+    "lib": ["deno.ns", "dom"]
+  },
+  "tasks": {
+    "dev": "supabase functions serve"
+  }
+}
