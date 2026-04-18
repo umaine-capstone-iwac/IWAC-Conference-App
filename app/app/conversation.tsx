@@ -48,9 +48,12 @@ export default function ConversationScreen() {
 
   // Reporting state
   const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [selectedMessageId, setSelectedMessageId] = useState<number | null>(
-    null,
-  );
+
+  // Selected message
+  const [selectedMessage, setSelectedMessage] = useState<null | {
+    id: number;
+    reported: boolean;
+  }>(null);
 
   // Block state
   const [blockStatus, setBlockStatus] = useState<{
@@ -254,37 +257,42 @@ export default function ConversationScreen() {
 
   // Report or unreport a message
   const toggleReportMessage = async () => {
-    if (!userID || !selectedMessageId) return;
+    if (!userID || !selectedMessage) return;
 
-    const message = messages.find((m) => m.id === selectedMessageId);
+    const message = messages.find((m) => m.id === selectedMessage.id);
     if (!message) return;
 
     if (message.reported) {
       // Unreport
-      await supabase
+      const { error } = await supabase
         .from('reports')
         .delete()
         .eq('reporter_user_id', userID)
         .eq('target_type', 'message')
-        .eq('target_id', selectedMessageId);
+        .eq('target_id', selectedMessage.id);
+
+      if (error) {
+        throw error;
+      }
     } else {
       // Report
-      await supabase.from('reports').insert({
+      const { error } = await supabase.from('reports').insert({
         reporter_user_id: userID,
         target_type: 'message',
-        target_id: selectedMessageId,
+        target_id: selectedMessage.id,
       });
+
+      if (error) {
+        throw error;
+      }
     }
 
     // Update flag icon of targetted message
     setMessages((prev) =>
       prev.map((m) =>
-        m.id === selectedMessageId ? { ...m, reported: !m.reported } : m,
+        m.id === selectedMessage.id ? { ...m, reported: !m.reported } : m,
       ),
     );
-
-    setReportModalVisible(false);
-    setSelectedMessageId(null);
   };
 
   // Mark messages from otherUser as read
@@ -456,7 +464,7 @@ export default function ConversationScreen() {
               {!item.fromUser && (
                 <TouchableOpacity
                   onPress={() => {
-                    setSelectedMessageId(item.id);
+                    setSelectedMessage(item);
                     setReportModalVisible(true);
                   }}
                 >
@@ -513,35 +521,26 @@ export default function ConversationScreen() {
         {/* Report Modal */}
         <ActionModal
           visible={reportModalVisible}
-          title={
-            selectedMessageId &&
-            messages.find((m) => m.id === selectedMessageId)?.reported
-              ? 'Remove Report'
-              : 'Report Message'
-          }
+          title={selectedMessage?.reported ? 'Remove Report' : 'Report Message'}
           caption={
-            selectedMessageId &&
-            messages.find((m) => m.id === selectedMessageId)?.reported
+            selectedMessage?.reported
               ? 'Do you want to remove your report?'
               : 'Are you sure you want to report this message to an admin?'
           }
-          confirmText={
-            selectedMessageId &&
-            messages.find((m) => m.id === selectedMessageId)?.reported
-              ? 'Unreport'
-              : 'Report'
+          confirmText={selectedMessage?.reported ? 'Unreport' : 'Report'}
+          successMessage={
+            selectedMessage?.reported
+              ? 'Message successfully unreported.'
+              : 'Message successfully reported to an administrator.'
           }
           onClose={() => {
             setReportModalVisible(false);
-            setSelectedMessageId(null);
+            setSelectedMessage(null);
           }}
           onConfirm={async () => {
-            if (!selectedMessageId) return;
+            if (!selectedMessage) return;
 
             await toggleReportMessage();
-
-            setReportModalVisible(false);
-            setSelectedMessageId(null);
           }}
         />
       </SafeAreaView>

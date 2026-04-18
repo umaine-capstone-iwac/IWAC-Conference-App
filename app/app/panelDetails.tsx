@@ -92,9 +92,11 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     new Set(),
   );
   const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [selectedCommentId, setSelectedCommentId] = useState<number | null>(
-    null,
-  );
+
+  const [selectedComment, setSelectedComment] = useState<null | {
+    id: number;
+    reported: boolean;
+  }>(null);
 
   const tags = normalizeTags(panel.tag);
 
@@ -433,7 +435,10 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
                       ) : (
                         <TouchableOpacity
                           onPress={() => {
-                            setSelectedCommentId(c.comment_id);
+                            setSelectedComment({
+                              id: c.comment_id,
+                              reported: reportedComments.has(c.comment_id),
+                            });
                             setReportModalVisible(true);
                           }}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -486,30 +491,26 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
       </ScrollView>
       <ActionModal
         visible={reportModalVisible}
-        title={
-          selectedCommentId && reportedComments.has(selectedCommentId)
-            ? 'Remove Report'
-            : 'Report Comment'
-        }
+        title={selectedComment?.reported ? 'Remove Report' : 'Report Comment'}
         caption={
-          selectedCommentId && reportedComments.has(selectedCommentId)
+          selectedComment?.reported
             ? 'Do you want to remove your report?'
             : 'Are you sure you want to report this comment to an admin?'
         }
-        confirmText={
-          selectedCommentId && reportedComments.has(selectedCommentId)
-            ? 'Unreport'
-            : 'Report'
+        confirmText={selectedComment?.reported ? 'Unreport' : 'Report'}
+        successMessage={
+          selectedComment?.reported
+            ? 'Report removed successfully.'
+            : 'Comment reported successfully to an administrator.'
         }
         onClose={() => {
           setReportModalVisible(false);
-          setSelectedCommentId(null);
+          setSelectedComment(null);
         }}
         onConfirm={async () => {
-          if (!selectedCommentId) return;
-          await toggleReportComment(selectedCommentId);
-          setReportModalVisible(false);
-          setSelectedCommentId(null);
+          if (!selectedComment) return;
+
+          await toggleReportComment(selectedComment.id);
         }}
       />
     </KeyboardAvoidingView>

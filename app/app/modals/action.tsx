@@ -19,6 +19,7 @@ interface ConfirmModalProps {
   confirmText: string;
   onConfirm: () => Promise<void> | void;
   onClose: () => void;
+  successMessage?: string;
 }
 
 export default function ConfirmModal({
@@ -28,22 +29,24 @@ export default function ConfirmModal({
   confirmText,
   onConfirm,
   onClose,
+  successMessage,
 }: ConfirmModalProps) {
   // -- STATE -- //
 
-  // Message state (error or success)
-  const [message, setMessage] = useState('');
+  // Modal status
+  type Status = 'idle' | 'loading' | 'success';
+  const [status, setStatus] = useState<Status>('idle');
 
-  // Loading state
-  const [loading, setLoading] = useState(false);
+  // Error message
+  const [errorMessage, setErrorMessage] = useState('');
 
   // -- INITIALIZATION -- //
 
   // Clear message and loading on modal open
   useEffect(() => {
     if (visible) {
-      setMessage('');
-      setLoading(false);
+      setStatus('idle');
+      setErrorMessage('');
     }
   }, [visible]);
 
@@ -56,23 +59,23 @@ export default function ConfirmModal({
 
   // Run passed confirm function on 'Confirm'
   const handleConfirm = async () => {
-    if (loading) return;
+    if (status === 'loading' || status === 'success') return;
 
-    setLoading(true);
-    setMessage('');
+    setStatus('loading');
+    setErrorMessage('');
 
     try {
       await onConfirm();
+      setStatus('success');
     } catch (error: unknown) {
-      console.error('Confirm action failed:', error);
+      console.error(error);
 
-      setMessage(
+      setErrorMessage(
         error instanceof Error
           ? error.message
           : 'Something went wrong. Please try again.',
       );
-    } finally {
-      setLoading(false);
+      setStatus('idle');
     }
   };
 
@@ -87,28 +90,37 @@ export default function ConfirmModal({
     >
       <View style={styles.modalOverlay}>
         <View style={styles.modalCard}>
-          {/* Modal title */}
+          {/* Title */}
           <ThemedText type="subtitle" style={styles.modalTitle}>
             {title}
           </ThemedText>
 
-          {/* Modal message */}
-          <Text style={styles.modalBody}>{caption}</Text>
+          {/* Caption or Success Message */}
+          {status === 'success' ? (
+            <Text style={styles.successMessage}>
+              {successMessage ?? caption}
+            </Text>
+          ) : (
+            <Text style={styles.modalBody}>{caption}</Text>
+          )}
 
-          {/* Inline error or success message, if any */}
-          {message ? <Text style={styles.message}> {message} </Text> : null}
+          {/* Error message (only in idle/error states) */}
+          {errorMessage ? (
+            <Text style={styles.message}>{errorMessage}</Text>
+          ) : null}
 
-          {/* Buttons or activity indicator */}
-          {loading ? (
-            // Show spinner while processing request
+          {/* LOADING: Spinner */}
+          {status === 'loading' && (
             <ActivityIndicator
               style={{ marginTop: 12 }}
               color={Colors.awac.orange}
             />
-          ) : (
-            // Show buttons if not loading
+          )}
+
+          {/* IDLE: Action + Cancel */}
+          {status === 'idle' && (
             <View style={styles.buttonsContainer}>
-              <TouchableOpacity onPress={handleConfirm} disabled={loading}>
+              <TouchableOpacity onPress={handleConfirm}>
                 <View style={styles.submitButton}>
                   <Text style={styles.submitButtonText}>{confirmText}</Text>
                 </View>
@@ -117,6 +129,17 @@ export default function ConfirmModal({
               <TouchableOpacity onPress={handleClose}>
                 <View style={styles.cancelButton}>
                   <Text style={styles.cancelButtonText}>Cancel</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* SUCCESS: only Dismiss */}
+          {status === 'success' && (
+            <View style={styles.buttonsContainer}>
+              <TouchableOpacity onPress={handleClose}>
+                <View style={styles.submitButton}>
+                  <Text style={styles.submitButtonText}>Dismiss</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -200,5 +223,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
+  },
+  successMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    color: 'green',
+    marginBottom: 16,
   },
 });

@@ -43,6 +43,9 @@ export default function ProfileScreen() {
   // Report state
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [isReported, setIsReported] = useState(false);
+  const [selectedReportState, setSelectedReportState] = useState<
+    boolean | null
+  >(null);
 
   // Blocked state
   const [blockModalVisible, setBlockModalVisible] = useState(false);
@@ -169,21 +172,23 @@ export default function ProfileScreen() {
     if (!userID || !viewedUserID) return;
 
     if (isReported) {
-      await supabase
+      const { error } = await supabase
         .from('reports')
         .delete()
         .eq('reporter_user_id', userID)
         .eq('target_type', 'profile')
         .eq('target_id', viewedUserID);
 
+      if (error) throw error;
       setIsReported(false);
     } else {
-      await supabase.from('reports').insert({
+      const { error } = await supabase.from('reports').insert({
         reporter_user_id: userID,
         target_type: 'profile',
         target_id: viewedUserID,
       });
 
+      if (error) throw error;
       setIsReported(true);
     }
   };
@@ -262,7 +267,12 @@ export default function ProfileScreen() {
               </Pressable>
 
               {/* Report button */}
-              <Pressable onPress={() => setReportModalVisible(true)}>
+              <Pressable
+                onPress={() => {
+                  setSelectedReportState(isReported);
+                  setReportModalVisible(true);
+                }}
+              >
                 <View style={styles.editButton}>
                   <IconSymbol
                     size={22}
@@ -367,17 +377,21 @@ export default function ProfileScreen() {
       {/* Report modal */}
       <ActionModal
         visible={reportModalVisible}
-        title={isReported ? 'Remove Report' : 'Report User'}
+        title={selectedReportState ? 'Remove Report' : 'Report User'}
         caption={
-          isReported
+          selectedReportState
             ? "Do you want to remove your report for this user's profile?"
             : "Are you sure you want to report this user's profile to an admin?"
         }
-        confirmText={isReported ? 'Unreport' : 'Report'}
+        confirmText={selectedReportState ? 'Unreport' : 'Report'}
+        successMessage={
+          selectedReportState
+            ? 'Report successfully removed.'
+            : 'Profile successfully reported to an administrator.'
+        }
         onClose={() => setReportModalVisible(false)}
         onConfirm={async () => {
           await toggleReportUser();
-          setReportModalVisible(false);
         }}
       />
     </ScrollView>
