@@ -41,7 +41,6 @@ export default function ProfileSettingsModal() {
 
   // Delete account state
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   // -- DATA LOADING -- //
 
@@ -222,7 +221,6 @@ export default function ProfileSettingsModal() {
   // Delete user account
   const deleteAccount = async () => {
     if (!userID) return;
-    setDeleting(true);
 
     try {
       const { data: sessionData } = await supabase.auth.getSession();
@@ -251,7 +249,6 @@ export default function ProfileSettingsModal() {
       console.error('Delete account failed:', err);
       Alert.alert('Error', 'Failed to delete account');
     } finally {
-      setDeleting(false);
     }
   };
 

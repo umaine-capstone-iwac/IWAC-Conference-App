@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   linkButtonText: {
     marginTop: 10,
     color: 'mediumblue',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   errorText: {

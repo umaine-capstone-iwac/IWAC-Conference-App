@@ -174,20 +174,27 @@ export default function LoginScreen() {
           <ThemedText style={styles.errorText}>{errorText}</ThemedText>
         )}
 
-        {/* Link to create account screen */}
-        <TouchableOpacity onPress={() => router.replace('/createAccount')}>
-          <View style={styles.linkButton}>
-            <Text>New to the IWAC App?</Text>
-            <Text style={styles.linkButtonText}>Create Account</Text>
-          </View>
-        </TouchableOpacity>
+        {/* Footer Links */}
+        <View style={styles.footerLinks}>
+          {/* Create Account */}
+          <TouchableOpacity onPress={() => router.replace('/createAccount')}>
+            <Text style={styles.footerLinkText}>Create Account</Text>
+          </TouchableOpacity>
 
-        {/* Opens forgot password modal */}
-        <TouchableOpacity onPress={() => setForgotModalVisible(true)}>
-          <View style={styles.linkButton}>
-            <Text style={styles.linkButtonText}>Forgot Password?</Text>
-          </View>
-        </TouchableOpacity>
+          {/* Forgot password */}
+          <TouchableOpacity onPress={() => setForgotModalVisible(true)}>
+            <Text style={styles.footerLinkText}>Forgot Password?</Text>
+          </TouchableOpacity>
+
+          {/* Privacy Policy */}
+          <TouchableOpacity
+            onPress={() =>
+              router.push('https://umaine-capstone-iwac.github.io/IWAC-Conference-App/')
+            }
+          >
+            <Text style={styles.footerLinkText}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Forgot password modal */}
         <ForgotPasswordModal
@@ -256,5 +263,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     alignSelf: 'center',
     fontSize: 16,
+  },
+  footerLinks: {
+    marginTop: 25,
+    alignItems: 'center',
+    gap: 22,
+  },
+  footerLinkText: {
+    color: 'mediumblue',
+    fontSize: 18,
+    fontWeight: '500',
+    paddingVertical: 2,
   },
 });
