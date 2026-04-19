@@ -189,7 +189,9 @@ export default function LoginScreen() {
           {/* Privacy Policy */}
           <TouchableOpacity
             onPress={() =>
-              router.push('https://umaine-capstone-iwac.github.io/IWAC-Conference-App/')
+              router.push(
+                'https://umaine-capstone-iwac.github.io/IWAC-Conference-App/',
+              )
             }
           >
             <Text style={styles.footerLinkText}>Privacy Policy</Text>
