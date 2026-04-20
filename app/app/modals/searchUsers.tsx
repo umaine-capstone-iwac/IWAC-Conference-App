@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.lightBlue,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 20,
+    gap: 35,
   },
   userText: {
     fontSize: 18,
