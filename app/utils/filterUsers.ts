@@ -10,7 +10,7 @@ export type User = {
   avatar_url?: string | null;
 };
 
-export function filterUsers(users: User[], search: string): User[] {
+export function filterUsers<T extends User>(users: T[], search: string): T[] {
   // Normalize search input for consistent matching
   const query = search.trim().toLowerCase();
 

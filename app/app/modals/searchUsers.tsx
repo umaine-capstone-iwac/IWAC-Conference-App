@@ -21,6 +21,8 @@ export default function SearchUsersScreen() {
       first_name: string | null;
       last_name: string | null;
       avatar_url: string | null;
+      isBlockedByMe?: boolean;
+      isBlockedByThem?: boolean;
     }[]
   >([]);
 
@@ -61,6 +63,16 @@ export default function SearchUsersScreen() {
       return;
     }
 
+    // Fetch block relationships involving current user
+    const { data: blocksData, error: blocksError } = await supabase
+      .from('blocks')
+      .select('blocker_user_id, blocked_user_id')
+      .or(`blocker_user_id.eq.${userID},blocked_user_id.eq.${userID}`);
+
+    if (blocksError) {
+      console.error('Error loading blocks:', blocksError);
+    }
+
     // Fetch avatar url profile data
     const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
@@ -74,13 +86,27 @@ export default function SearchUsersScreen() {
       console.error('Error loading profiles:', profilesError);
     }
 
-    // Merge avatar URLs into user records
-    const usersWithAvatars = usersData.map((user) => {
+    // Merge avatar URLs and blocked status into user records
+    const mergedUsers = usersData.map((user) => {
       const profile = profilesData?.find((p) => p.id === user.id);
-      return { ...user, avatar_url: profile?.avatar_url ?? null };
+
+      const isBlockedByMe = blocksData?.some(
+        (b) => b.blocker_user_id === userID && b.blocked_user_id === user.id,
+      );
+
+      const isBlockedByThem = blocksData?.some(
+        (b) => b.blocker_user_id === user.id && b.blocked_user_id === userID,
+      );
+
+      return {
+        ...user,
+        avatar_url: profile?.avatar_url ?? null,
+        isBlockedByMe: !!isBlockedByMe,
+        isBlockedByThem: !!isBlockedByThem,
+      };
     });
 
-    setUsers(usersWithAvatars);
+    setUsers(mergedUsers);
   }, [userID]);
 
   // -- SCREEN EFFECTS -- //
@@ -102,8 +128,16 @@ export default function SearchUsersScreen() {
         renderItem={({ item }) => (
           <Pressable
             onPress={() => {
-              router.dismissAll();
-              router.push(`/conversation?otherUserID=${item.id}`);
+              router.back();
+
+              // If block either way, move to profile
+              if (item.isBlockedByThem || item.isBlockedByMe) {
+                router.push(`/profile?otherUserID=${item.id}`);
+              }
+              // Otherwise, move to conversation
+              else {
+                router.push(`/conversation?otherUserID=${item.id}`);
+              }
             }}
             style={styles.userRow}
           >
@@ -112,7 +146,16 @@ export default function SearchUsersScreen() {
               avatarUrl={item.avatar_url}
               userId={item.id}
             />
-            <Text style={styles.userText}>
+            <Text
+              style={[
+                styles.userText,
+                item.isBlockedByMe
+                  ? { color: 'red' }
+                  : item.isBlockedByThem
+                    ? { color: 'gray' }
+                    : null,
+              ]}
+            >
               {item.first_name} {item.last_name}
             </Text>
           </Pressable>

@@ -13,7 +13,6 @@ import ActionModal from '@/app/modals/action';
 // -- INTERFACES -- //
 
 interface ProfileDetails {
-  // Defines the profile details structure
   id: string;
   first_name: string;
   last_name: string;
@@ -25,35 +24,49 @@ interface ProfileDetails {
   avatar_url: string | null;
 }
 
+type ProfileMode = 'self' | 'muted' | 'full';
+
+// Null = not yet loaded, avoids false 'full' flash before block check resolves
+interface SocialState {
+  isBlockedByMe: boolean | null;
+  isBlockedByThem: boolean | null;
+  isReported: boolean | null;
+}
+
 export default function ProfileScreen() {
   // -- STATE -- //
-  const [userID, setUserID] = useState<string>(); // State to hold the logged in user's ID
-  const [profile, setProfileData] = useState<ProfileDetails | null>(null); // State to hold profile details from supabase
+  const [userID, setUserID] = useState<string | undefined>();
+  const [profile, setProfileData] = useState<ProfileDetails | null>(null);
   const { otherUserID } = useLocalSearchParams();
+
   const viewedUserID =
     otherUserID && String(otherUserID) !== userID
       ? String(otherUserID)
       : userID;
+
   const isOwnProfile =
     userID && viewedUserID && String(userID) === String(viewedUserID);
 
-  // Forgot password modal visibility state
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  // Social state - null means "not yet fetched" to prevent false rendering
+  const [social, setSocial] = useState<SocialState>({
+    isBlockedByMe: null,
+    isBlockedByThem: null,
+    isReported: null,
+  });
 
-  // Report state
-  const [reportModalVisible, setReportModalVisible] = useState(false);
-  const [isReported, setIsReported] = useState(false);
+  // Report selected state - snapshot of isReported when modal opens
   const [selectedReportState, setSelectedReportState] = useState<
     boolean | null
   >(null);
 
-  // Blocked state
+  // Modal visibility state
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
   const [blockModalVisible, setBlockModalVisible] = useState(false);
-  const [isBlocked, setIsBlocked] = useState(false);
 
   // -- DATA LOADING -- //
 
-  //fetch the logged in user's ID
+  // Fetch the logged in user's ID once on mount
   useEffect(() => {
     const loadUser = async () => {
       setUserID((await supabase.auth.getSession()).data.session?.user?.id);
@@ -61,35 +74,61 @@ export default function ProfileScreen() {
     loadUser();
   }, []);
 
-  // Fetch profile data for the user you wish to view
   const fetchProfileData = useCallback(async () => {
-    if (!viewedUserID) return; //Don't load if we don't have a user ID to fetch for
+    if (!viewedUserID || !userID) return; // Wait until both IDs are available
 
-    // Check if current user has blocked this profile
-    if (userID && viewedUserID && userID !== viewedUserID) {
-      const { data } = await supabase
-        .from('blocks')
-        .select('id')
-        .eq('blocker_user_id', userID)
-        .eq('blocked_user_id', viewedUserID)
-        .maybeSingle();
+    // Reset social state before fetching to avoid stale values on re-visit
+    setSocial({
+      isBlockedByMe: null,
+      isBlockedByThem: null,
+      isReported: null,
+    });
 
-      setIsBlocked(!!data);
+    // Fetch block/report status for other users only
+    if (userID !== viewedUserID) {
+      const [{ data: blockByMe }, { data: blockByThem }, { data: reportData }] =
+        await Promise.all([
+          // I blocked them
+          supabase
+            .from('blocks')
+            .select('id')
+            .eq('blocker_user_id', userID)
+            .eq('blocked_user_id', viewedUserID)
+            .maybeSingle(),
+
+          // They blocked me
+          supabase
+            .from('blocks')
+            .select('id')
+            .eq('blocker_user_id', viewedUserID)
+            .eq('blocked_user_id', userID)
+            .maybeSingle(),
+
+          // Report
+          supabase
+            .from('reports')
+            .select('id')
+            .eq('reporter_user_id', userID)
+            .eq('target_type', 'profile')
+            .eq('target_id', viewedUserID)
+            .maybeSingle(),
+        ]);
+
+      setSocial({
+        isBlockedByMe: !!blockByMe,
+        isBlockedByThem: !!blockByThem,
+        isReported: !!reportData,
+      });
+    } else {
+      // Own profile - no block/report state needed
+      setSocial({
+        isBlockedByMe: false,
+        isBlockedByThem: false,
+        isReported: false,
+      });
     }
 
-    // Check if current user has reported this profile
-    if (userID && viewedUserID && userID !== viewedUserID) {
-      const { data } = await supabase
-        .from('reports')
-        .select('id')
-        .eq('reporter_user_id', userID)
-        .eq('target_type', 'profile')
-        .eq('target_id', viewedUserID)
-        .maybeSingle();
-
-      setIsReported(!!data);
-    }
-
+    // Fetch profile + user name in parallel
     try {
       const [
         { data: profileRow, error: pErr },
@@ -100,10 +139,9 @@ export default function ProfileScreen() {
           .select(
             'id, profession, contact_info, about_me, interests, my_sessions, avatar_url',
           )
-          .eq('id', viewedUserID) // Filter to get only the logged in user's profile data
-          .single(), //expecting a single profile row for the user ID
+          .eq('id', viewedUserID)
+          .single(),
 
-        //Now to get the names
         supabase
           .from('users')
           .select('first_name, last_name')
@@ -111,7 +149,7 @@ export default function ProfileScreen() {
           .single(),
       ]);
 
-      // Profile rows missing = deleted user, force sign out
+      // Profile row missing = deleted user, force sign out
       if (pErr?.code === 'PGRST116' || uErr?.code === 'PGRST116') {
         await supabase.auth.signOut();
         router.push('/login');
@@ -124,8 +162,8 @@ export default function ProfileScreen() {
         return;
       }
 
-      //map the data into a structure we want
-      const mapped = {
+      // Map the data into a structure we want
+      const mapped: ProfileDetails = {
         id: profileRow.id,
         first_name: userRow?.first_name ?? '',
         last_name: userRow?.last_name ?? '',
@@ -135,61 +173,59 @@ export default function ProfileScreen() {
         interests: profileRow.interests ?? '',
         my_sessions: profileRow.my_sessions ?? '',
         avatar_url: profileRow.avatar_url,
-      } as ProfileDetails;
+      };
 
-      setProfileData(mapped); // Update state with fetched profile data
+      setProfileData(mapped);
     } catch (err) {
       console.error('Unexpected error fetching profile data:', err);
     }
-  }, [viewedUserID]);
+  }, [viewedUserID, userID]); // userID must be here - block check depends on it
 
   // -- DATA MODIFYING -- //
 
-  // Block or unblock the user
+  // Block or unblock the viewed user
   const toggleBlockUser = async () => {
     if (!userID || !viewedUserID) return;
 
-    if (isBlocked) {
+    if (social.isBlockedByMe) {
       await supabase
         .from('blocks')
         .delete()
         .eq('blocker_user_id', userID)
         .eq('blocked_user_id', viewedUserID);
 
-      setIsBlocked(false);
+      setSocial((prev) => ({ ...prev, isBlockedByMe: false }));
     } else {
       await supabase.from('blocks').insert({
         blocker_user_id: userID,
         blocked_user_id: viewedUserID,
       });
 
-      setIsBlocked(true);
+      setSocial((prev) => ({ ...prev, isBlockedByMe: true }));
     }
   };
 
-  // Report or unreport the user's profile
+  // Report or unreport the viewed user's profile
   const toggleReportUser = async () => {
     if (!userID || !viewedUserID) return;
 
-    if (isReported) {
-      const { error } = await supabase
+    if (social.isReported) {
+      await supabase
         .from('reports')
         .delete()
         .eq('reporter_user_id', userID)
         .eq('target_type', 'profile')
         .eq('target_id', viewedUserID);
 
-      if (error) throw error;
-      setIsReported(false);
+      setSocial((prev) => ({ ...prev, isReported: false }));
     } else {
-      const { error } = await supabase.from('reports').insert({
+      await supabase.from('reports').insert({
         reporter_user_id: userID,
         target_type: 'profile',
         target_id: viewedUserID,
       });
 
-      if (error) throw error;
-      setIsReported(true);
+      setSocial((prev) => ({ ...prev, isReported: true }));
     }
   };
 
@@ -198,19 +234,204 @@ export default function ProfileScreen() {
   // Fetch profile data when the screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      if (viewedUserID) {
-        fetchProfileData();
-      }
-    }, [viewedUserID, fetchProfileData]),
+      if (viewedUserID && userID) fetchProfileData();
+    }, [viewedUserID, userID, fetchProfileData]),
   );
 
-  // Fetch profile data when the screen loads or when the viewed user ID changes
+  // Also fetch when IDs first become available
   useEffect(() => {
-    // fetch once when userID becomes available
-    if (viewedUserID) fetchProfileData();
-  }, [viewedUserID, fetchProfileData]);
+    if (viewedUserID && userID) fetchProfileData();
+  }, [viewedUserID, userID, fetchProfileData]);
+
+  // -- DERIVED STATE -- //
+
+  // Wait for social state to be fetched before deriving mode
+  // This prevents a 'full' flash before the block check resolves
+  const profileMode: ProfileMode | null = (() => {
+    if (
+      social.isBlockedByMe === null ||
+      social.isBlockedByThem === null ||
+      social.isReported === null
+    )
+      return null;
+
+    const isBlocked = social.isBlockedByMe || social.isBlockedByThem;
+
+    if (isOwnProfile) return 'self';
+    if (isBlocked) return 'muted';
+    return 'full';
+  })();
+
+  // Render nothing until we know what mode we're in
+  if (!profileMode) return null;
+
+  // -- UI HELPERS -- //
+
+  const renderHeaderButtons = () => {
+    switch (profileMode) {
+      case 'self':
+        return (
+          <>
+            {/* Edit profile button */}
+            <Pressable onPress={() => router.push('/profileSettings')}>
+              <View style={styles.editButton}>
+                <Text style={styles.editButtonText}>Edit Profile</Text>
+              </View>
+            </Pressable>
+
+            {/* Logout button */}
+            <Pressable onPress={() => setLogoutModalVisible(true)}>
+              <View style={styles.editButton}>
+                <IconSymbol
+                  size={18}
+                  name={'rectangle.portrait.and.arrow.right'}
+                  color={Colors.awac.beige}
+                />
+              </View>
+            </Pressable>
+          </>
+        );
+
+      case 'muted':
+        return (
+          <>
+            {/* Report button */}
+            <Pressable
+              onPress={() => {
+                setSelectedReportState(social.isReported);
+                setReportModalVisible(true);
+              }}
+            >
+              <View style={styles.editButton}>
+                <IconSymbol
+                  size={22}
+                  name={social.isReported ? 'flag.fill' : 'flag'}
+                  color={Colors.awac.beige}
+                />
+              </View>
+            </Pressable>
+
+            {/* Unblock button */}
+            <Pressable onPress={() => setBlockModalVisible(true)}>
+              <View style={styles.editButton}>
+                {social.isBlockedByMe ? (
+                  <Text style={styles.editButtonText}>Unblock</Text>
+                ) : (
+                  <Text style={styles.editButtonText}>Block</Text>
+                )}
+              </View>
+            </Pressable>
+          </>
+        );
+
+      case 'full':
+        return (
+          <>
+            {/* Message button */}
+            <Pressable
+              onPress={() =>
+                router.push(`/conversation?otherUserID=${viewedUserID}`)
+              }
+            >
+              <View style={styles.editButton}>
+                <IconSymbol
+                  size={26}
+                  name="message.fill"
+                  color={Colors.awac.beige}
+                />
+              </View>
+            </Pressable>
+
+            {/* Report button */}
+            <Pressable
+              onPress={() => {
+                setSelectedReportState(social.isReported);
+                setReportModalVisible(true);
+              }}
+            >
+              <View style={styles.editButton}>
+                <IconSymbol
+                  size={22}
+                  name={social.isReported ? 'flag.fill' : 'flag'}
+                  color={Colors.awac.beige}
+                />
+              </View>
+            </Pressable>
+
+            {/* Block button */}
+            <Pressable onPress={() => setBlockModalVisible(true)}>
+              <View style={styles.editButton}>
+                <IconSymbol size={26} name="nosign" color={Colors.awac.beige} />
+              </View>
+            </Pressable>
+          </>
+        );
+    }
+  };
 
   // -- UI -- //
+
+  // Blocked users see a minimal profile
+  if (profileMode === 'muted') {
+    return (
+      <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
+        <ThemedView style={styles.profileContainer}>
+          <ProfilePicture
+            size={75}
+            avatarUrl={profile?.avatar_url}
+            userId={profile?.id}
+          />
+          <View
+            style={{ flexDirection: 'column', gap: 16, alignItems: 'center' }}
+          >
+            {profile && (
+              <ThemedText type="title" style={{ fontSize: 26 }}>
+                {profile.first_name} {profile.last_name}
+              </ThemedText>
+            )}
+            <View style={styles.buttonsContainer}>{renderHeaderButtons()}</View>
+          </View>
+        </ThemedView>
+        <ThemedView style={styles.sectionContainer}>
+          <ThemedText style={{ textAlign: 'center', fontSize: 16 }}>
+            {social.isBlockedByMe
+              ? 'You have blocked this user'
+              : 'This user profile is not available'}
+          </ThemedText>
+        </ThemedView>
+
+        {/* Block modal */}
+        <ActionModal
+          visible={blockModalVisible}
+          title="Unblock User"
+          caption="Do you want to unblock this user? You will be able to message each other again."
+          confirmText="Unblock"
+          onClose={() => setBlockModalVisible(false)}
+          onConfirm={async () => {
+            await toggleBlockUser();
+            setBlockModalVisible(false);
+          }}
+        />
+
+        {/* Report modal */}
+        <ActionModal
+          visible={reportModalVisible}
+          title={selectedReportState ? 'Remove Report' : 'Report User'}
+          caption={
+            selectedReportState
+              ? "Do you want to remove your report for this user's profile?"
+              : "Are you sure you want to report this user's profile to an admin?"
+          }
+          confirmText={selectedReportState ? 'Unreport' : 'Report'}
+          onClose={() => setReportModalVisible(false)}
+          onConfirm={async () => {
+            await toggleReportUser();
+          }}
+        />
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView style={{ backgroundColor: Colors.awac.beige }}>
       <ThemedView style={styles.profileContainer}>
@@ -219,9 +440,10 @@ export default function ProfileScreen() {
           avatarUrl={profile?.avatar_url}
           userId={profile?.id}
         />
+
         <View style={{ flexDirection: 'column', gap: 8 }}>
-          {profile ? (
-            <View key={profile.id}>
+          {profile && (
+            <View>
               <ThemedText type="title" style={{ fontSize: 26 }}>
                 {profile.first_name} {profile.last_name}
               </ThemedText>
@@ -229,108 +451,30 @@ export default function ProfileScreen() {
                 {profile.profession}
               </ThemedText>
             </View>
-          ) : null}
-          {isOwnProfile && (
-            <View style={styles.buttonsContainer}>
-              <Pressable onPress={() => router.push('/profileSettings')}>
-                <View style={styles.editButton}>
-                  <Text style={styles.editButtonText}>Edit Profile</Text>
-                </View>
-              </Pressable>
-              <Pressable onPress={() => setLogoutModalVisible(true)}>
-                <View style={styles.editButton}>
-                  <IconSymbol
-                    size={18}
-                    name={'rectangle.portrait.and.arrow.right'}
-                    color={Colors.awac.beige}
-                  />
-                </View>
-              </Pressable>
-            </View>
           )}
 
-          {!isOwnProfile && viewedUserID && (
-            <View style={styles.buttonsContainer}>
-              {/* Message button */}
-              <Pressable
-                onPress={() =>
-                  router.push(`/conversation?otherUserID=${viewedUserID}`)
-                }
-              >
-                <View style={styles.editButton}>
-                  <IconSymbol
-                    size={26}
-                    name="message.fill"
-                    color={Colors.awac.beige}
-                  />
-                </View>
-              </Pressable>
-
-              {/* Report button */}
-              <Pressable
-                onPress={() => {
-                  setSelectedReportState(isReported);
-                  setReportModalVisible(true);
-                }}
-              >
-                <View style={styles.editButton}>
-                  <IconSymbol
-                    size={22}
-                    name={isReported ? 'flag.fill' : 'flag'}
-                    color={Colors.awac.beige}
-                  />
-                </View>
-              </Pressable>
-
-              {/* Block / Unblock button */}
-              <Pressable onPress={() => setBlockModalVisible(true)}>
-                <View style={styles.editButton}>
-                  {isBlocked ? (
-                    <Text style={styles.editButtonText}>Unblock</Text>
-                  ) : (
-                    <IconSymbol
-                      size={26}
-                      name="nosign"
-                      color={Colors.awac.beige}
-                    />
-                  )}
-                </View>
-              </Pressable>
-            </View>
-          )}
+          <View style={styles.buttonsContainer}>{renderHeaderButtons()}</View>
         </View>
       </ThemedView>
+
       <ThemedView style={styles.sectionContainer}>
-        {profile ? (
-          <View key={`${profile.id}-contact_info`}>
-            <ThemedText type="subtitle">Contact Information</ThemedText>
-            <ThemedText>{profile.contact_info}</ThemedText>
-          </View>
-        ) : null}
+        <ThemedText type="subtitle">Contact Information</ThemedText>
+        <ThemedText>{profile?.contact_info}</ThemedText>
       </ThemedView>
+
       <ThemedView style={styles.sectionContainer}>
-        {profile ? (
-          <View key={`${profile.id}-about_me`}>
-            <ThemedText type="subtitle">About Me</ThemedText>
-            <ThemedText>{profile.about_me}</ThemedText>
-          </View>
-        ) : null}
+        <ThemedText type="subtitle">About Me</ThemedText>
+        <ThemedText>{profile?.about_me}</ThemedText>
       </ThemedView>
+
       <ThemedView style={styles.sectionContainer}>
-        {profile ? (
-          <View key={`${profile.id}-interests`}>
-            <ThemedText type="subtitle">Interests</ThemedText>
-            <ThemedText>{profile.interests}</ThemedText>
-          </View>
-        ) : null}
+        <ThemedText type="subtitle">Interests</ThemedText>
+        <ThemedText>{profile?.interests}</ThemedText>
       </ThemedView>
+
       <ThemedView style={styles.sectionContainer}>
-        {profile ? (
-          <View key={`${profile.id}-sessions`}>
-            <ThemedText type="subtitle">My Sessions</ThemedText>
-            <ThemedText>{profile.my_sessions}</ThemedText>
-          </View>
-        ) : null}
+        <ThemedText type="subtitle">My Sessions</ThemedText>
+        <ThemedText>{profile?.my_sessions}</ThemedText>
       </ThemedView>
 
       {/* Logout modal */}
@@ -351,22 +495,22 @@ export default function ProfileScreen() {
           console.log('User signed out successfully');
           setLogoutModalVisible(false);
 
-          // Logout on success
           requestAnimationFrame(() => {
             router.replace('/login');
           });
         }}
       />
-      {/* Block modal  */}
+
+      {/* Block modal */}
       <ActionModal
         visible={blockModalVisible}
-        title={isBlocked ? 'Unblock User' : 'Block User'}
+        title={social.isBlockedByMe ? 'Unblock User' : 'Block User'}
         caption={
-          isBlocked
+          social.isBlockedByMe
             ? 'Do you want to unblock this user? You will be able to message each other again.'
             : 'Are you sure you want to block this user? You will not be able to message each other.'
         }
-        confirmText={isBlocked ? 'Unblock' : 'Block'}
+        confirmText={social.isBlockedByMe ? 'Unblock' : 'Block'}
         onClose={() => setBlockModalVisible(false)}
         onConfirm={async () => {
           await toggleBlockUser();
@@ -387,7 +531,7 @@ export default function ProfileScreen() {
         successMessage={
           selectedReportState
             ? 'Report successfully removed.'
-            : 'Profile successfully reported to an administrator.'
+            : 'Profile successfully reported to an administrator. They will review the content within 24 hours and take action as necessary.'
         }
         onClose={() => setReportModalVisible(false)}
         onConfirm={async () => {
@@ -419,7 +563,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.awac.navy,
     borderWidth: 2,
     borderRadius: 8,
-    // backgroundColor: Colors.awac.beige,
   },
   editButton: {
     backgroundColor: Colors.umaine.darkBlue,

@@ -531,7 +531,7 @@ export default function ConversationScreen() {
           successMessage={
             selectedMessage?.reported
               ? 'Message successfully unreported.'
-              : 'Message successfully reported to an administrator.'
+              : 'Message successfully reported to an administrator. They will review the content within 24 hours and take action as necessary.'
           }
           onClose={() => {
             setReportModalVisible(false);

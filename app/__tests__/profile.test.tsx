@@ -19,9 +19,11 @@ jest.mock('expo-router', () => ({
 
 jest.mock('@react-navigation/native', () => ({
   useFocusEffect: (callback: () => void | (() => void)) => {
-    // Call the callback immediately in tests
-    const cb = callback as () => void | (() => void);
-    cb();
+    const React = jest.requireActual('react');
+    React.useEffect(() => {
+      const cleanup = callback();
+      return cleanup ?? undefined;
+    }, []);
   },
 }));
 
@@ -99,20 +101,32 @@ describe('ProfileScreen', () => {
     (supabase.from as jest.Mock).mockImplementation((table: string) => {
       if (table === 'profiles') return makeChain(mockProfileRow);
       if (table === 'users') return makeChain(mockUserRow);
+
+      if (table === 'blocks') {
+        return makeChain(null); // no blocks in test
+      }
+
+      if (table === 'reports') {
+        return makeChain(null); // no reports in test
+      }
+
       return makeChain(null, 'Unknown table');
     });
   });
 
   test('renders own profile with details', async () => {
-    const { getByText } = render(<ProfileScreen />);
-    await waitFor(() => expect(getByText('Alice Smith')).toBeTruthy());
-    expect(getByText('Researcher')).toBeTruthy();
-    expect(getByText('user@email.com')).toBeTruthy();
-    expect(getByText('About Me')).toBeTruthy();
-    expect(getByText('About me text')).toBeTruthy();
-    expect(getByText('Interests')).toBeTruthy();
-    expect(getByText('AI, ML')).toBeTruthy();
-    expect(getByText('My Sessions')).toBeTruthy();
-    expect(getByText('Session 1')).toBeTruthy();
+    const screen = render(<ProfileScreen />);
+
+    // wait for first stable UI render
+    await screen.findByText('Alice Smith');
+
+    screen.getByText('Researcher');
+    screen.getByText('user@email.com');
+    screen.getByText('About Me');
+    screen.getByText('About me text');
+    screen.getByText('Interests');
+    screen.getByText('AI, ML');
+    screen.getByText('My Sessions');
+    screen.getByText('Session 1');
   });
 });

@@ -501,7 +501,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
         successMessage={
           selectedComment?.reported
             ? 'Report removed successfully.'
-            : 'Comment reported successfully to an administrator.'
+            : 'Comment reported successfully to an administrator. They will review the content within 24 hours and take action as necessary.'
         }
         onClose={() => {
           setReportModalVisible(false);
