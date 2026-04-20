@@ -119,24 +119,22 @@ describe('ProfileScreen', () => {
     });
   });
 
-
-  // This test was commented out after repeated failures with functional Profile screen
+  // NOTE: This test was skipped after repeated failures with functional Profile screen
   // This test should be replaced with a true unit test, not just mocking the UI
 
+  test.skip('renders own profile with details', async () => {
+    const screen = render(<ProfileScreen />);
 
-  // test('renders own profile with details', async () => {
-  //   const screen = render(<ProfileScreen />);
+    // wait for first stable UI render
+    await screen.findByText('Alice Smith');
 
-  //   // wait for first stable UI render
-  //   await screen.findByText('Alice Smith');
-
-  //   screen.getByText('Researcher');
-  //   screen.getByText('user@email.com');
-  //   screen.getByText('About Me');
-  //   screen.getByText('About me text');
-  //   screen.getByText('Interests');
-  //   screen.getByText('AI, ML');
-  //   screen.getByText('My Sessions');
-  //   screen.getByText('Session 1');
-  // });
+    screen.getByText('Researcher');
+    screen.getByText('user@email.com');
+    screen.getByText('About Me');
+    screen.getByText('About me text');
+    screen.getByText('Interests');
+    screen.getByText('AI, ML');
+    screen.getByText('My Sessions');
+    screen.getByText('Session 1');
+  });
 });
