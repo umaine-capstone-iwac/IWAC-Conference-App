@@ -13,7 +13,9 @@ jest.mock('@/lib/supabase', () => ({
 
 // Mock Expo and React Navigation hooks
 jest.mock('expo-router', () => ({
-  useLocalSearchParams: () => ({}),
+  useLocalSearchParams: () => ({
+    otherUserID: undefined,
+  }),
   router: { push: jest.fn(), replace: jest.fn() },
 }));
 
@@ -21,10 +23,10 @@ jest.mock('@react-navigation/native', () => {
   const React = jest.requireActual('react');
 
   return {
-    useFocusEffect: (callback: any) => {
+    useFocusEffect: (effect: () => void | (() => void)): void => {
       React.useEffect(() => {
-        const cleanup = callback();
-        return cleanup;
+        const cleanup = effect();
+        return typeof cleanup === 'function' ? cleanup : undefined;
       }, []);
     },
   };
