@@ -269,7 +269,7 @@ const styles = StyleSheet.create({
   footerLinks: {
     marginTop: 25,
     alignItems: 'center',
-    gap: 22,
+    gap: 28,
   },
   footerLinkText: {
     color: 'mediumblue',

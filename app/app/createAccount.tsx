@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themedText';
@@ -25,6 +26,7 @@ export default function CreateAccount() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passCheck, setPassCheck] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   // Stops user from attempting multiple create account calls
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +87,13 @@ export default function CreateAccount() {
     // Verify passwords match
     if (passCheck !== password) {
       setErrorText('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    // Ensure terms are agreed to
+    if (!acceptedTerms) {
+      setErrorText('You must agree to the Terms of Use');
       setIsLoading(false);
       return;
     }
@@ -205,6 +214,35 @@ export default function CreateAccount() {
             />
           </View>
 
+          {/* Terms of Use */}
+          <View style={styles.termsContainer}>
+            <TouchableOpacity
+              style={styles.checkbox}
+              onPress={() => setAcceptedTerms(!acceptedTerms)}
+            >
+              <View
+                style={[
+                  styles.checkboxBox,
+                  acceptedTerms && styles.checkboxChecked,
+                ]}
+              />
+            </TouchableOpacity>
+
+            <Text style={styles.termsText}>
+              By checking this box, I agree to the{' '}
+              <Text
+                style={styles.linkText}
+                onPress={() =>
+                  Linking.openURL(
+                    'https://umaine-capstone-iwac.github.io/IWAC-Conference-App/terms-of-use.html',
+                  )
+                }
+              >
+                Terms of Use
+              </Text>
+            </Text>
+          </View>
+
           {/* Create account button */}
           <TouchableOpacity onPress={handleCreateAccount} disabled={isLoading}>
             <View
@@ -303,5 +341,37 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
     textAlign: 'center',
     fontSize: 16,
+  },
+  termsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: '10%',
+    marginBottom: 15,
+  },
+
+  checkbox: {
+    marginRight: 10,
+  },
+
+  checkboxBox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#333',
+    borderRadius: 4,
+  },
+
+  checkboxChecked: {
+    backgroundColor: Colors.awac.orange,
+  },
+
+  termsText: {
+    flex: 1,
+    fontSize: 14,
+  },
+
+  linkText: {
+    color: 'mediumblue',
+    textDecorationLine: 'underline',
   },
 });
