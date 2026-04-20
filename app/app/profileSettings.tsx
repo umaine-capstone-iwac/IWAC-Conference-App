@@ -244,7 +244,6 @@ export default function ProfileSettingsModal() {
       }
 
       await supabase.auth.signOut();
-      router.replace('/login');
     } catch (err) {
       console.error('Delete account failed:', err);
       Alert.alert('Error', 'Failed to delete account');
@@ -394,7 +393,11 @@ export default function ProfileSettingsModal() {
         title="Delete Account"
         caption="This action is permanent. Your account and data will be permanently deleted."
         confirmText="Delete"
-        onClose={() => setDeleteModalVisible(false)}
+        successMessage="Account and associated data deleted successfully."
+        onClose={() => {
+          setDeleteModalVisible(false);
+          router.replace('/login');
+        }}
         onConfirm={async () => {
           await deleteAccount();
         }}
