@@ -17,15 +17,18 @@ jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn() },
 }));
 
-jest.mock('@react-navigation/native', () => ({
-  useFocusEffect: (callback: () => void | (() => void)) => {
-    const React = jest.requireActual('react');
-    React.useEffect(() => {
-      const cleanup = callback();
-      return cleanup ?? undefined;
-    }, []);
-  },
-}));
+jest.mock('@react-navigation/native', () => {
+  const React = jest.requireActual('react');
+
+  return {
+    useFocusEffect: (callback: any) => {
+      React.useEffect(() => {
+        const cleanup = callback();
+        return cleanup;
+      }, []);
+    },
+  };
+});
 
 // Mock ThemedText and ThemedView
 jest.mock('@/components/themedText', () => {
