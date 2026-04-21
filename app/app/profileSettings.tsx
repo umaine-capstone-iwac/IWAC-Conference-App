@@ -137,21 +137,36 @@ export default function ProfileSettingsModal() {
     try {
       const fileName = `${userID}-${Date.now()}.jpg`;
 
-      //fetch the image and convert it into a blob (binary large object)
-      const response = await fetch(avatarUri);
-      const blob = await response.blob();
+      // Get the session token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      if (!token) throw new Error('No authentication token');
 
-      // Upload the blob to Supabase storage
-      const { error } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, blob as never);
-      if (error) throw error;
+      // Create FormData with the file
+      const formData = new FormData();
+      formData.append('file', {
+        uri: avatarUri,
+        name: fileName,
+        type: 'image/jpeg',
+      } as any);
 
-      // Get the public URL of the uploaded image
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(fileName);
+      // Upload directly via Supabase REST API
+      const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/storage/v1/object/avatars/${fileName}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Upload failed: ${error}`);
+      }
+
+      // Get the public URL
+      const publicUrl = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/storage/v1/object/public/avatars/${fileName}`;
       return publicUrl;
     } catch (err) {
       console.error('Error uploading avatar:', err);
