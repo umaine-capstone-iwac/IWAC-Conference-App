@@ -178,6 +178,7 @@ export default function NotificationsScreen() {
           <View style={styles.userRow}>
             <Text
               style={[styles.userText, !notification.read && styles.unreadText]}
+              numberOfLines={0}
             >
               {notification.text}
             </Text>
@@ -188,6 +189,7 @@ export default function NotificationsScreen() {
                   height: 10,
                   borderRadius: 5,
                   backgroundColor: Colors.umaine.darkBlue,
+                  flexShrink: 0,
                 }}
               />
             )}
@@ -223,6 +225,7 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 18,
     lineHeight: 24,
+    flex: 1,
   },
   unreadText: {
     fontWeight: '700',
