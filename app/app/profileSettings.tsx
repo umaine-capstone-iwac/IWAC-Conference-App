@@ -112,20 +112,28 @@ export default function ProfileSettingsModal() {
 
   // Function to handle updating the profile picture
   const pickImage = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
+    // Request media library permissions
+    const status = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (!status.granted) {
+      Alert.alert(
+        'Permission Required',
+        'We need permission to access your photos to change your profile picture.'
+      );
+      return;
+    }
 
-      if (!result.canceled && result.assets[0]) {
-        setAvatarUri(result.assets[0].uri);
-      }
-    } catch (err) {
-      console.error('Error picking image:', err);
-      Alert.alert('Error', 'Failed to pick image');
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    console.log('Image picker result:', result);
+
+    if (!result.canceled) {
+      setAvatarUri(result.assets[0].uri);
     }
   };
 

@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import { useState, useEffect } from 'react';
 
 export type ProfilePictureProps = {
   size: number;
@@ -13,7 +14,14 @@ export function ProfilePicture({
   avatarUrl,
   userId,
 }: ProfilePictureProps) {
-  const image = avatarUrl ? (
+  const [imageLoadFailed, setImageLoadFailed] = useState(false);
+
+  // Reset imageLoadFailed when avatarUrl changes
+  useEffect(() => {
+    setImageLoadFailed(false);
+  }, [avatarUrl]);
+
+  const image = avatarUrl && !imageLoadFailed ? (
     <Image
       source={{
         uri: avatarUrl,
@@ -24,6 +32,7 @@ export function ProfilePicture({
       ]}
       onError={(e) => {
         console.error('Profile image load error:', e.nativeEvent);
+        setImageLoadFailed(true);
       }}
       accessibilityLabel="Profile picture"
     />

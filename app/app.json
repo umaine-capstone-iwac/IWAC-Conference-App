@@ -11,7 +11,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "org.wacassociation.iwac",
-      "buildNumber": "3"
+      "buildNumber": "3",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "We need access to your photo library to let you change your profile picture."
+      }
     },
     "android": {
       "icon": "./assets/images/icon-android.png",
@@ -23,10 +26,20 @@
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
       "package": "org.wacassociation.iwac",
-      "versionCode": 3
+      "versionCode": 3,
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES"
+      ]
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
       [
         "expo-splash-screen",
         {
