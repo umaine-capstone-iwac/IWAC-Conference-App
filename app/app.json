@@ -9,11 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "org.wacassociation.iwac",
       "buildNumber": "3",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "We need access to your photo library to let you change your profile picture."
+        "NSPhotoLibraryUsageDescription": "Allow access to your photos so you can choose a profile picture. This is optional."
       }
     },
     "android": {
@@ -23,6 +23,8 @@
         "backgroundColor": "#f3ebdc"
       },
       "edgeToEdgeEnabled": true,
+      "abiFilters": ["arm64-v8a", "x86_64"],
+      "minSdkVersion": 26,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
       "package": "org.wacassociation.iwac",
@@ -37,7 +39,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "Allow access to your photos so you can choose a profile picture. This is optional."
         }
       ],
       [

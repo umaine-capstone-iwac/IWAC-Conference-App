@@ -21,30 +21,31 @@ export function ProfilePicture({
     setImageLoadFailed(false);
   }, [avatarUrl]);
 
-  const image = avatarUrl && !imageLoadFailed ? (
-    <Image
-      source={{
-        uri: avatarUrl,
-      }}
-      style={[
-        styles.profilePicture,
-        { width: size, height: size, borderRadius: size / 2 },
-      ]}
-      onError={(e) => {
-        console.error('Profile image load error:', e.nativeEvent);
-        setImageLoadFailed(true);
-      }}
-      accessibilityLabel="Profile picture"
-    />
-  ) : (
-    <Image
-      source={require('@/assets/images/profile-picture.png')}
-      style={[
-        styles.profilePicture,
-        { width: size, height: size, borderRadius: size / 2 },
-      ]}
-    />
-  );
+  const image =
+    avatarUrl && !imageLoadFailed ? (
+      <Image
+        source={{
+          uri: avatarUrl,
+        }}
+        style={[
+          styles.profilePicture,
+          { width: size, height: size, borderRadius: size / 2 },
+        ]}
+        onError={(e) => {
+          console.error('Profile image load error:', e.nativeEvent);
+          setImageLoadFailed(true);
+        }}
+        accessibilityLabel="Profile picture"
+      />
+    ) : (
+      <Image
+        source={require('@/assets/images/profile-picture.png')}
+        style={[
+          styles.profilePicture,
+          { width: size, height: size, borderRadius: size / 2 },
+        ]}
+      />
+    );
 
   // -- NAVIGATION -- //
 
@@ -53,6 +54,7 @@ export function ProfilePicture({
     return (
       <Pressable
         onPress={() => router.replace(`/profile?otherUserID=${userId}`)}
+        hitSlop={10}
       >
         {image}
       </Pressable>

@@ -114,11 +114,11 @@ export default function ProfileSettingsModal() {
   const pickImage = async () => {
     // Request media library permissions
     const status = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (!status.granted) {
       Alert.alert(
         'Permission Required',
-        'We need permission to access your photos to change your profile picture.'
+        'We need permission to access your photos to change your profile picture.',
       );
       return;
     }
@@ -156,7 +156,7 @@ export default function ProfileSettingsModal() {
         uri: avatarUri,
         name: fileName,
         type: 'image/jpeg',
-      } as any);
+      } as unknown as Blob);
 
       // Upload directly via Supabase REST API
       const url = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/storage/v1/object/avatars/${fileName}`;
