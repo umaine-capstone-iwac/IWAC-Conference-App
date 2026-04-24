@@ -63,6 +63,7 @@ export default function LoginScreen() {
       // Return if not registered
       if (!result.valid) {
         setErrorText(result.message);
+        setIsLoading(false);
         return;
       }
 
@@ -78,6 +79,7 @@ export default function LoginScreen() {
         setErrorText(
           'Incorrect password, or no account found.\nPlease verify password or create an account.',
         );
+        setIsLoading(false);
         return;
       }
 
@@ -85,6 +87,7 @@ export default function LoginScreen() {
 
       if (!user) {
         setErrorText('Unable to retrieve user.');
+        setIsLoading(false);
         return;
       }
 
@@ -142,7 +145,7 @@ export default function LoginScreen() {
           </ThemedText>
           <Input
             text="email@address.com"
-            onChangeText={setEmail}
+            onChangeText={(text) => setEmail(text.toLowerCase())}
             autoCapitalize="none"
           />
         </View>

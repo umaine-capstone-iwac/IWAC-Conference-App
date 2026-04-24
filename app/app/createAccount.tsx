@@ -183,7 +183,7 @@ export default function CreateAccount() {
             </ThemedText>
             <Input
               text="email@address.com"
-              onChangeText={setEmail}
+              onChangeText={(text) => setEmail(text.toLowerCase())}
               autoCapitalize="none"
             />
           </View>
