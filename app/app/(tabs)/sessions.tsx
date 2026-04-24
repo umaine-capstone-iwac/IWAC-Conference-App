@@ -170,6 +170,13 @@ export default function SessionsScreen() {
         }),
       );
 
+      built.sort((a, b) => {
+        const getDay = (d: string) =>
+          parseInt(d.trim().split(' ').pop() || '0', 10);
+
+        return getDay(a.date) - getDay(b.date);
+      });
+
       setSessions(built);
     } catch (err) {
       console.error(err);
