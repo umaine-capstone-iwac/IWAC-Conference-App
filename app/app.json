@@ -28,11 +28,7 @@
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "pan",
       "package": "org.wacassociation.iwac",
-      "versionCode": 3,
-      "permissions": [
-        "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.READ_MEDIA_IMAGES"
-      ]
+      "versionCode": 7
     },
     "plugins": [
       "expo-router",

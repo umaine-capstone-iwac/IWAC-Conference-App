@@ -112,17 +112,6 @@ export default function ProfileSettingsModal() {
 
   // Function to handle updating the profile picture
   const pickImage = async () => {
-    // Request media library permissions
-    const status = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!status.granted) {
-      Alert.alert(
-        'Permission Required',
-        'We need permission to access your photos to change your profile picture.',
-      );
-      return;
-    }
-
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
