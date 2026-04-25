@@ -292,7 +292,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 160 : 60}
     >
       <ScrollView

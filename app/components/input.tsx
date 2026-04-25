@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: 'center',
     flex: 1,
+    color: Colors.text,
   },
   visibilityIcon: {
     position: 'absolute',

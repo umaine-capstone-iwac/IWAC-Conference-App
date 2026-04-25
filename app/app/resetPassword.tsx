@@ -124,7 +124,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
     return (
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.content}>
           <ThemedText style={styles.verifyingText}>
@@ -138,7 +138,7 @@ export default function ResetPasswordScreen(): React.JSX.Element {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.content}>
         <View style={styles.inputGroup}>
