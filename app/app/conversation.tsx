@@ -431,14 +431,15 @@ export default function ConversationScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={80}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'none'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
     >
       <FlatList
         ref={flatListRef}
         data={messages.slice().reverse()}
         inverted
         keyExtractor={(item) => item.id.toString()}
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item }) => (
           <View
             style={{

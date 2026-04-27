@@ -144,9 +144,10 @@ export default function CreateAccount() {
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'none'}
       >
-        <ScrollView>
+        <ScrollView
+          keyboardShouldPersistTaps="handled">
           {/* Create account header */}
           <ThemedText type="subtitle" style={styles.subtitle}>
             Create Account
