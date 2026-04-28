@@ -276,13 +276,14 @@ export default function ProfileSettingsModal() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'none'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
     >
       <View style={styles.container}>
         <ScrollView
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.contentContainer}>
+          contentContainerStyle={styles.contentContainer}
+        >
           <ThemedText type="subtitle" style={styles.subtitle}>
             Edit your profile information below:
           </ThemedText>
