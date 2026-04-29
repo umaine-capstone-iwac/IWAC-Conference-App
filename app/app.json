@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "iwacapp",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "org.wacassociation.iwac",
@@ -23,7 +23,7 @@
         "backgroundColor": "#f3ebdc"
       },
       "package": "org.wacassociation.iwac",
-      "versionCode": 12,
+      "versionCode": 13,
       "edgeToEdgeEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
       "statusBar": {
