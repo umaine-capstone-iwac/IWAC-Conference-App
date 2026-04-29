@@ -85,7 +85,7 @@ export default function RootLayout() {
         />
       </Stack>
 
-      <StatusBar style="auto" />
+      <StatusBar style="auto" translucent={false} />
     </ThemeProvider>
   );
 }

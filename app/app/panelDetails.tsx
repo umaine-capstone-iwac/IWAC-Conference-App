@@ -512,22 +512,14 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     </>
   );
 
-  if (Platform.OS === 'ios') {
-    return (
-      <KeyboardAvoidingView
-        style={{ flex: 1, backgroundColor: Colors.awac.beige }}
-        behavior="padding"
-        keyboardVerticalOffset={100}
-      >
-        {innerContent}
-      </KeyboardAvoidingView>
-    );
-  }
-
   return (
-    <View style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: Colors.awac.beige }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+    >
       {innerContent}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
