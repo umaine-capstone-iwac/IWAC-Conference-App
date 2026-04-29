@@ -2,7 +2,7 @@
   "expo": {
     "name": "IWAC",
     "slug": "iwac-conference",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "iwacapp",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "org.wacassociation.iwac",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow access to your photos so you can choose a profile picture. This is optional."
       }
@@ -23,12 +23,21 @@
         "backgroundColor": "#f3ebdc"
       },
       "edgeToEdgeEnabled": true,
-      "abiFilters": ["arm64-v8a", "x86_64"],
+      "abiFilters": [
+        "arm64-v8a",
+        "x86_64",
+        "arm64-v8a",
+        "x86_64"
+      ],
       "minSdkVersion": 26,
       "predictiveBackGestureEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
       "package": "org.wacassociation.iwac",
-      "versionCode": 7
+      "versionCode": 8,
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -58,8 +67,14 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "ef145f14-72b0-4176-8e77-6cb8c5978aaa"
+        "projectId": "a5828739-669d-488e-b1c0-ee3f3919d2e7"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/a5828739-669d-488e-b1c0-ee3f3919d2e7"
     }
   }
 }

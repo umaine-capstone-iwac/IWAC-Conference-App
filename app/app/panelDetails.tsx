@@ -291,15 +291,14 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'none'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 160 : 0}
+      style={{ flex: 1, backgroundColor: Colors.awac.beige }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       <ScrollView
         ref={scrollRef}
         style={styles.scrollContainer}
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: 40 }}
       >
         <View style={styles.container}>
           {/* Back button */}
