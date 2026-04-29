@@ -428,12 +428,8 @@ export default function ConversationScreen() {
   ) : null;
 
   // -- UI -- //
-  return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
-    >
+  const innerContent = (
+    <>
       <FlatList
         ref={flatListRef}
         data={messages.slice().reverse()}
@@ -545,8 +541,22 @@ export default function ConversationScreen() {
           }}
         />
       </SafeAreaView>
-    </KeyboardAvoidingView>
+    </>
   );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior="padding"
+        keyboardVerticalOffset={90}
+      >
+        {innerContent}
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return <View style={styles.container}>{innerContent}</View>;
 }
 
 // -- STYLES -- //

@@ -289,12 +289,8 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
 
   // -- UI -- //
 
-  return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: Colors.awac.beige }}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
-    >
+  const innerContent = (
+    <>
       <ScrollView
         ref={scrollRef}
         style={styles.scrollContainer}
@@ -488,6 +484,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           </View>
         </View>
       </ScrollView>
+
       <ActionModal
         visible={reportModalVisible}
         title={selectedComment?.reported ? 'Remove Report' : 'Report Comment'}
@@ -512,7 +509,25 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
           await toggleReportComment(selectedComment.id);
         }}
       />
-    </KeyboardAvoidingView>
+    </>
+  );
+
+  if (Platform.OS === 'ios') {
+    return (
+      <KeyboardAvoidingView
+        style={{ flex: 1, backgroundColor: Colors.awac.beige }}
+        behavior="padding"
+        keyboardVerticalOffset={100}
+      >
+        {innerContent}
+      </KeyboardAvoidingView>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: Colors.awac.beige }}>
+      {innerContent}
+    </View>
   );
 }
 
