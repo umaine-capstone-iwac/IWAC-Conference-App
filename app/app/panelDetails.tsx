@@ -516,7 +516,7 @@ export default function PanelDetail({ panel, userID, onBack }: Props) {
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: Colors.awac.beige }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 125}
     >
       {innerContent}
     </KeyboardAvoidingView>
