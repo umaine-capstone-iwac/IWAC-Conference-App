@@ -419,8 +419,8 @@ export default function ProfileSettingsModal() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 125}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 110}
     >
       {innerContent}
     </KeyboardAvoidingView>
@@ -434,6 +434,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+    paddingBottom: Platform.OS === 'android' ? 30 : 20,
   },
   title: {
     fontSize: 28,

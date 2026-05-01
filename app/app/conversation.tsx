@@ -429,7 +429,7 @@ export default function ConversationScreen() {
 
   // -- UI -- //
   const innerContent = (
-    <>
+    <View style={{ flex: 1 }}>
       <FlatList
         ref={flatListRef}
         data={messages.slice().reverse()}
@@ -488,7 +488,7 @@ export default function ConversationScreen() {
         windowSize={10}
       />
 
-      <SafeAreaView edges={['bottom']} style={styles.inputContainer}>
+      <View style={styles.inputContainer}>
         {isBlockedEitherWay ? (
           <View style={styles.blockedContainer}>
             <ThemedText style={styles.blockedText}>
@@ -540,15 +540,15 @@ export default function ConversationScreen() {
             await toggleReportMessage();
           }}
         />
-      </SafeAreaView>
-    </>
+      </View>
+    </View>
   );
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 125}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 100}
     >
       {innerContent}
     </KeyboardAvoidingView>
@@ -599,11 +599,11 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
+    paddingBottom: Platform.OS === 'android' ? 30 : 12,
     gap: 10,
     borderTopWidth: 2,
     borderColor: Colors.awac.navy,
     backgroundColor: Colors.awac.beige,
-    bottom: 0,
     alignItems: 'flex-end',
     width: '100%',
   },

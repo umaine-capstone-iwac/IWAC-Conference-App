@@ -23,7 +23,7 @@
         "backgroundColor": "#f3ebdc"
       },
       "package": "org.wacassociation.iwac",
-      "versionCode": 13,
+      "versionCode": 16,
       "edgeToEdgeEnabled": false,
       "softwareKeyboardLayoutMode": "resize",
       "statusBar": {
