@@ -1,4 +1,5 @@
 import {
+  ScrollView,
   View,
   Text,
   StyleSheet,
@@ -170,32 +171,37 @@ export default function NotificationsScreen() {
   return (
     //loads the notifications from supabase
     <View style={styles.container}>
-      {notifications.map((notification) => (
-        <Pressable
-          key={notification.id}
-          onPress={() => !notification.read && markAsRead(notification.id)}
-        >
-          <View style={styles.userRow}>
-            <Text
-              style={[styles.userText, !notification.read && styles.unreadText]}
-              numberOfLines={0}
-            >
-              {notification.text}
-            </Text>
-            {!notification.read && (
-              <View
-                style={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: 5,
-                  backgroundColor: Colors.umaine.darkBlue,
-                  flexShrink: 0,
-                }}
-              />
-            )}
-          </View>
-        </Pressable>
-      ))}
+      <ScrollView>
+        {notifications.map((notification) => (
+          <Pressable
+            key={notification.id}
+            onPress={() => !notification.read && markAsRead(notification.id)}
+          >
+            <View style={styles.userRow}>
+              <Text
+                style={[
+                  styles.userText,
+                  !notification.read && styles.unreadText,
+                ]}
+                numberOfLines={0}
+              >
+                {notification.text}
+              </Text>
+              {!notification.read && (
+                <View
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: 5,
+                    backgroundColor: Colors.umaine.darkBlue,
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+            </View>
+          </Pressable>
+        ))}
+      </ScrollView>
     </View>
   );
 }
