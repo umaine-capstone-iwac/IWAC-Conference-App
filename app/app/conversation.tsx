@@ -13,7 +13,6 @@ import { ProfilePicture } from '@/components/profilePicture';
 import ActionModal from '@/app/modals/action';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { supabase } from '@/lib/supabase';
@@ -548,7 +547,7 @@ export default function ConversationScreen() {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 100}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 100}
     >
       {innerContent}
     </KeyboardAvoidingView>
@@ -599,7 +598,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     padding: 12,
-    paddingBottom: Platform.OS === 'android' ? 30 : 12,
+    paddingBottom: Platform.OS === 'android' ? 30 : 40,
     gap: 10,
     borderTopWidth: 2,
     borderColor: Colors.awac.navy,
